@@ -6,7 +6,7 @@ The gallery is a soft pink room. Each card shows the finished picture. Open one 
 
 ## Pictures
 
-Sixteen original illustrations, drawn for Linen — not copied from another coloring app. Two pages in each category: animals, flowers, mandalas, landscapes, food, butterflies, birds, and places. Every page has its own palette and about 185 regions. Sources are listed on the Image credits screen and in [CREDITS.md](CREDITS.md).
+Thirty original illustrations, drawn for Linen — not copied from another coloring app. Beach, city, and peaceful places sit beside animals, flowers, mandalas, landscapes, food, butterflies, birds, and home. Every page has its own palette and about 185 regions. Sources are listed on the Image credits screen and in [CREDITS.md](CREDITS.md).
 
 ## Run it
 

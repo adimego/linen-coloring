@@ -7,6 +7,141 @@ and they are not traced from someone else's artwork.
 Author: Linen
 License: original work, created for Linen
 
+## Beach
+
+### Palm Sunset
+
+Two palms against a warm sea.
+
+- **Palm Sunset**
+  - Author: Linen
+  - Source: original illustration created for Linen
+  - License: original work, created for Linen
+
+### Tide Pool
+
+Shells and a starfish in a quiet pool.
+
+- **Tide Pool**
+  - Author: Linen
+  - Source: original illustration created for Linen
+  - License: original work, created for Linen
+
+### Lighthouse Cove
+
+A striped light above a small cove.
+
+- **Lighthouse Cove**
+  - Author: Linen
+  - Source: original illustration created for Linen
+  - License: original work, created for Linen
+
+### Beach Huts
+
+A row of huts facing the water.
+
+- **Beach Huts**
+  - Author: Linen
+  - Source: original illustration created for Linen
+  - License: original work, created for Linen
+
+
+## City
+
+### Dusk Skyline
+
+Towers against a fading sun.
+
+- **Dusk Skyline**
+  - Author: Linen
+  - Source: original illustration created for Linen
+  - License: original work, created for Linen
+
+### Street Café
+
+An awning, two tables, and a flower box.
+
+- **Street Café**
+  - Author: Linen
+  - Source: original illustration created for Linen
+  - License: original work, created for Linen
+
+### Canal Bridge
+
+A low bridge over still water.
+
+- **Canal Bridge**
+  - Author: Linen
+  - Source: original illustration created for Linen
+  - License: original work, created for Linen
+
+### Rainy Lights
+
+Wet pavement and a few glowing windows.
+
+- **Rainy Lights**
+  - Author: Linen
+  - Source: original illustration created for Linen
+  - License: original work, created for Linen
+
+
+## Peaceful Places
+
+### Zen Garden
+
+Raked gravel, stones, and a maple.
+
+- **Zen Garden**
+  - Author: Linen
+  - Source: original illustration created for Linen
+  - License: original work, created for Linen
+
+### Snow Cabin
+
+A cabin under a quiet snow sky.
+
+- **Snow Cabin**
+  - Author: Linen
+  - Source: original illustration created for Linen
+  - License: original work, created for Linen
+
+### Lavender Rows
+
+Purple rows running toward a small house.
+
+- **Lavender Rows**
+  - Author: Linen
+  - Source: original illustration created for Linen
+  - License: original work, created for Linen
+
+### Forest Falls
+
+A white fall into a green pool.
+
+- **Forest Falls**
+  - Author: Linen
+  - Source: original illustration created for Linen
+  - License: original work, created for Linen
+
+### Balloon Valley
+
+Three balloons over a wide valley.
+
+- **Balloon Valley**
+  - Author: Linen
+  - Source: original illustration created for Linen
+  - License: original work, created for Linen
+
+### Reading Nook
+
+A chair, a lamp, and a shelf of books.
+
+- **Reading Nook**
+  - Author: Linen
+  - Source: original illustration created for Linen
+  - License: original work, created for Linen
+
+
 ## Animals
 
 ### Cat Nap

@@ -1,19 +1,33 @@
-import blueWingFile from "./art/blue-wing.json";
+import balloonsFile from "./art/balloon-valley.json";
+import hutsFile from "./art/beach-huts.json";
 import tartFile from "./art/berry-tart.json";
+import blueWingFile from "./art/blue-wing.json";
+import canalFile from "./art/canal-bridge.json";
 import catFile from "./art/cat-nap.json";
 import coastFile from "./art/coast-path.json";
+import skylineFile from "./art/dusk-skyline.json";
+import fallsFile from "./art/forest-falls.json";
 import foxFile from "./art/garden-fox.json";
 import robinFile from "./art/garden-robin.json";
 import lakeFile from "./art/lake-evening.json";
+import lavenderFile from "./art/lavender-rows.json";
 import teaFile from "./art/lemon-tea.json";
+import lightFile from "./art/lighthouse-cove.json";
 import monarchFile from "./art/monarch.json";
 import cityFile from "./art/night-windows.json";
 import roseFile from "./art/open-rose.json";
+import palmFile from "./art/palm-sunset.json";
 import petalFile from "./art/petal-mandala.json";
+import rainFile from "./art/rainy-lights.json";
+import nookFile from "./art/reading-nook.json";
 import cottageFile from "./art/rose-cottage.json";
+import cabinFile from "./art/snow-cabin.json";
 import starFile from "./art/star-mandala.json";
 import swanFile from "./art/still-swan.json";
+import cafeFile from "./art/street-cafe.json";
 import sunflowerFile from "./art/sunflower.json";
+import tideFile from "./art/tide-pool.json";
+import zenFile from "./art/zen-garden.json";
 import { categories, type CategoryId, type Picture, type Region } from "./types.ts";
 
 type ArtFile = {
@@ -59,10 +73,24 @@ export const pictures: Picture[] = [
   art(swanFile as unknown as ArtFile),
   art(cottageFile as unknown as ArtFile),
   art(cityFile as unknown as ArtFile),
+  art(palmFile as unknown as ArtFile),
+  art(tideFile as unknown as ArtFile),
+  art(lightFile as unknown as ArtFile),
+  art(hutsFile as unknown as ArtFile),
+  art(skylineFile as unknown as ArtFile),
+  art(cafeFile as unknown as ArtFile),
+  art(canalFile as unknown as ArtFile),
+  art(rainFile as unknown as ArtFile),
+  art(zenFile as unknown as ArtFile),
+  art(cabinFile as unknown as ArtFile),
+  art(lavenderFile as unknown as ArtFile),
+  art(fallsFile as unknown as ArtFile),
+  art(balloonsFile as unknown as ArtFile),
+  art(nookFile as unknown as ArtFile),
 ];
 
 function assertPictures(list: Picture[]): void {
-  if (list.length < 16) throw new Error(`Need at least 16 pictures, found ${list.length}`);
+  if (list.length < 30) throw new Error(`Need at least 30 pictures, found ${list.length}`);
   const ids = new Set<string>();
   for (const picture of list) {
     if (ids.has(picture.id)) throw new Error(`Duplicate picture ${picture.id}`);
@@ -89,9 +117,11 @@ function assertPictures(list: Picture[]): void {
       if (!used.has(n)) throw new Error(`${picture.id} never uses color ${n}`);
     }
   }
+  const minimums: Partial<Record<CategoryId, number>> = { beach: 4, city: 4, peaceful: 6 };
   for (const category of categories) {
     const count = list.filter((picture) => picture.category === category.id).length;
-    if (count < 2) throw new Error(`${category.name} needs at least 2 pictures`);
+    const need = minimums[category.id] ?? 2;
+    if (count < need) throw new Error(`${category.name} needs at least ${need} pictures`);
   }
 }
 

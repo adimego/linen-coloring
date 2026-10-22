@@ -1055,6 +1055,19 @@ def previews() -> None:
     sheet.save(out / "sheet.png")
 
 
+def _install_rich_scenes() -> None:
+    import sys
+
+    scenes = getattr(sys.modules.get("rich_scenes"), "SCENES", None)
+    if not scenes:
+        return
+    global PICTURES
+    PICTURES = [
+        (pid, category, title, caption, scenes.get(pid, maker))
+        for pid, category, title, caption, maker in PICTURES
+    ]
+
+
 def main() -> None:
     if len(sys.argv) > 1 and sys.argv[1] == "preview":
         ids = set(sys.argv[2:])

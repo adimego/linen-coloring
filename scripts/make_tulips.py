@@ -308,6 +308,19 @@ PLATES = [
 ]
 
 
+def _install_rich_scenes() -> None:
+    import sys
+
+    scenes = getattr(sys.modules.get("rich_scenes"), "SCENES", None)
+    if not scenes:
+        return
+    global ORIGINALS
+    ORIGINALS = [
+        (pid, title, caption, scenes.get(pid, maker))
+        for pid, title, caption, maker in ORIGINALS
+    ]
+
+
 def build_original(spec: tuple) -> tuple[dict, dict]:
     pid, title, caption, maker = spec
     scene = maker()

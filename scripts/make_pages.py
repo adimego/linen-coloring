@@ -1769,6 +1769,20 @@ def raster_previews(pictures: list[dict]) -> None:
             )
 
 
+def _install_rich_scenes() -> None:
+    """Point rebuilt pages at rich_scenes when that module is already loaded."""
+    import sys
+
+    scenes = getattr(sys.modules.get("rich_scenes"), "SCENES", None)
+    if not scenes:
+        return
+    global PICTURES
+    PICTURES = [
+        (pid, category, title, caption, scenes.get(pid, maker))
+        for pid, category, title, caption, maker in PICTURES
+    ]
+
+
 def main() -> None:
     ART.mkdir(parents=True, exist_ok=True)
     for old in ART.glob("*.json"):

@@ -1,6 +1,6 @@
 # Quality audit
 
-The mosaic pass and the confetti daily pass are gone. Gallery pages are the earlier drawings, with smooth tonal bands added only where a shape is large enough to split. Daily pages are eighteen illustrated scenes. Match and Zen play the clear, the fall, and the swap as motion.
+The mosaic pass and the confetti daily pass are gone. Gallery pages are the earlier drawings, with smooth tonal bands added only where a shape is large enough to split. Daily pages are twenty of those gallery drawings, recolored for the time of day. Match and Zen play the clear, the fall, and the swap as motion.
 
 - Gallery: 72 pictures, 119–216 regions, 10–28 colors. Bands follow the shape (horizontal on fields, concentric on round forms, one light/shadow cut on a tall form). Print credits are unchanged.
 - Daily: 20 gallery drawings (monarch, cat nap, lemon tea, flamingo, peony, cherry blossoms, sunflower, tulip field, swan, robin, fox, rose cottage, lighthouse, canal, snow cabin, balloons, cupcakes, open rose, tide pool, beach huts). The paths and the tonal bands are the gallery’s. Dawn, dusk, and night recolor the palette; night also mirrors the page. Across a year the pages land at 166–210 regions, with a smallest inscribed radius of 5.41 viewBox units. A 7-day stretch never repeats a drawing. The same drawing returns 20 days later in the next time of day.

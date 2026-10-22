@@ -1,6 +1,9 @@
 export const PAGE = { w: 320, h: 460, viewBox: "0 0 320 460" } as const;
 
 export const categories = [
+  { id: "pink", name: "Pink" },
+  { id: "jewelry", name: "Jewelry" },
+  { id: "fun-designs", name: "Fun Designs" },
   { id: "music", name: "Music" },
   { id: "relaxing-landscapes", name: "Relaxing Landscapes" },
   { id: "beach", name: "Beach" },

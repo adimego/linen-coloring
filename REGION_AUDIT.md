@@ -24,6 +24,18 @@ A region is too small when its area is under 0.15% of the page (221 square units
 | Sunflower | flowers | 185 | 0.04% | 7.5px | 161 | 0.17% | 15.4px |
 | Berry Tart | food | 185 | 0.04% | 4.7px | 142 | 0.17% | 14.7px |
 | Lemon Tea | food | 185 | 0.04% | 5.4px | 114 | 0.17% | 15.4px |
+| Doodle Collage | fun-designs | 170 | 0.03% | 6.5px | 102 | 0.19% | 16.3px |
+| Hearts and Stars | fun-designs | 170 | 0.24% | 18.9px | 170 | 0.27% | 20.0px |
+| Kaleidoscope | fun-designs | 170 | 0.03% | 5.3px | 125 | 0.25% | 16.9px |
+| Quilt Blocks | fun-designs | 168 | 0.13% | 7.0px | 115 | 0.23% | 17.1px |
+| Retro Swirls | fun-designs | 170 | 0.06% | 8.6px | 82 | 0.24% | 17.8px |
+| Stained Glass | fun-designs | 170 | 0.05% | 3.1px | 150 | 0.19% | 15.2px |
+| Drop Earrings | jewelry | 170 | 0.01% | 3.9px | 83 | 0.23% | 15.5px |
+| Gem Brooch | jewelry | 170 | 0.06% | 9.6px | 144 | 0.17% | 16.3px |
+| Gem Ring | jewelry | 170 | 0.04% | 7.8px | 132 | 0.18% | 16.0px |
+| Jewelry Box | jewelry | 170 | 0.06% | 11.6px | 159 | 0.17% | 15.5px |
+| Pearl Strand | jewelry | 170 | 0.03% | 4.6px | 145 | 0.16% | 15.4px |
+| Pendant Necklace | jewelry | 170 | 0.04% | 7.8px | 127 | 0.18% | 15.5px |
 | Coast Path | landscapes | 185 | 0.05% | 6.9px | 176 | 0.17% | 17.1px |
 | Lake Evening | landscapes | 185 | 0.07% | 7.8px | 175 | 0.17% | 17.1px |
 | Petal Mandala | mandalas | 185 | 0.06% | 7.5px | 164 | 0.21% | 15.1px |
@@ -42,6 +54,12 @@ A region is too small when its area is under 0.15% of the page (221 square units
 | Reading Nook | peaceful | 185 | 0.04% | 4.9px | 171 | 0.18% | 15.6px |
 | Snow Cabin | peaceful | 185 | 0.04% | 4.7px | 163 | 0.17% | 15.5px |
 | Zen Garden | peaceful | 185 | 0.06% | 6.3px | 139 | 0.17% | 15.5px |
+| Cherry Blossoms | pink | 170 | 0.03% | 5.6px | 106 | 0.24% | 16.2px |
+| Flamingo | pink | 170 | 0.02% | 3.1px | 140 | 0.23% | 17.7px |
+| Peony | pink | 170 | 0.06% | 6.3px | 162 | 0.18% | 14.7px |
+| Pink Bedroom | pink | 170 | 0.15% | 7.8px | 156 | 0.19% | 14.7px |
+| Pink Cupcakes | pink | 169 | 0.03% | 3.8px | 129 | 0.17% | 14.7px |
+| Vanity Table | pink | 170 | 0.06% | 7.8px | 157 | 0.17% | 15.5px |
 | Night Windows | places | 185 | 0.03% | 7.8px | 85 | 0.38% | 15.5px |
 | Rose Cottage | places | 185 | 0.03% | 3.1px | 155 | 0.19% | 15.5px |
 | Clear Morning | relaxing-landscapes | 234 | 0.02% | 3.9px | 89 | 0.35% | 15.5px |

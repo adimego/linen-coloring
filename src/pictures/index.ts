@@ -1,3 +1,21 @@
+import bedroomFile from "./art/pink-bedroom.json";
+import blossomsFile from "./art/cherry-blossoms.json";
+import boxFile from "./art/jewelry-box.json";
+import broochFile from "./art/gem-brooch.json";
+import cupcakesFile from "./art/pink-cupcakes.json";
+import doodleFile from "./art/doodle-collage.json";
+import earringsFile from "./art/drop-earrings.json";
+import flamingoFile from "./art/flamingo.json";
+import glassFile from "./art/stained-glass.json";
+import heartsFile from "./art/hearts-and-stars.json";
+import kaleidoscopeFile from "./art/kaleidoscope.json";
+import necklaceFile from "./art/pendant-necklace.json";
+import pearlsFile from "./art/pearl-strand.json";
+import peonyFile from "./art/peony.json";
+import quiltFile from "./art/quilt-blocks.json";
+import ringFile from "./art/gem-ring.json";
+import swirlsFile from "./art/retro-swirls.json";
+import vanityFile from "./art/vanity-table.json";
 import balloonsFile from "./art/balloon-valley.json";
 import hutsFile from "./art/beach-huts.json";
 import tartFile from "./art/berry-tart.json";
@@ -75,6 +93,24 @@ function art(file: ArtFile): Picture {
 }
 
 export const pictures: Picture[] = [
+  art(blossomsFile as unknown as ArtFile),
+  art(flamingoFile as unknown as ArtFile),
+  art(peonyFile as unknown as ArtFile),
+  art(cupcakesFile as unknown as ArtFile),
+  art(vanityFile as unknown as ArtFile),
+  art(bedroomFile as unknown as ArtFile),
+  art(ringFile as unknown as ArtFile),
+  art(pearlsFile as unknown as ArtFile),
+  art(earringsFile as unknown as ArtFile),
+  art(broochFile as unknown as ArtFile),
+  art(necklaceFile as unknown as ArtFile),
+  art(boxFile as unknown as ArtFile),
+  art(kaleidoscopeFile as unknown as ArtFile),
+  art(heartsFile as unknown as ArtFile),
+  art(swirlsFile as unknown as ArtFile),
+  art(doodleFile as unknown as ArtFile),
+  art(glassFile as unknown as ArtFile),
+  art(quiltFile as unknown as ArtFile),
   art(musicFile as unknown as ArtFile),
   art(scoreFile as unknown as ArtFile),
   art(guitarFile as unknown as ArtFile),
@@ -152,6 +188,9 @@ function assertPictures(list: Picture[]): void {
     }
   }
   const minimums: Partial<Record<CategoryId, number>> = {
+    pink: 6,
+    jewelry: 6,
+    "fun-designs": 6,
     music: 8,
     "relaxing-landscapes": 8,
     beach: 4,

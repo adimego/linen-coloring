@@ -61,7 +61,8 @@ export class Ambience {
       this.blip(392, now, 0.4, 0.36);
       return;
     }
-    this.blip(587.33, now, 0.55, 0.32);
+    this.blip(659.25, now, 0.34, 0.2);
+    this.blip(880, now + 0.08, 0.22, 0.28);
   }
 
   stop(): void {

@@ -1,84 +1,82 @@
 # Quality audit
 
-Every gallery page, every daily picture, and every Match reveal now has enough regions for a long coloring session. Broad shapes are split into light, mid, and dark steps of the same hue instead of being chopped into specks. Adjacent swatches stay in that order and are far enough apart to tell apart.
+The mosaic pass and the confetti daily pass are gone. Gallery pages are the earlier drawings, with smooth tonal bands added only where a shape is large enough to split. Daily pages are eighteen illustrated scenes. Match and Zen play the clear, the fall, and the swap as motion.
 
-- Gallery: 72 pictures, 189–320 regions, 15–30 colors. Smallest inscribed radius about 5.4 viewBox units (about 13px at the default phone fit).
-- Daily: 18 scenes. Across the 365 days from 22 October 2026 the pages landed at 180–243 regions, with a smallest inscribed radius of 5.22 viewBox units. The calendar rotates the scenes so one does not return within 7 days, and the next time it appears the time of day has changed. The gate also rejects checkerboards, equal bar stacks, dot lattices, and a day that is too close to any of the previous 30.
-- Print-derived pages were re-banded on the existing drawing. Credits are unchanged.
-- Match: all 20 levels still reveal the gallery picture with the same id. Path counts are the new banded pages.
+- Gallery: 72 pictures, 119–216 regions, 10–28 colors. Bands follow the shape (horizontal on fields, concentric on round forms, one light/shadow cut on a tall form). Print credits are unchanged.
+- Daily: 18 templates (tulips, lagoon, rose window, harbor, swan, robin, sunflower, cottage, lighthouse, canal, cat, balloons, cabin, tea, monarch, cherry, peony, fox). Across the 365 days from 22 October 2026 the pages landed at 53–138 regions, with a smallest inscribed radius of 5.41 viewBox units. A 7-day stretch never repeats a template. The same template returns 18 days later in the next time of day (dawn, day, dusk, night). Counts sit below the gallery because each scene is one illustration — petals, panes, tiles, trees — and pieces under radius 5.4 are merged away. No checker dock, no striped rose window, no confetti field.
+- Match and Zen: a swap slides the two pieces (about 340ms) and an invalid swap slides back. A match glows (280ms), then scales up and fades with six sparks in the piece color (380ms), a two-note chime, and a 12ms vibration when the browser supports it. Mute skips the chime. Survivors slide into the gaps and new pieces fall from above (400ms) with a short ease-out settle. Chains run one frame after another. `prefers-reduced-motion` fades the matched pieces and skips the travel. Motion uses transforms and the Web Animations API.
 
 | Picture | Category | Regions | Note |
 | --- | --- | ---: | --- |
-| Cat Nap | animals | 296 | Tonal bands added across sky, water, petals, or fabric. |
-| Garden Fox | animals | 307 | Tonal bands added across sky, water, petals, or fabric. |
-| Beach Huts | beach | 310 | Tonal bands added across sky, water, petals, or fabric. |
-| Lighthouse Cove | beach | 320 | Tonal bands added across sky, water, petals, or fabric. |
-| Palm Sunset | beach | 318 | Tonal bands added across sky, water, petals, or fabric. |
-| Tide Pool | beach | 317 | Tonal bands added across sky, water, petals, or fabric. |
-| Garden Robin | birds | 315 | Tonal bands added across sky, water, petals, or fabric. |
-| Still Swan | birds | 290 | Tonal bands added across sky, water, petals, or fabric. |
-| Blue Wing | butterflies | 270 | Tonal bands added across sky, water, petals, or fabric. |
-| Monarch | butterflies | 279 | Tonal bands added across sky, water, petals, or fabric. |
-| Canal Bridge | city | 297 | Tonal bands added across sky, water, petals, or fabric. |
-| Dusk Skyline | city | 281 | Tonal bands added across sky, water, petals, or fabric. |
-| Rainy Lights | city | 240 | Tonal bands added across sky, water, petals, or fabric. |
-| Street Café | city | 293 | Tonal bands added across sky, water, petals, or fabric. |
-| Open Rose | flowers | 312 | Tonal bands added across sky, water, petals, or fabric. |
-| Sunflower | flowers | 302 | Tonal bands added across sky, water, petals, or fabric. |
-| Berry Tart | food | 291 | Tonal bands added across sky, water, petals, or fabric. |
-| Lemon Tea | food | 308 | Tonal bands added across sky, water, petals, or fabric. |
-| Doodle Collage | fun-designs | 288 | Tonal bands added across sky, water, petals, or fabric. |
-| Hearts and Stars | fun-designs | 320 | Tonal bands added across sky, water, petals, or fabric. |
-| Kaleidoscope | fun-designs | 302 | Tonal bands added across sky, water, petals, or fabric. |
-| Quilt Blocks | fun-designs | 189 | Tonal bands added across sky, water, petals, or fabric. |
-| Retro Swirls | fun-designs | 231 | Tonal bands added across sky, water, petals, or fabric. |
-| Stained Glass | fun-designs | 294 | Tonal bands added across sky, water, petals, or fabric. |
-| Drop Earrings | jewelry | 317 | Tonal bands added across sky, water, petals, or fabric. |
-| Gem Brooch | jewelry | 294 | Tonal bands added across sky, water, petals, or fabric. |
-| Gem Ring | jewelry | 315 | Tonal bands added across sky, water, petals, or fabric. |
-| Jewelry Box | jewelry | 313 | Tonal bands added across sky, water, petals, or fabric. |
-| Pearl Strand | jewelry | 299 | Tonal bands added across sky, water, petals, or fabric. |
-| Pendant Necklace | jewelry | 320 | Tonal bands added across sky, water, petals, or fabric. |
-| Coast Path | landscapes | 309 | Tonal bands added across sky, water, petals, or fabric. |
-| Lake Evening | landscapes | 320 | Tonal bands added across sky, water, petals, or fabric. |
-| Petal Mandala | mandalas | 303 | Tonal bands added across sky, water, petals, or fabric. |
-| Star Mandala | mandalas | 308 | Tonal bands added across sky, water, petals, or fabric. |
-| At the Harp | music | 212 | Tonal bands on the print; credit kept. |
-| At the Piano | music | 218 | Tonal bands on the print; credit kept. |
-| Flute Player | music | 320 | Tonal bands on the print; credit kept. |
-| Maple and Shamisen | music | 315 | Tonal bands on the print; credit kept. |
-| Still Guitar | music | 253 | Tonal bands on the print; credit kept. |
-| The Arts: Music | music | 247 | Tonal bands on the print; credit kept. |
-| Violin and Score | music | 226 | Tonal bands on the print; credit kept. |
-| With a Koto | music | 313 | Tonal bands on the print; credit kept. |
-| Balloon Valley | peaceful | 304 | Tonal bands added across sky, water, petals, or fabric. |
-| Forest Falls | peaceful | 320 | Tonal bands added across sky, water, petals, or fabric. |
-| Lavender Rows | peaceful | 312 | Tonal bands added across sky, water, petals, or fabric. |
-| Reading Nook | peaceful | 290 | Tonal bands added across sky, water, petals, or fabric. |
-| Snow Cabin | peaceful | 319 | Tonal bands added across sky, water, petals, or fabric. |
-| Zen Garden | peaceful | 320 | Tonal bands added across sky, water, petals, or fabric. |
-| Cherry Blossoms | pink | 251 | Tonal bands added across sky, water, petals, or fabric. |
-| Flamingo | pink | 271 | Tonal bands added across sky, water, petals, or fabric. |
-| Peony | pink | 316 | Tonal bands added across sky, water, petals, or fabric. |
-| Pink Bedroom | pink | 307 | Tonal bands added across sky, water, petals, or fabric. |
-| Pink Cupcakes | pink | 301 | Tonal bands added across sky, water, petals, or fabric. |
-| Vanity Table | pink | 317 | Tonal bands added across sky, water, petals, or fabric. |
-| Night Windows | places | 274 | Tonal bands added across sky, water, petals, or fabric. |
-| Rose Cottage | places | 315 | Tonal bands added across sky, water, petals, or fabric. |
-| Clear Morning | relaxing-landscapes | 245 | Tonal bands on the print; credit kept. |
-| Inume Pass | relaxing-landscapes | 228 | Tonal bands on the print; credit kept. |
-| Lake at Hakone | relaxing-landscapes | 237 | Tonal bands on the print; credit kept. |
-| Mishima Pass | relaxing-landscapes | 238 | Tonal bands on the print; credit kept. |
-| Sea at Satta | relaxing-landscapes | 233 | Tonal bands on the print; credit kept. |
-| Sunset Hill | relaxing-landscapes | 289 | Tonal bands on the print; credit kept. |
-| Village at Kusatsu | relaxing-landscapes | 319 | Tonal bands on the print; credit kept. |
-| Wind over the Fields | relaxing-landscapes | 245 | Tonal bands on the print; credit kept. |
-| Besler Tulips | tulips | 230 | Tonal bands added across sky, water, petals, or fabric. |
-| Garden Path | tulips | 282 | Tonal bands added across sky, water, petals, or fabric. |
-| Single Tulip | tulips | 320 | Tonal bands added across sky, water, petals, or fabric. |
-| Sweet Tulip | tulips | 271 | Tonal bands added across sky, water, petals, or fabric. |
-| Tulip Bouquet | tulips | 310 | Tonal bands added across sky, water, petals, or fabric. |
-| Tulip Field | tulips | 283 | Tonal bands added across sky, water, petals, or fabric. |
-| Tulip Mandala | tulips | 278 | Tonal bands added across sky, water, petals, or fabric. |
-| Watering Can | tulips | 312 | Tonal bands added across sky, water, petals, or fabric. |
-
+| Besler Tulips | Tulips | 133 | Bands on the print; credit kept. |
+| Garden Path | Tulips | 175 | Shape-following bands on the original drawing. |
+| Single Tulip | Tulips | 201 | Shape-following bands on the original drawing. |
+| Sweet Tulip | Tulips | 171 | Bands on the print; credit kept. |
+| Tulip Bouquet | Tulips | 194 | Shape-following bands on the original drawing. |
+| Tulip Field | Tulips | 204 | Shape-following bands on the original drawing. |
+| Tulip Mandala | Tulips | 179 | Shape-following bands on the original drawing. |
+| Watering Can | Tulips | 199 | Shape-following bands on the original drawing. |
+| Cherry Blossoms | Pink | 166 | Shape-following bands on the original drawing. |
+| Flamingo | Pink | 193 | Shape-following bands on the original drawing. |
+| Peony | Pink | 208 | Shape-following bands on the original drawing. |
+| Pink Bedroom | Pink | 174 | Shape-following bands on the original drawing. |
+| Pink Cupcakes | Pink | 190 | Shape-following bands on the original drawing. |
+| Vanity Table | Pink | 196 | Shape-following bands on the original drawing. |
+| Drop Earrings | Jewelry | 181 | Shape-following bands on the original drawing. |
+| Gem Brooch | Jewelry | 204 | Shape-following bands on the original drawing. |
+| Gem Ring | Jewelry | 202 | Shape-following bands on the original drawing. |
+| Jewelry Box | Jewelry | 184 | Shape-following bands on the original drawing. |
+| Pearl Strand | Jewelry | 185 | Shape-following bands on the original drawing. |
+| Pendant Necklace | Jewelry | 180 | Shape-following bands on the original drawing. |
+| Doodle Collage | Fun Designs | 211 | Shape-following bands on the original drawing. |
+| Hearts and Stars | Fun Designs | 216 | Shape-following bands on the original drawing. |
+| Kaleidoscope | Fun Designs | 167 | Shape-following bands on the original drawing. |
+| Quilt Blocks | Fun Designs | 127 | Shape-following bands on the original drawing. |
+| Retro Swirls | Fun Designs | 138 | Shape-following bands on the original drawing. |
+| Stained Glass | Fun Designs | 177 | Shape-following bands on the original drawing. |
+| At the Harp | Music | 135 | Bands on the print; credit kept. |
+| At the Piano | Music | 159 | Bands on the print; credit kept. |
+| Flute Player | Music | 199 | Bands on the print; credit kept. |
+| Maple and Shamisen | Music | 200 | Bands on the print; credit kept. |
+| Still Guitar | Music | 156 | Bands on the print; credit kept. |
+| The Arts: Music | Music | 158 | Bands on the print; credit kept. |
+| Violin and Score | Music | 119 | Bands on the print; credit kept. |
+| With a Koto | Music | 186 | Bands on the print; credit kept. |
+| Clear Morning | Relaxing Landscapes | 145 | Bands on the print; credit kept. |
+| Inume Pass | Relaxing Landscapes | 141 | Bands on the print; credit kept. |
+| Lake at Hakone | Relaxing Landscapes | 146 | Bands on the print; credit kept. |
+| Mishima Pass | Relaxing Landscapes | 164 | Bands on the print; credit kept. |
+| Sea at Satta | Relaxing Landscapes | 144 | Bands on the print; credit kept. |
+| Sunset Hill | Relaxing Landscapes | 176 | Bands on the print; credit kept. |
+| Village at Kusatsu | Relaxing Landscapes | 200 | Bands on the print; credit kept. |
+| Wind over the Fields | Relaxing Landscapes | 154 | Bands on the print; credit kept. |
+| Beach Huts | Beach | 206 | Shape-following bands on the original drawing. |
+| Lighthouse Cove | Beach | 210 | Shape-following bands on the original drawing. |
+| Palm Sunset | Beach | 210 | Shape-following bands on the original drawing. |
+| Tide Pool | Beach | 209 | Shape-following bands on the original drawing. |
+| Canal Bridge | City | 187 | Shape-following bands on the original drawing. |
+| Dusk Skyline | City | 210 | Shape-following bands on the original drawing. |
+| Rainy Lights | City | 177 | Shape-following bands on the original drawing. |
+| Street Café | City | 179 | Shape-following bands on the original drawing. |
+| Balloon Valley | Peaceful Places | 200 | Shape-following bands on the original drawing. |
+| Forest Falls | Peaceful Places | 202 | Shape-following bands on the original drawing. |
+| Lavender Rows | Peaceful Places | 197 | Shape-following bands on the original drawing. |
+| Reading Nook | Peaceful Places | 185 | Shape-following bands on the original drawing. |
+| Snow Cabin | Peaceful Places | 204 | Shape-following bands on the original drawing. |
+| Zen Garden | Peaceful Places | 200 | Shape-following bands on the original drawing. |
+| Cat Nap | Animals | 197 | Shape-following bands on the original drawing. |
+| Garden Fox | Animals | 203 | Shape-following bands on the original drawing. |
+| Open Rose | Flowers | 191 | Shape-following bands on the original drawing. |
+| Sunflower | Flowers | 182 | Shape-following bands on the original drawing. |
+| Petal Mandala | Mandalas | 209 | Shape-following bands on the original drawing. |
+| Star Mandala | Mandalas | 182 | Shape-following bands on the original drawing. |
+| Coast Path | Landscapes | 194 | Shape-following bands on the original drawing. |
+| Lake Evening | Landscapes | 207 | Shape-following bands on the original drawing. |
+| Berry Tart | Food | 199 | Shape-following bands on the original drawing. |
+| Lemon Tea | Food | 186 | Shape-following bands on the original drawing. |
+| Blue Wing | Butterflies | 178 | Shape-following bands on the original drawing. |
+| Monarch | Butterflies | 178 | Shape-following bands on the original drawing. |
+| Garden Robin | Birds | 190 | Shape-following bands on the original drawing. |
+| Still Swan | Birds | 193 | Shape-following bands on the original drawing. |
+| Night Windows | Places | 200 | Shape-following bands on the original drawing. |
+| Rose Cottage | Places | 184 | Shape-following bands on the original drawing. |

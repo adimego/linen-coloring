@@ -2,7 +2,8 @@ import type { Cue } from "../audio.ts";
 import { icon } from "../icons.ts";
 import type { Picture } from "../pictures/types.ts";
 import { referenceFills, renderSvg } from "../render.ts";
-import { createBoard, findMove, listPieces, mulberry32, reshuffle, trySwap, type CellPos, type PieceAt } from "./logic.ts";
+import { createBoard, findMove, listPieces, mulberry32, reshuffle, resolveAll, swapOnly, type CellPos, type PieceAt } from "./logic.ts";
+import { playCascade, slideSwap } from "./motion.ts";
 import { pieceByKind } from "./pieces.ts";
 
 export type ZenCtx = {
@@ -22,11 +23,6 @@ function reducedMotion(): boolean {
   return window.matchMedia("(prefers-reduced-motion: reduce)").matches;
 }
 
-function wait(ms: number): Promise<void> {
-  if (ms <= 0) return Promise.resolve();
-  return new Promise((resolve) => window.setTimeout(resolve, ms));
-}
-
 export function renderZen(root: HTMLElement, ctx: ZenCtx): () => void {
   const rng = mulberry32((Date.now() ^ 0x9e3779b9) >>> 0);
   const mask = Array.from({ length: ROWS }, () => Array.from({ length: COLS }, () => true));
@@ -38,6 +34,7 @@ export function renderZen(root: HTMLElement, ctx: ZenCtx): () => void {
   let hintTimer = 0;
   let pointer: { x: number; y: number; cell: CellPos } | null = null;
   let reveal = Boolean(ctx.picture);
+  let disposed = false;
   const reduce = reducedMotion();
 
   root.innerHTML = `
@@ -176,6 +173,7 @@ export function renderZen(root: HTMLElement, ctx: ZenCtx): () => void {
     el.dataset.id = String(piece.id);
     el.dataset.r = String(piece.r);
     el.dataset.c = String(piece.c);
+    el.dataset.kind = String(piece.kind);
     const artPiece = pieceByKind(piece.kind);
     el.style.background = artPiece.disc;
     el.innerHTML = artPiece.svg;
@@ -241,49 +239,69 @@ export function renderZen(root: HTMLElement, ctx: ZenCtx): () => void {
     void play(from, cell);
   }
 
-  async function glide(a: CellPos, b: CellPos, forward: boolean): Promise<void> {
-    const first = pieces.querySelector(`[data-r="${a.r}"][data-c="${a.c}"]`);
-    const second = pieces.querySelector(`[data-r="${b.r}"][data-c="${b.c}"]`);
-    if (!(first instanceof HTMLElement) || !(second instanceof HTMLElement)) return;
-    const sign = forward ? 1 : -1;
-    const dx = ((b.c - a.c) / COLS) * frame.clientWidth * sign;
-    const dy = ((b.r - a.r) / ROWS) * frame.clientHeight * sign;
-    const ms = reduce ? 0 : 160;
-    for (const el of [first, second]) el.style.transition = ms ? `transform ${ms}ms ease` : "none";
-    first.style.transform = forward ? `translate(${dx}px, ${dy}px)` : "none";
-    second.style.transform = forward ? `translate(${-dx}px, ${-dy}px)` : "none";
-    await wait(ms + 20);
+  function motionHost() {
+    return {
+      frame,
+      layer: pieces,
+      cols: COLS,
+      rows: ROWS,
+      reduce,
+      make: makePiece,
+      find: pieceEl,
+      locate: (r: number, c: number) => {
+        const node = pieces.querySelector(`[data-r="${r}"][data-c="${c}"]`);
+        return node instanceof HTMLElement ? node : null;
+      },
+      place: (el: HTMLElement, piece: PieceAt) => {
+        const pos = posOf(piece.r, piece.c);
+        el.dataset.r = String(piece.r);
+        el.dataset.c = String(piece.c);
+        el.style.left = pos.left;
+        el.style.top = pos.top;
+      },
+    };
+  }
+
+  function commitPositions(): void {
+    for (const piece of listPieces(grid)) {
+      const el = pieceEl(piece.id) ?? makePiece(piece);
+      if (!el.parentElement) pieces.append(el);
+      const pos = posOf(piece.r, piece.c);
+      el.dataset.r = String(piece.r);
+      el.dataset.c = String(piece.c);
+      el.style.transition = "none";
+      el.style.transform = "none";
+      el.style.left = pos.left;
+      el.style.top = pos.top;
+    }
   }
 
   async function play(a: CellPos, b: CellPos): Promise<void> {
     if (busy || paused) return;
     busy = true;
     clearHint();
-    await glide(a, b, true);
-    const frames = trySwap(grid, a, b, rng);
-    if (!frames) {
-      await glide(a, b, false);
+    const host = motionHost();
+    await slideSwap(host, a, b, true);
+    if (!swapOnly(grid, a, b)) {
+      await slideSwap(host, a, b, false);
       busy = false;
       armHint();
       return;
     }
-    ctx.haptic();
-    ctx.cue("match");
-    const cleared = new Set(frames.flatMap((frameStep) => frameStep.cleared.map((cell) => cell.id)));
-    for (const id of cleared) {
-      const el = pieceEl(id);
-      if (!el) continue;
-      el.style.transition = reduce ? "none" : "transform 200ms ease, opacity 200ms ease";
-      el.style.transform = "scale(0.5)";
-      el.style.opacity = "0";
-    }
-    await wait(reduce ? 0 : 200);
+    commitPositions();
+    const frames = resolveAll(grid, rng);
+    await playCascade(host, frames, {
+      onCovers: () => undefined,
+      chime: () => ctx.cue("match"),
+      haptic: () => ctx.haptic(),
+      alive: () => !disposed,
+    });
     if (!findMove(grid)) {
       reshuffle(grid, rng);
       ctx.cue("shuffle");
       ctx.say("The pieces found a new arrangement.");
+      paintPieces(true);
     }
-    paintPieces(true);
     refreshLabels();
     busy = false;
     if (!paused) armHint();
@@ -314,6 +332,7 @@ export function renderZen(root: HTMLElement, ctx: ZenCtx): () => void {
   }
 
   return () => {
+    disposed = true;
     clearHint();
   };
 }

@@ -1,12 +1,17 @@
 import { Ambience, type Cue } from "./audio.ts";
+import { archiveDates, buildDaily, dailyPicture, formatDailyLabel, isIsoDate, LAUNCH_DATE, localDateISO } from "./daily/generate.ts";
 import { exportPng } from "./exportPng.ts";
 import { GestureController } from "./gestures.ts";
 import { icon } from "./icons.ts";
+import { renderZen } from "./match/zen.ts";
+import { levelFromHash } from "./match/levels.ts";
+import { renderMatchHome, renderMatchLevel, type MatchCtx } from "./match/view.ts";
+import { difficultyPlan, posterizeFile } from "./photo/posterize.ts";
+import { deletePhoto, loadPhotoCache, photoById, photoRecords, savePhoto } from "./photo/store.ts";
 import { getPicture, picturesIn } from "./pictures/index.ts";
 import { categories, type Picture, type Region } from "./pictures/types.ts";
 import { markHot, referenceFills, renderSvg, setRegionFill } from "./render.ts";
-import { levelFromHash } from "./match/levels.ts";
-import { renderMatchHome, renderMatchLevel, type MatchCtx } from "./match/view.ts";
+import { applyTheme, cycleTheme, loadSettings, SCAPES, themeLabel, writeSettings, type ScapeId } from "./settings.ts";
 import {
   applyFill,
   applyRedo,
@@ -14,6 +19,7 @@ import {
   colorProgress,
   filledCount,
   firstOpenIndex,
+  forgetPicture,
   isComplete,
   loadSave,
   pictureSave,
@@ -71,19 +77,57 @@ export class App {
     this.root = root;
     this.save = loadSave();
     if (this.save.category !== "all" && !categoryIds.has(this.save.category)) this.save.category = "all";
+    const settings = loadSettings();
+    this.audio.setScape(settings.scape);
+    this.audio.setVolume(settings.volume);
+    window.addEventListener("linen-theme", () => this.paintThemeColor());
     this.installHistory();
     this.armSound();
-    this.render();
+    const waitForPhotos = location.hash.startsWith("#p=photo-") || location.hash === "#photos" || location.hash === "#photo";
+    if (!waitForPhotos) this.render();
+    void this.boot(waitForPhotos);
+  }
+
+  private async boot(waitForPhotos: boolean): Promise<void> {
+    try {
+      await loadPhotoCache();
+    } catch {
+      /* Storage can be blocked. The rest of Linen still opens. */
+    }
+    if (waitForPhotos) this.render();
   }
 
   private installHistory(): void {
     const hash = location.hash;
     const base = location.pathname + location.search;
     const matchLevel = /^#m=\d+$/.test(hash);
-    if (hash.startsWith("#p=") || hash === "#credits" || hash === "#match" || matchLevel) {
+    const pictureId = pictureIdFromHash() ?? "";
+    const stacked =
+      hash.startsWith("#p=") ||
+      hash === "#credits" ||
+      hash === "#match" ||
+      matchLevel ||
+      hash === "#zen" ||
+      hash === "#daily" ||
+      hash === "#photos" ||
+      hash === "#photo" ||
+      hash === "#tones";
+    if (stacked) {
       history.replaceState({ view: "gallery" }, "", base);
-      if (matchLevel) history.pushState({ view: "match" }, "", "#match");
-      const view = hash === "#credits" ? "credits" : hash === "#match" ? "match" : matchLevel ? "level" : "color";
+      if (matchLevel || hash === "#zen") history.pushState({ view: "match" }, "", "#match");
+      if (hash === "#photo" || pictureId.startsWith("photo-")) history.pushState({ view: "photos" }, "", "#photos");
+      if (pictureId.startsWith("daily-")) history.pushState({ view: "daily" }, "", "#daily");
+      const view = hash === "#credits"
+        ? "credits"
+        : hash === "#match"
+          ? "match"
+          : matchLevel
+            ? "level"
+            : hash === "#zen"
+              ? "zen"
+              : hash.startsWith("#")
+                ? hash.slice(1)
+                : "color";
       history.pushState({ view }, "", hash);
     } else {
       history.replaceState({ view: "gallery" }, "", base || "./");
@@ -111,25 +155,64 @@ export class App {
     const hash = location.hash;
     const matchRoute = hash === "#match" || hash.startsWith("#m=");
     const credits = hash === "#credits";
-    const picture = credits || matchRoute ? undefined : this.currentPicture();
+    const picture = credits || matchRoute || hash === "#zen" || hash === "#daily" || hash === "#photos" || hash === "#photo" || hash === "#tones"
+      ? undefined
+      : this.currentPicture();
     if (credits) this.renderCredits();
+    else if (hash === "#zen") this.renderZenRoute();
     else if (matchRoute) this.renderMatchRoute();
+    else if (hash === "#tones") this.renderTones();
+    else if (hash === "#daily") this.renderDaily();
+    else if (hash === "#photos") this.renderPhotos();
+    else if (hash === "#photo") this.renderPhotoMaker();
     else if (picture) this.renderStudio(picture);
     else this.renderGallery();
-    const studio = this.root.classList.contains("is-studio");
-    document.querySelector('meta[name="theme-color"]')?.setAttribute("content", studio ? "#f6efe8" : "#f6d0dc");
+    this.paintThemeColor();
     this.finishChrome();
+  }
+
+  private paintThemeColor(): void {
+    const night = document.documentElement.dataset.theme === "night";
+    const studio = this.root.classList.contains("is-studio");
+    const color = night ? "#2a2422" : studio ? "#f6efe8" : "#f6d0dc";
+    document.querySelector('meta[name="theme-color"]')?.setAttribute("content", color);
   }
 
   private currentPicture(): Picture | undefined {
     const id = pictureIdFromHash();
     if (!id) return undefined;
+    if (id.startsWith("daily-")) {
+      const iso = id.slice("daily-".length);
+      const today = localDateISO();
+      if (!isIsoDate(iso) || iso < LAUNCH_DATE || iso > today) {
+        this.bounceGallery();
+        return undefined;
+      }
+      try {
+        return dailyPicture(iso);
+      } catch {
+        this.bounceGallery();
+        return undefined;
+      }
+    }
+    if (id.startsWith("photo-")) {
+      const photo = photoById(id);
+      if (!photo) {
+        this.bounceGallery();
+        return undefined;
+      }
+      return photo;
+    }
     const picture = getPicture(id);
     if (!picture) {
-      history.replaceState({ view: "gallery" }, "", location.pathname + location.search);
+      this.bounceGallery();
       return undefined;
     }
     return picture;
+  }
+
+  private bounceGallery(): void {
+    history.replaceState({ view: "gallery" }, "", location.pathname + location.search);
   }
 
   private renderGallery(): void {
@@ -149,10 +232,16 @@ export class App {
             <h1>Linen</h1>
           </div>
         </div>
-        ${this.soundButton()}
+        ${this.headerTools()}
       </header>
       ${this.modeSwitch("color")}
       <main class="gallery">
+        ${this.todayCard()}
+        <div class="home-links">
+          <button type="button" data-go="daily">Daily</button>
+          <button type="button" data-go="photo">Your photo</button>
+          <button type="button" data-go="photos">My photos</button>
+        </div>
         <p class="blurb">Choose a shade, then tap every region that wears its number.</p>
         <div class="categories" role="tablist" aria-label="Categories">
           ${chips
@@ -184,6 +273,16 @@ export class App {
       const host = this.root.querySelector(`#thumb-${picture.id}`);
       host?.append(renderSvg(picture, referenceFills(picture), { interactive: false, numbers: false, lines: false, layout: "thumb" }));
     }
+    const todayHost = this.root.querySelector("#today-thumb");
+    const todayIso = this.root.querySelector<HTMLElement>("#today")?.dataset.iso;
+    if (todayHost && todayIso) {
+      try {
+        const todayPicture = dailyPicture(todayIso);
+        todayHost.append(renderSvg(todayPicture, referenceFills(todayPicture), { interactive: false, numbers: false, lines: false, layout: "thumb" }));
+      } catch {
+        /* The card already explains a failed day. */
+      }
+    }
 
     this.root.querySelectorAll<HTMLButtonElement>("[data-category]").forEach((button) => {
       button.addEventListener("click", () => {
@@ -204,6 +303,19 @@ export class App {
       });
     });
     this.must("#credits").addEventListener("click", () => this.openCredits());
+    this.root.querySelectorAll<HTMLButtonElement>("[data-go]").forEach((button) => {
+      button.addEventListener("click", () => {
+        const go = button.dataset.go;
+        if (go === "daily") this.openDaily();
+        else if (go === "photo") this.openPhotoMaker();
+        else if (go === "photos") this.openPhotos();
+      });
+    });
+    const today = this.root.querySelector<HTMLButtonElement>("#today");
+    today?.addEventListener("click", () => {
+      const iso = today.dataset.iso;
+      if (iso) this.open(`daily-${iso}`);
+    });
     const tabRow = this.root.querySelector<HTMLElement>(".categories");
     const selectedTab = this.root.querySelector<HTMLElement>('[data-category][aria-selected="true"]');
     if (tabRow && selectedTab) tabRow.scrollLeft = Math.max(0, selectedTab.offsetLeft - 16);
@@ -311,6 +423,7 @@ export class App {
           <button type="button" class="icon-btn" id="undo" aria-label="Undo"${data.undo.length ? "" : " disabled"}>${icon("undo")}</button>
           <button type="button" class="icon-btn" id="redo" aria-label="Redo"${data.redo.length ? "" : " disabled"}>${icon("redo")}</button>
           <button type="button" class="icon-btn" id="export" aria-label="Save PNG">${icon("download")}</button>
+          ${this.themeButton()}
           ${this.soundButton()}
         </div>
       </header>
@@ -635,9 +748,10 @@ export class App {
 
   private matchCtx(): MatchCtx {
     return {
-      soundHtml: this.soundButton(),
+      soundHtml: this.headerTools(),
       openMatch: () => this.openMatch(),
       openLevel: (id) => this.openLevel(id),
+      openZen: () => this.openZen(),
       back: () => history.back(),
       say: (message) => this.say(message),
       cue: (kind) => this.playCue(kind),
@@ -665,7 +779,392 @@ export class App {
 
   private finishChrome(): void {
     if (this.root.querySelector("#sound")) this.bindSound();
+    if (this.root.querySelector("#theme")) this.bindTheme();
+    if (this.root.querySelector("#open-tones")) this.bindTonesNav();
     if (this.root.querySelector("[data-mode]")) this.bindModes();
+  }
+
+  private headerTools(): string {
+    return `<div class="tool-cluster">${this.themeButton()}${this.tonesButton()}${this.soundButton()}</div>`;
+  }
+
+  private themeButton(): string {
+    const theme = loadSettings().theme;
+    const name = theme === "night" ? "moon" : theme === "system" ? "monitor" : "sun";
+    return `<button type="button" class="icon-btn" id="theme" aria-label="Theme: ${themeLabel(theme)}. Switch theme.">${icon(name)}</button>`;
+  }
+
+  private tonesButton(): string {
+    return `<button type="button" class="icon-btn" id="open-tones" aria-label="Soundscapes">${icon("waves")}</button>`;
+  }
+
+  private bindTheme(): void {
+    this.must<HTMLButtonElement>("#theme").addEventListener("click", () => {
+      const settings = loadSettings();
+      const next = cycleTheme(settings.theme);
+      writeSettings({ ...settings, theme: next });
+      applyTheme(next);
+      const button = this.must<HTMLButtonElement>("#theme");
+      const name = next === "night" ? "moon" : next === "system" ? "monitor" : "sun";
+      button.setAttribute("aria-label", `Theme: ${themeLabel(next)}. Switch theme.`);
+      button.innerHTML = icon(name);
+      this.say(`${themeLabel(next)} theme.`);
+    });
+  }
+
+  private bindTonesNav(): void {
+    this.must("#open-tones").addEventListener("click", () => this.openTones());
+  }
+
+  private todayCard(): string {
+    const today = localDateISO();
+    if (today < LAUNCH_DATE) {
+      return `<section class="today-card is-waiting"><p class="eyebrow">Today</p><p>The first daily picture arrives on ${esc(formatDailyLabel(LAUNCH_DATE))}.</p></section>`;
+    }
+    try {
+      const result = buildDaily(today);
+      const picture = result.picture;
+      const filled = filledCount(picture, this.save);
+      const total = picture.regions.length;
+      return `
+        <button type="button" class="today-card" id="today" data-iso="${today}" aria-label="Today's picture, ${esc(picture.title)}, ${filled} of ${total}">
+          <span class="thumb" id="today-thumb"></span>
+          <span class="meta">
+            <span class="eyebrow">Today</span>
+            <span class="card-title">${esc(picture.title)}</span>
+            <span class="caption">${esc(formatDailyLabel(today))}</span>
+            <span class="count">${filled} of ${total}</span>
+          </span>
+        </button>`;
+    } catch {
+      return `<section class="today-card is-waiting"><p class="eyebrow">Today</p><p>Today's picture could not be drawn. Open Daily to try again.</p></section>`;
+    }
+  }
+
+  private renderZenRoute(): void {
+    this.root.className = "app is-gallery is-zen";
+    let picture: Picture | null = null;
+    const today = localDateISO();
+    if (today >= LAUNCH_DATE) {
+      try {
+        picture = dailyPicture(today);
+      } catch {
+        picture = null;
+      }
+    }
+    this.viewCleanups.push(
+      renderZen(this.root, {
+        toolsHtml: this.headerTools(),
+        back: () => history.back(),
+        say: (message) => this.say(message),
+        cue: (kind) => this.playCue(kind),
+        haptic: () => haptic(),
+        picture,
+      }),
+    );
+  }
+
+  private renderDaily(): void {
+    const dates = archiveDates();
+    this.root.className = "app is-gallery";
+    this.root.innerHTML = `
+      <header class="top gallery-top">
+        <button type="button" class="icon-btn" id="back" aria-label="Back to gallery">${icon("back")}</button>
+        <div class="title-block">
+          <p class="eyebrow">One each day</p>
+          <h1>Daily</h1>
+        </div>
+        ${this.headerTools()}
+      </header>
+      <main class="gallery">
+        <p class="blurb">A new picture every day, drawn from the date. Yesterday looks the same on every phone.</p>
+        ${
+          dates.length
+            ? `<div class="grid" id="daily-grid"></div>`
+            : `<div class="empty"><p>The daily pictures begin on ${esc(formatDailyLabel(LAUNCH_DATE))}.</p></div>`
+        }
+      </main>
+      <p class="live" id="live" aria-live="polite"></p>
+    `;
+    this.must("#back").addEventListener("click", () => history.back());
+    const grid = this.root.querySelector("#daily-grid");
+    if (!grid) return;
+    const observer = new IntersectionObserver(
+      (entries) => {
+        for (const entry of entries) {
+          if (!entry.isIntersecting) continue;
+          const host = entry.target;
+          if (!(host instanceof HTMLElement)) continue;
+          const iso = host.dataset.iso;
+          observer.unobserve(host);
+          if (iso) this.paintDailyThumb(host, iso);
+        }
+      },
+      { rootMargin: "240px" },
+    );
+    dates.forEach((iso, index) => {
+      const button = document.createElement("button");
+      button.type = "button";
+      button.className = "card";
+      button.dataset.iso = iso;
+      button.innerHTML = `
+        <span class="thumb"></span>
+        <span class="meta">
+          <span class="card-title">${esc(formatDailyLabel(iso))}</span>
+          <span class="caption">Drawing…</span>
+        </span>`;
+      button.addEventListener("click", () => this.open(`daily-${iso}`));
+      grid.append(button);
+      if (index < 2) this.paintDailyThumb(button, iso);
+      else observer.observe(button);
+    });
+    this.viewCleanups.push(() => observer.disconnect());
+  }
+
+  private paintDailyThumb(host: HTMLElement, iso: string): void {
+    try {
+      const picture = dailyPicture(iso);
+      const thumb = host.querySelector(".thumb");
+      const title = host.querySelector(".card-title");
+      const caption = host.querySelector(".caption");
+      if (title) title.textContent = picture.title;
+      const filled = filledCount(picture, this.save);
+      if (caption) caption.textContent = `${formatDailyLabel(iso)} · ${filled} of ${picture.regions.length}`;
+      host.setAttribute("aria-label", `${picture.title}, ${formatDailyLabel(iso)}, ${filled} of ${picture.regions.length}`);
+      if (thumb && !thumb.childElementCount) {
+        thumb.append(renderSvg(picture, referenceFills(picture), { interactive: false, numbers: false, lines: false, layout: "thumb" }));
+      }
+    } catch {
+      const caption = host.querySelector(".caption");
+      if (caption) caption.textContent = "This date could not be drawn.";
+    }
+  }
+
+  private renderPhotos(): void {
+    const records = photoRecords();
+    this.root.className = "app is-gallery";
+    this.root.innerHTML = `
+      <header class="top gallery-top">
+        <button type="button" class="icon-btn" id="back" aria-label="Back to gallery">${icon("back")}</button>
+        <div class="title-block">
+          <p class="eyebrow">On this phone</p>
+          <h1>My photos</h1>
+        </div>
+        ${this.headerTools()}
+      </header>
+      <main class="gallery">
+        <p class="blurb">Photos you turn into pages stay here. Nothing is uploaded.</p>
+        <div class="home-links home-links-single">
+          <button type="button" id="add-photo">Your photo</button>
+        </div>
+        ${
+          records.length
+            ? `<div class="grid" id="photo-grid"></div>`
+            : `<div class="empty"><p>No photos yet.</p><p>Choose a picture from this phone and it becomes a numbered page.</p></div>`
+        }
+      </main>
+      <p class="live" id="live" aria-live="polite"></p>
+    `;
+    this.must("#back").addEventListener("click", () => history.back());
+    this.must("#add-photo").addEventListener("click", () => this.openPhotoMaker());
+    const grid = this.root.querySelector("#photo-grid");
+    for (const record of records) {
+      const picture = record.picture;
+      const filled = filledCount(picture, this.save);
+      const card = document.createElement("div");
+      card.className = "photo-card";
+      card.innerHTML = `
+        <button type="button" class="card" data-id="${esc(picture.id)}">
+          <span class="thumb"></span>
+          <span class="meta">
+            <span class="card-title">${esc(picture.title)}</span>
+            <span class="caption">${filled} of ${picture.regions.length}</span>
+          </span>
+        </button>
+        <button type="button" class="text-link photo-delete" data-delete="${esc(picture.id)}">Delete</button>`;
+      const thumb = card.querySelector(".thumb");
+      thumb?.append(renderSvg(picture, referenceFills(picture), { interactive: false, numbers: false, lines: false, layout: "thumb" }));
+      card.querySelector<HTMLButtonElement>(".card")?.addEventListener("click", () => this.open(picture.id));
+      card.querySelector<HTMLButtonElement>(".photo-delete")?.addEventListener("click", () => {
+        void this.removePhoto(picture.id);
+      });
+      grid?.append(card);
+    }
+  }
+
+  private async removePhoto(id: string): Promise<void> {
+    try {
+      await deletePhoto(id);
+    } catch {
+      this.say("That photo could not be deleted.");
+      return;
+    }
+    this.save = forgetPicture(this.save, id);
+    writeSave(this.save);
+    this.say("Photo deleted.");
+    this.render();
+  }
+
+  private renderPhotoMaker(): void {
+    const plan = difficultyPlan(0.45);
+    this.root.className = "app is-gallery";
+    this.root.innerHTML = `
+      <header class="top gallery-top">
+        <button type="button" class="icon-btn" id="back" aria-label="Back to my photos">${icon("back")}</button>
+        <div class="title-block">
+          <p class="eyebrow">On this phone</p>
+          <h1>Your photo</h1>
+        </div>
+        ${this.headerTools()}
+      </header>
+      <main class="gallery photo-maker">
+        <p class="blurb">Take or choose a photo. Linen turns it into a coloring page here, on this phone. Nothing is uploaded.</p>
+        <label class="photo-pick">
+          <input id="photo-file" type="file" accept="image/*" capture="environment">
+          <span>Take or choose a photo</span>
+        </label>
+        <img id="photo-preview" alt="Chosen photo" hidden>
+        <label class="volume" for="photo-difficulty">Regions</label>
+        <input id="photo-difficulty" type="range" min="0" max="100" value="45" aria-describedby="photo-diff-label">
+        <p class="note" id="photo-diff-label">${esc(plan.label)}</p>
+        <button type="button" class="primary" id="photo-make" disabled>Make coloring page</button>
+        <p class="note" id="photo-status"></p>
+      </main>
+      <p class="live" id="live" aria-live="polite"></p>
+    `;
+    this.must("#back").addEventListener("click", () => history.back());
+    const input = this.must<HTMLInputElement>("#photo-file");
+    const preview = this.must<HTMLImageElement>("#photo-preview");
+    const range = this.must<HTMLInputElement>("#photo-difficulty");
+    const make = this.must<HTMLButtonElement>("#photo-make");
+    const label = this.must("#photo-diff-label");
+    const status = this.must("#photo-status");
+    let url = "";
+    input.addEventListener("change", () => {
+      if (url) URL.revokeObjectURL(url);
+      const file = input.files?.[0];
+      if (!file) {
+        preview.hidden = true;
+        make.disabled = true;
+        status.textContent = "";
+        return;
+      }
+      url = URL.createObjectURL(file);
+      preview.src = url;
+      preview.hidden = false;
+      make.disabled = false;
+      status.textContent = "";
+    });
+    range.addEventListener("input", () => {
+      label.textContent = difficultyPlan(Number(range.value) / 100).label;
+    });
+    make.addEventListener("click", () => {
+      const file = input.files?.[0];
+      if (!file) return;
+      void this.makePhoto(file, Number(range.value) / 100, make, status);
+    });
+    this.viewCleanups.push(() => {
+      if (url) URL.revokeObjectURL(url);
+    });
+  }
+
+  private async makePhoto(file: File, amount: number, button: HTMLButtonElement, status: HTMLElement): Promise<void> {
+    button.disabled = true;
+    status.textContent = "Painting the page…";
+    this.say("Painting the page.");
+    await new Promise((resolve) => window.requestAnimationFrame(() => resolve(null)));
+    const hour = new Date().getHours();
+    const title = hour < 11 ? "Morning photo" : hour < 17 ? "Afternoon photo" : hour < 21 ? "Evening photo" : "Night photo";
+    const id = `photo-${Date.now().toString(36)}`;
+    try {
+      const picture = await posterizeFile(file, amount, { id, title });
+      await savePhoto(picture);
+      this.say(`${picture.regions.length} regions, ${picture.colors.length} colors.`);
+      this.open(picture.id);
+    } catch {
+      status.textContent = "That image could not be read. Try another photo.";
+      button.disabled = false;
+      this.say("That image could not be read.");
+    }
+  }
+
+  private renderTones(): void {
+    const settings = loadSettings();
+    this.root.className = "app is-gallery";
+    this.root.innerHTML = `
+      <header class="top gallery-top">
+        <button type="button" class="icon-btn" id="back" aria-label="Back">${icon("back")}</button>
+        <div class="title-block">
+          <p class="eyebrow">Generated here</p>
+          <h1>Sound</h1>
+        </div>
+        ${this.headerTools()}
+      </header>
+      <main class="gallery">
+        <p class="blurb">Pick a bed. It plays in Color, Match, and Zen, and it follows the speaker button.</p>
+        <p class="note">${this.save.sound ? "Sound is on." : "Sound is off. The speaker button turns it on."}</p>
+        <div class="scape-list" role="listbox" aria-label="Soundscapes">
+          ${SCAPES.map(
+            (scape) => `
+            <button type="button" role="option" data-scape="${scape.id}" aria-selected="${scape.id === settings.scape}">
+              <span class="card-title">${esc(scape.name)}</span>
+              <span class="caption">${esc(scape.note)}</span>
+            </button>`,
+          ).join("")}
+        </div>
+        <label class="volume" for="volume">Volume</label>
+        <input id="volume" type="range" min="0" max="100" value="${Math.round(settings.volume * 100)}" aria-label="Volume">
+      </main>
+      <p class="live" id="live" aria-live="polite"></p>
+    `;
+    this.must("#back").addEventListener("click", () => history.back());
+    this.root.querySelectorAll<HTMLButtonElement>("[data-scape]").forEach((button) => {
+      button.addEventListener("click", () => {
+        const id = button.dataset.scape;
+        if (!id || !SCAPES.some((scape) => scape.id === id)) return;
+        const next = loadSettings();
+        writeSettings({ ...next, scape: id as ScapeId });
+        this.audio.setScape(id as ScapeId);
+        this.root.querySelectorAll<HTMLButtonElement>("[data-scape]").forEach((other) => {
+          other.setAttribute("aria-selected", other === button ? "true" : "false");
+        });
+        const name = SCAPES.find((scape) => scape.id === id)?.name ?? "Sound";
+        this.say(this.save.sound ? `${name}.` : `${name} saved. Turn sound on to hear it.`);
+      });
+    });
+    this.must<HTMLInputElement>("#volume").addEventListener("input", (event) => {
+      const target = event.currentTarget;
+      if (!(target instanceof HTMLInputElement)) return;
+      const volume = Number(target.value) / 100;
+      const next = loadSettings();
+      writeSettings({ ...next, volume });
+      this.audio.setVolume(volume);
+    });
+  }
+
+  private openDaily(): void {
+    history.pushState({ view: "daily" }, "", "#daily");
+    this.render();
+  }
+
+  private openPhotos(): void {
+    history.pushState({ view: "photos" }, "", "#photos");
+    this.render();
+  }
+
+  private openPhotoMaker(): void {
+    history.pushState({ view: "photo" }, "", "#photo");
+    this.render();
+  }
+
+  private openTones(): void {
+    history.pushState({ view: "tones" }, "", "#tones");
+    this.render();
+  }
+
+  private openZen(): void {
+    history.pushState({ view: "zen" }, "", "#zen");
+    this.render();
   }
 
   private playCue(kind: Cue): void {

@@ -47,7 +47,7 @@ export type Credit = {
 
 export type Picture = {
   id: string;
-  category: CategoryId;
+  category: CategoryId | "daily" | "photo";
   title: string;
   caption: string;
   viewBox: string;

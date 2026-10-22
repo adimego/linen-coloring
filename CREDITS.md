@@ -1,11 +1,86 @@
 # Image credits
 
-Every coloring page in Linen is an original illustration drawn for this app.
-They are not copied from Happy Color, Color by Number, or any other coloring product,
-and they are not traced from someone else's artwork.
+Relaxing Landscapes are adapted from public-domain prints on Wikimedia Commons.
+Every other coloring page is an original illustration drawn for this app.
+Those original pages are not copied from Happy Color, Color by Number, or any other coloring product.
 
-Author: Linen
-License: original work, created for Linen
+## Relaxing Landscapes
+
+Each of these pages is a color-by-number adaptation of a public-domain landscape print.
+Where a title cartouche sat in open sky, that sky was filled in so the page reads as a landscape.
+The artwork and the scan are in the public domain.
+
+### Lake at Hakone
+
+A still lake under a dark mountain.
+
+- **The lake in Hakone, from Thirty-six Views of Mount Fuji, 1858**
+  - Author: Utagawa Hiroshige
+  - Source: https://commons.wikimedia.org/wiki/File:Hiroshige%2C_The_lake_in_Hakone%2C_1858.jpg
+  - License: Public domain — https://creativecommons.org/publicdomain/mark/1.0/
+
+### Sea at Satta
+
+Cliffs above a bay, with Fuji far off.
+
+- **The Sea at Satta, Suruga Province, from Thirty-six Views of Mount Fuji**
+  - Author: Utagawa Hiroshige
+  - Source: https://commons.wikimedia.org/wiki/File:Ando_Hiroshige_-_The_Sea_at_Satta%2C_Suruga_Province%2C_from_the_series_%22Thirty-six_Views_of_Mount_Fuji%22_-_Google_Art_Project.jpg
+  - License: Public domain — https://creativecommons.org/publicdomain/mark/1.0/
+
+### Clear Morning
+
+Fuji at sunrise, red against a quiet sky.
+
+- **South Wind, Clear Morning (Gaifū kaisei), from Thirty-six Views of Mount Fuji**
+  - Author: Katsushika Hokusai
+  - Source: https://commons.wikimedia.org/wiki/File:Red_Fuji_southern_wind_clear_morning.jpg
+  - License: Public domain — https://creativecommons.org/publicdomain/mark/1.0/
+
+### Wind over the Fields
+
+Papers blowing across the fields at Ejiri.
+
+- **Ejiri in Suruga Province, from Thirty-six Views of Mount Fuji**
+  - Author: Katsushika Hokusai
+  - Source: https://commons.wikimedia.org/wiki/File:Ejiri_in_the_Suruga_province.jpg
+  - License: Public domain — https://creativecommons.org/publicdomain/mark/1.0/
+
+### Inume Pass
+
+A pine path through the mountains.
+
+- **The Inume Pass in Kai Province, from Thirty-six Views of Mount Fuji**
+  - Author: Katsushika Hokusai
+  - Source: https://commons.wikimedia.org/wiki/File:Inume_pass_in_the_Kai_province.jpg
+  - License: Public domain — https://creativecommons.org/publicdomain/mark/1.0/
+
+### Mishima Pass
+
+Pines, a lake, and a path through the hills.
+
+- **Mishima Pass in Kai Province, from Thirty-six Views of Mount Fuji**
+  - Author: Katsushika Hokusai
+  - Source: https://commons.wikimedia.org/wiki/File:Mishima_pass_in_Kai_province.jpg
+  - License: Public domain — https://creativecommons.org/publicdomain/mark/1.0/
+
+### Sunset Hill
+
+A drum bridge and the hill at evening.
+
+- **Drum Bridge and Sunset Hill at Meguro, from One Hundred Famous Views of Edo, 1857**
+  - Author: Utagawa Hiroshige
+  - Source: https://commons.wikimedia.org/wiki/File:Hiroshige%2C_Drum_bridge_at_Meguro_and_Sunset_Hill%2C_1857.jpg
+  - License: Public domain — https://creativecommons.org/publicdomain/mark/1.0/
+
+### Village at Kusatsu
+
+A country road with a mountain behind it.
+
+- **Landscape at Kusatsu**
+  - Author: Utagawa Hiroshige
+  - Source: https://commons.wikimedia.org/wiki/File:Ando_Hiroshige_-_Landscape_at_Kusatsu_-_Google_Art_Project.jpg
+  - License: Public domain — https://creativecommons.org/publicdomain/mark/1.0/
 
 ## Beach
 

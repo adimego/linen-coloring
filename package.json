@@ -6,7 +6,8 @@
   "scripts": {
     "dev": "vite --host 127.0.0.1 --port 43123",
     "build": "tsc && vite build",
-    "preview": "vite preview --host 127.0.0.1 --port 43123"
+    "preview": "vite preview --host 127.0.0.1 --port 43123",
+    "test:match": "node --experimental-strip-types --disable-warning=ExperimentalWarning scripts/test_match.ts"
   },
   "dependencies": {
     "@fontsource/fraunces": "^5.2.9",

@@ -2,6 +2,8 @@
  * A quiet original drone plus occasional pentatonic tones.
  * Nothing here quotes a song.
  */
+export type Cue = "match" | "win" | "shuffle";
+
 export class Ambience {
   private ctx: AudioContext | null = null;
   private master: GainNode | null = null;
@@ -41,6 +43,24 @@ export class Ambience {
     this.tone(ctx, filter, 220, 0.14);
     this.tone(ctx, filter, 261.63, 0.06);
     this.schedulePluck();
+  }
+
+  cue(kind: Cue): void {
+    const ctx = this.ctx;
+    const master = this.master;
+    if (!ctx || !master) return;
+    const now = ctx.currentTime;
+    if (kind === "win") {
+      this.blip(523.25, now, 0.7, 0.42);
+      this.blip(659.25, now + 0.12, 0.65, 0.46);
+      this.blip(783.99, now + 0.24, 0.55, 0.55);
+      return;
+    }
+    if (kind === "shuffle") {
+      this.blip(392, now, 0.4, 0.36);
+      return;
+    }
+    this.blip(587.33, now, 0.55, 0.32);
   }
 
   stop(): void {
@@ -85,6 +105,23 @@ export class Ambience {
       this.pluck();
       if (this.ctx) this.schedulePluck();
     }, 6500 + Math.random() * 4500);
+  }
+
+  private blip(freq: number, when: number, amount: number, length: number): void {
+    const ctx = this.ctx;
+    const master = this.master;
+    if (!ctx || !master) return;
+    const osc = ctx.createOscillator();
+    osc.type = "sine";
+    osc.frequency.value = freq;
+    const gain = ctx.createGain();
+    gain.gain.setValueAtTime(0.0001, when);
+    gain.gain.exponentialRampToValueAtTime(0.045 * amount, when + 0.02);
+    gain.gain.exponentialRampToValueAtTime(0.0001, when + length);
+    osc.connect(gain);
+    gain.connect(master);
+    osc.start(when);
+    osc.stop(when + length + 0.02);
   }
 
   private pluck(): void {

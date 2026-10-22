@@ -1,8 +1,8 @@
 {
   "id": "/linen-coloring/",
-  "name": "Linen — quiet coloring",
+  "name": "Linen — color and match",
   "short_name": "Linen",
-  "description": "A calm color-by-number book for your phone. Match a number, fill the region, and pick up where you left off.",
+  "description": "A calm color-by-number book and a gentle match game. Fill a region, or uncover a picture one match at a time, and pick up where you left off.",
   "start_url": "/linen-coloring/",
   "scope": "/linen-coloring/",
   "display": "standalone",

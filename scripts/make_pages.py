@@ -23,6 +23,9 @@ VW, VH = 320, 460
 W, H = VW * SCALE, VH * SCALE
 
 CATEGORIES = [
+    ("beach", "Beach"),
+    ("city", "City"),
+    ("peaceful", "Peaceful Places"),
     ("animals", "Animals"),
     ("flowers", "Flowers"),
     ("mandalas", "Mandalas"),
@@ -50,7 +53,13 @@ class Scene:
         self.img = np.zeros((H, W), np.uint8)
         self.inks: list[tuple[str, float]] = []
 
+    def _paint(self, idx: int) -> int:
+        if idx < 0 or idx >= len(self.colors):
+            raise RuntimeError(f"color {idx} outside 0..{len(self.colors) - 1}")
+        return int(idx)
+
     def poly(self, pts: list[tuple[float, float]], idx: int) -> None:
+        idx = self._paint(idx)
         arr = np.array([[sx(x), sy(y)] for x, y in pts], np.int32)
         cv2.fillPoly(self.img, [arr], int(idx), lineType=cv2.LINE_8)
 
@@ -58,6 +67,7 @@ class Scene:
         self.poly([(x, y), (x + w, y), (x + w, y + h), (x, y + h)], idx)
 
     def ellipse(self, cx: float, cy: float, rx: float, ry: float, idx: int, angle: float = 0) -> None:
+        idx = self._paint(idx)
         cv2.ellipse(
             self.img,
             (sx(cx), sy(cy)),
@@ -71,7 +81,7 @@ class Scene:
         )
 
     def circle(self, cx: float, cy: float, r: float, idx: int) -> None:
-        cv2.circle(self.img, (sx(cx), sy(cy)), max(1, sx(r)), int(idx), -1, cv2.LINE_8)
+        cv2.circle(self.img, (sx(cx), sy(cy)), max(1, sx(r)), self._paint(idx), -1, cv2.LINE_8)
 
     def tri(self, a: tuple[float, float], b: tuple[float, float], c: tuple[float, float], idx: int) -> None:
         self.poly([a, b, c], idx)
@@ -84,7 +94,7 @@ class Scene:
 
     def stroke(self, pts: list[tuple[float, float]], width: float, idx: int) -> None:
         arr = np.array([[sx(x), sy(y)] for x, y in pts], np.int32)
-        cv2.polylines(self.img, [arr], False, int(idx), max(1, sx(width)), cv2.LINE_8)
+        cv2.polylines(self.img, [arr], False, self._paint(idx), max(1, sx(width)), cv2.LINE_8)
 
     def bands(self, x: float, y: float, w: float, h: float, indices: list[int]) -> None:
         n = len(indices)
@@ -1059,6 +1069,572 @@ def scene_city() -> Scene:
     return s
 
 
+def scene_palm_sunset() -> Scene:
+    c = [
+        "#5d78c4",
+        "#f29bb4",
+        "#f7c48a",
+        "#f8e4ae",
+        "#fff6d2",
+        "#f6d15e",
+        "#7ec4e2",
+        "#3e8fbe",
+        "#2a628f",
+        "#f6e0c0",
+        "#e4c296",
+        "#8a5a38",
+        "#5c3a28",
+        "#2f6a40",
+        "#67a25e",
+    ]
+    s = Scene(c, {0, 1, 2, 3, 6, 7, 8, 9}, 211)
+    s.bands(0, 0, 320, 210, [0, 1, 2, 3])
+    s.circle(214, 162, 30, 5)
+    s.circle(214, 162, 16, 4)
+    s.bands(0, 198, 320, 112, [6, 7, 8])
+    s.ellipse(70, 236, 46, 8, 4)
+    s.ellipse(190, 268, 58, 7, 6)
+    s.rect(0, 304, 320, 160, 9)
+    s.ellipse(170, 322, 200, 16, 10)
+    s.capsule(78, 450, 112, 196, 9, 11)
+    s.capsule(86, 450, 116, 230, 4, 12)
+    for i, ang in enumerate((-62, -28, 6, 38, 68)):
+        s.ellipse(124, 186, 48, 11, 13 if i % 2 == 0 else 14, ang)
+    s.capsule(268, 460, 236, 248, 7, 11)
+    for i, ang in enumerate((150, 190, 220, 250)):
+        s.ellipse(228, 236, 36, 9, 14 if i % 2 == 0 else 13, ang)
+    s.ellipse(48, 390, 18, 8, 10, -16)
+    s.circle(286, 400, 9, 14)
+    return s
+
+
+def scene_tide_pool() -> Scene:
+    c = [
+        "#d5eef6",
+        "#f3ddb8",
+        "#e4c49a",
+        "#9a8b82",
+        "#5e514c",
+        "#7ec4d0",
+        "#3d8b9a",
+        "#f4fbfc",
+        "#f2b7c4",
+        "#f7f1e6",
+        "#c9a8dc",
+        "#e07a45",
+        "#4f8a62",
+        "#e08aa0",
+        "#f6e2a8",
+    ]
+    s = Scene(c, {0, 1, 2}, 223)
+    s.bands(0, 0, 320, 150, [0, 0])
+    s.rect(0, 140, 320, 320, 1)
+    s.ellipse(160, 250, 150, 28, 2)
+    s.ellipse(70, 200, 46, 28, 3)
+    s.ellipse(250, 190, 40, 24, 4)
+    s.ellipse(48, 360, 36, 22, 4)
+    s.ellipse(280, 340, 42, 26, 3)
+    s.ellipse(160, 300, 92, 58, 5)
+    s.ellipse(160, 308, 70, 40, 6)
+    s.ellipse(150, 292, 24, 10, 7)
+    s.ellipse(118, 250, 16, 11, 8, -24)
+    s.ellipse(118, 250, 8, 5, 9, -24)
+    s.ellipse(206, 268, 18, 12, 10, 18)
+    s.ellipse(206, 268, 8, 6, 9, 18)
+    s.ellipse(96, 340, 14, 10, 9, 30)
+    s.ellipse(230, 330, 12, 8, 8, -20)
+    for k in range(5):
+        ang = -math.pi / 2 + k * math.tau / 5
+        s.capsule(164, 312, 164 + math.cos(ang) * 22, 312 + math.sin(ang) * 22, 6, 11)
+    s.circle(164, 312, 6, 14)
+    s.ellipse(70, 300, 16, 8, 12, -40)
+    s.ellipse(250, 280, 18, 8, 12, 30)
+    s.ellipse(40, 430, 22, 12, 3)
+    s.circle(300, 420, 14, 4)
+    return s
+
+
+def scene_lighthouse() -> Scene:
+    c = [
+        "#f8d2c4",
+        "#f3b0c0",
+        "#9fd0ea",
+        "#3f86b4",
+        "#2c648e",
+        "#a89890",
+        "#6e5e58",
+        "#f7f4ee",
+        "#d24b4e",
+        "#8f3038",
+        "#f6e3a4",
+        "#e7d2b4",
+        "#5f8f62",
+        "#3e342e",
+        "#c9843a",
+    ]
+    s = Scene(c, {0, 1, 2, 3, 4, 11}, 229)
+    s.bands(0, 0, 320, 220, [1, 0, 2])
+    s.circle(64, 78, 22, 10)
+    s.bands(0, 200, 320, 130, [2, 3, 4])
+    s.poly([(0, 210), (0, 340), (110, 300), (70, 180)], 6)
+    s.poly([(220, 190), (320, 160), (320, 330), (250, 300)], 5)
+    s.ellipse(40, 250, 22, 12, 12)
+    s.rect(0, 318, 320, 150, 11)
+    s.ellipse(180, 340, 70, 16, 5)
+    s.rect(168, 150, 36, 150, 7)
+    for i in range(4):
+        s.rect(168, 168 + i * 28, 36, 12, 8)
+    s.rect(160, 128, 52, 28, 8)
+    s.circle(186, 118, 16, 10)
+    s.circle(186, 118, 8, 14)
+    s.tri((158, 132), (186, 86), (214, 132), 9)
+    s.rect(176, 250, 16, 40, 13)
+    s.ellipse(250, 300, 28, 8, 7)
+    s.tri((236, 296), (258, 262), (270, 296), 9)
+    s.circle(40, 400, 12, 6)
+    s.ellipse(80, 420, 20, 8, 12, 16)
+    return s
+
+
+def scene_beach_huts() -> Scene:
+    c = [
+        "#8ec8ea",
+        "#f7e4b8",
+        "#5eadd6",
+        "#f6e2c4",
+        "#e2c49a",
+        "#d4535c",
+        "#f0c14e",
+        "#3d9a96",
+        "#4d78c4",
+        "#f7f6f2",
+        "#6b4534",
+        "#a33b48",
+        "#c9842a",
+        "#2c6f78",
+        "#e07a92",
+        "#f7f1e8",
+    ]
+    s = Scene(c, {0, 1, 2, 3}, 241)
+    s.bands(0, 0, 320, 180, [0, 1])
+    s.circle(270, 58, 20, 15)
+    s.bands(0, 168, 320, 70, [2, 2])
+    s.rect(0, 230, 320, 230, 3)
+    s.ellipse(160, 250, 200, 18, 4)
+    huts = [(22, 5, 11), (98, 6, 12), (174, 7, 13), (250, 8, 5)]
+    for x, wall, roof in huts:
+        s.rect(x, 236, 58, 92, wall)
+        s.tri((x - 6, 242), (x + 29, 188), (x + 64, 242), roof)
+        s.rect(x + 18, 278, 18, 50, 10)
+        s.rect(x + 8, 252, 16, 14, 9)
+    s.ellipse(70, 360, 28, 10, 14)
+    s.capsule(70, 348, 70, 390, 2.2, 10)
+    s.ellipse(230, 380, 26, 9, 6)
+    s.capsule(230, 368, 230, 408, 2.2, 10)
+    s.ellipse(150, 420, 36, 10, 4)
+    return s
+
+
+def scene_dusk_skyline() -> Scene:
+    c = [
+        "#3a3d78",
+        "#c46b86",
+        "#f2b07a",
+        "#f8e2ae",
+        "#2e3358",
+        "#4e466c",
+        "#6a5878",
+        "#f6e2a8",
+        "#241f3a",
+        "#5c4e78",
+        "#e09a86",
+        "#3e3a48",
+        "#8eb0d4",
+        "#f7f4ee",
+    ]
+    s = Scene(c, {0, 1, 2, 3, 9}, 257)
+    s.bands(0, 0, 320, 250, [0, 1, 2])
+    s.circle(70, 150, 26, 3)
+    s.circle(70, 150, 12, 13)
+    towers = [(8, 150, 48, 200, 4), (62, 96, 70, 254, 5), (140, 70, 46, 280, 8), (192, 120, 64, 230, 6), (262, 150, 50, 200, 4)]
+    for x, y, w, h, idx in towers:
+        s.rect(x, y, w, h, idx)
+        cols = max(2, int(w // 16))
+        rows = max(4, int((h - 20) / 20))
+        for row in range(rows):
+            for col in range(cols):
+                lit = (row + col * 2 + x) % 4 != 0
+                s.rect(x + 6 + col * ((w - 12) / cols), y + 10 + row * ((h - 18) / rows), 7, 10, 7 if lit else 0)
+    s.rect(0, 346, 320, 120, 9)
+    s.rect(120, 330, 90, 16, 11)
+    s.rect(150, 318, 8, 28, 11)
+    s.ellipse(90, 390, 30, 10, 10)
+    s.ellipse(210, 410, 40, 12, 2)
+    return s
+
+
+def scene_street_cafe() -> Scene:
+    c = [
+        "#c5dff2",
+        "#f4e7d6",
+        "#e7cfc0",
+        "#c44755",
+        "#f7f3ea",
+        "#6b4034",
+        "#8ebfe0",
+        "#d9c4ae",
+        "#5f8f58",
+        "#e07a8a",
+        "#f2d48a",
+        "#f7f7f4",
+        "#8a5a3a",
+        "#3d6a4a",
+        "#f6e7b4",
+    ]
+    s = Scene(c, {0, 7}, 269)
+    s.bands(0, 0, 320, 150, [0, 0])
+    s.rect(0, 120, 320, 230, 1)
+    s.rect(0, 300, 320, 160, 7)
+    for i in range(6):
+        s.rect(0, 318 + i * 18, 320, 8, 2 if i % 2 else 7)
+    s.rect(36, 150, 250, 160, 1)
+    s.poly([(28, 168), (292, 150), (292, 196), (28, 214)], 4)
+    for i in range(7):
+        s.rect(36, 158 + i * 8, 248, 4, 3 if i % 2 == 0 else 4)
+    s.rect(70, 214, 54, 70, 6)
+    s.rect(78, 222, 38, 28, 11)
+    s.rect(160, 200, 70, 84, 5)
+    s.circle(196, 242, 6, 10)
+    s.rect(210, 214, 28, 46, 6)
+    s.ellipse(90, 360, 28, 12, 11)
+    s.capsule(70, 348, 70, 392, 3, 12)
+    s.capsule(112, 348, 112, 392, 3, 12)
+    s.ellipse(210, 372, 26, 11, 11)
+    s.ellipse(200, 348, 16, 8, 8)
+    s.circle(196, 340, 6, 9)
+    s.rect(250, 250, 18, 28, 14)
+    s.ellipse(150, 300, 22, 8, 8)
+    s.circle(146, 292, 5, 9)
+    return s
+
+
+def scene_canal() -> Scene:
+    c = [
+        "#d5e7f6",
+        "#f3e4d2",
+        "#e7b7ae",
+        "#d4896a",
+        "#3d6e90",
+        "#7ec0d4",
+        "#4a90ae",
+        "#f4ecdf",
+        "#cbbba8",
+        "#2c3338",
+        "#c4474a",
+        "#f6e2b0",
+        "#6b3a38",
+        "#7ea36a",
+        "#f7f4ee",
+    ]
+    s = Scene(c, {0, 5, 6}, 281)
+    s.bands(0, 0, 320, 150, [0, 0])
+    s.rect(0, 90, 150, 210, 3)
+    s.rect(170, 70, 150, 230, 1)
+    s.rect(188, 70, 40, 160, 2)
+    for x, y in ((24, 120), (70, 150), (24, 190), (70, 220), (196, 110), (250, 140), (196, 180), (250, 210)):
+        s.rect(x, y, 22, 30, 4)
+        s.rect(x + 4, y + 4, 14, 16, 11)
+    s.rect(40, 250, 28, 50, 12)
+    s.rect(230, 240, 26, 60, 12)
+    s.bands(0, 280, 320, 180, [5, 6, 5])
+    s.rect(70, 248, 180, 28, 7)
+    s.ellipse(160, 292, 64, 36, 5)
+    s.rect(78, 246, 164, 8, 8)
+    s.ellipse(210, 360, 46, 11, 9)
+    s.capsule(164, 356, 178, 346, 4, 9)
+    s.circle(214, 350, 6, 10)
+    s.capsule(96, 250, 96, 210, 3, 13)
+    s.ellipse(250, 40, 18, 8, 14)
+    return s
+
+
+def scene_rainy_lights() -> Scene:
+    c = [
+        "#243044",
+        "#3c4c68",
+        "#4a3d58",
+        "#2a3144",
+        "#f2c56a",
+        "#9eb6dc",
+        "#3a3842",
+        "#6a5644",
+        "#c4476a",
+        "#3d6e96",
+        "#e2b14a",
+        "#5c564e",
+        "#f7f4ee",
+        "#8f3044",
+        "#1c2436",
+    ]
+    s = Scene(c, {0, 1, 6}, 293)
+    s.bands(0, 0, 320, 200, [14, 0, 1])
+    s.rect(0, 150, 90, 230, 3)
+    s.rect(100, 90, 110, 290, 2)
+    s.rect(220, 130, 100, 250, 3)
+    for x, y, h in ((18, 180, 16), (52, 210, 16), (18, 250, 16), (124, 120, 18), (160, 160, 18), (124, 210, 18), (160, 250, 18), (240, 170, 16), (274, 210, 16), (240, 260, 16)):
+        s.rect(x, y, 22, h, 4 if (x + y) % 5 else 5)
+    s.rect(0, 360, 320, 100, 6)
+    s.rect(0, 372, 320, 28, 11)
+    s.ellipse(70, 400, 40, 10, 7)
+    s.ellipse(180, 418, 50, 12, 4)
+    s.ellipse(250, 400, 30, 8, 5)
+    s.ellipse(78, 250, 26, 14, 8)
+    s.capsule(78, 250, 78, 320, 2.4, 12)
+    s.ellipse(230, 280, 24, 12, 9)
+    s.capsule(230, 280, 230, 340, 2.4, 12)
+    s.rect(40, 330, 46, 30, 10)
+    s.circle(58, 356, 6, 14)
+    for i in range(16):
+        x = 16 + (i * 19) % 290
+        y = 24 + (i * 37) % 300
+        s.ink([(x, y), (x - 8, y + 22)], 1.05)
+    return s
+
+
+def scene_zen_garden() -> Scene:
+    c = [
+        "#e7d8c8",
+        "#efe4d2",
+        "#d8c6aa",
+        "#8a8078",
+        "#5c564e",
+        "#6f8f62",
+        "#c4474a",
+        "#6b4030",
+        "#f3e7d6",
+        "#8f3038",
+        "#7a9098",
+        "#c5d8d4",
+        "#e7b15c",
+        "#3f6b48",
+        "#f7f4ee",
+    ]
+    s = Scene(c, {0, 1, 2}, 307)
+    s.rect(0, 0, 320, 80, 0)
+    s.rect(0, 70, 320, 390, 1)
+    for i, y in enumerate((120, 168, 220, 280, 340, 400)):
+        s.ellipse(160, y, 150 - i * 6, 16, 2 if i % 2 == 0 else 1)
+    s.ellipse(110, 210, 28, 18, 3)
+    s.ellipse(200, 250, 22, 16, 4)
+    s.ellipse(150, 330, 18, 12, 3)
+    s.ellipse(80, 300, 26, 12, 5)
+    s.ellipse(240, 180, 20, 10, 5)
+    s.capsule(250, 430, 236, 250, 6, 7)
+    s.circle(228, 230, 22, 6)
+    s.circle(214, 214, 14, 12)
+    s.rect(48, 120, 28, 40, 8)
+    s.tri((40, 124), (62, 86), (84, 124), 9)
+    s.rect(56, 132, 12, 10, 11)
+    s.ellipse(70, 400, 30, 14, 10)
+    s.ellipse(70, 396, 18, 8, 11)
+    return s
+
+
+def scene_snow_cabin() -> Scene:
+    c = [
+        "#c5d8ee",
+        "#f4f7fb",
+        "#e7eef6",
+        "#c5d4e6",
+        "#f7f8fa",
+        "#3d5c48",
+        "#2a4034",
+        "#8a5a3c",
+        "#6b4030",
+        "#5c3828",
+        "#f6d58a",
+        "#d7e4c8",
+        "#8aa0b8",
+        "#f2e2c4",
+        "#4a6a8a",
+    ]
+    s = Scene(c, {0, 1, 2, 4}, 313)
+    s.bands(0, 0, 320, 200, [0, 1])
+    s.poly([(0, 180), (80, 90), (160, 170), (0, 200)], 2)
+    s.poly([(100, 190), (200, 70), (300, 180), (140, 200)], 3)
+    s.poly([(200, 176), (270, 110), (320, 160), (320, 200)], 12)
+    s.rect(0, 190, 320, 270, 4)
+    s.tri((36, 250), (58, 150), (80, 250), 5)
+    s.tri((48, 230), (64, 170), (78, 230), 6)
+    s.tri((250, 270), (276, 160), (302, 270), 6)
+    s.tri((262, 250), (276, 180), (292, 250), 5)
+    s.rect(110, 230, 110, 100, 7)
+    s.tri((96, 236), (165, 168), (234, 236), 4)
+    s.tri((110, 232), (165, 186), (220, 232), 8)
+    s.rect(150, 270, 28, 60, 9)
+    s.rect(124, 258, 28, 24, 10)
+    s.rect(178, 258, 24, 22, 10)
+    s.rect(168, 196, 16, 28, 13)
+    s.circle(176, 188, 6, 14)
+    s.ellipse(40, 360, 30, 10, 11)
+    return s
+
+
+def scene_lavender() -> Scene:
+    c = [
+        "#d5e6f8",
+        "#f7e4ee",
+        "#cbb6e6",
+        "#8d6bb8",
+        "#5c468c",
+        "#e8d8c4",
+        "#f6f1e8",
+        "#c45a6a",
+        "#6f9a5c",
+        "#4f7a46",
+        "#f6e2b0",
+        "#f7f7f8",
+        "#a84860",
+        "#7ea0d0",
+    ]
+    s = Scene(c, {0, 1, 2}, 331)
+    s.bands(0, 0, 320, 180, [0, 1])
+    s.circle(250, 60, 18, 11)
+    s.ellipse(160, 200, 240, 50, 2)
+    for i, y in enumerate((210, 250, 292, 336, 382, 428)):
+        bulge = 150 + i * 8
+        s.ellipse(150, y, bulge, 16, 3 if i % 2 == 0 else 4)
+        s.ellipse(150, y - 6, bulge * 0.7, 6, 4 if i % 2 == 0 else 3)
+    s.poly([(150, 200), (196, 210), (176, 450), (132, 450)], 5)
+    s.rect(36, 150, 70, 58, 6)
+    s.tri((30, 154), (71, 112), (112, 154), 7)
+    s.rect(58, 172, 18, 28, 12)
+    s.rect(46, 164, 16, 14, 13)
+    s.ellipse(250, 168, 26, 22, 8)
+    s.capsule(250, 190, 250, 230, 4, 9)
+    s.circle(40, 400, 8, 3)
+    return s
+
+
+def scene_waterfall() -> Scene:
+    c = [
+        "#d5eaf2",
+        "#3f6b4c",
+        "#6fa868",
+        "#8d847c",
+        "#5c564e",
+        "#f4fbfc",
+        "#d5eef2",
+        "#6eb8c8",
+        "#3d8496",
+        "#7ea86a",
+        "#3f6848",
+        "#c5b8a8",
+        "#e7f6f4",
+        "#2f4e3c",
+    ]
+    s = Scene(c, {0, 6, 7}, 347)
+    s.bands(0, 0, 320, 120, [0, 0])
+    s.rect(0, 70, 320, 80, 1)
+    s.tri((20, 140), (50, 60), (90, 140), 2)
+    s.tri((230, 130), (270, 40), (310, 140), 10)
+    s.tri((250, 120), (276, 70), (300, 120), 13)
+    s.poly([(0, 120), (0, 360), (100, 300), (80, 140)], 3)
+    s.poly([(220, 130), (320, 110), (320, 380), (230, 320)], 4)
+    s.ellipse(70, 220, 24, 14, 9)
+    s.ellipse(270, 240, 28, 12, 2)
+    s.capsule(160, 120, 160, 300, 18, 5)
+    s.capsule(160, 150, 160, 280, 10, 12)
+    s.ellipse(160, 330, 80, 36, 7)
+    s.ellipse(160, 340, 56, 22, 8)
+    s.ellipse(120, 360, 20, 10, 11)
+    s.ellipse(210, 370, 24, 12, 4)
+    s.ellipse(40, 400, 30, 14, 9)
+    s.rect(0, 390, 320, 70, 10)
+    return s
+
+
+def scene_balloons() -> Scene:
+    c = [
+        "#8ec4ee",
+        "#d7eef8",
+        "#f7f8f6",
+        "#b7d08a",
+        "#6f9a56",
+        "#8fb56e",
+        "#d4535c",
+        "#f7f1e4",
+        "#4d78c4",
+        "#f0c14e",
+        "#8a5a32",
+        "#5c4030",
+        "#e7f2dc",
+        "#f2b7c4",
+        "#3d5c86",
+    ]
+    s = Scene(c, {0, 1, 3}, 359)
+    s.bands(0, 0, 320, 280, [0, 1])
+    s.ellipse(60, 70, 28, 12, 2)
+    s.ellipse(250, 48, 34, 12, 2)
+    s.ellipse(160, 430, 220, 120, 3)
+    s.ellipse(80, 390, 90, 40, 4)
+    s.ellipse(240, 400, 100, 36, 5)
+    balloons = [(90, 150, 7, 6), (170, 120, 8, 9), (250, 168, 9, 13)]
+    for cx, cy, a, b in balloons:
+        s.ellipse(cx, cy, 36, 46, a)
+        s.ellipse(cx, cy - 8, 22, 28, b)
+        s.tri((cx - 10, cy + 40), (cx, cy + 58), (cx + 10, cy + 40), a)
+        s.rect(cx - 8, cy + 64, 16, 10, 10)
+        s.ink([(cx - 6, cy + 44), (cx - 6, cy + 64)], 1.1)
+        s.ink([(cx + 6, cy + 44), (cx + 6, cy + 64)], 1.1)
+    s.circle(40, 360, 8, 12)
+    s.ellipse(300, 370, 16, 8, 4)
+    return s
+
+
+def scene_reading_nook() -> Scene:
+    c = [
+        "#f6e4ea",
+        "#e7d0d8",
+        "#c5dff2",
+        "#f7f4ee",
+        "#e7b7c8",
+        "#6f8f78",
+        "#4f6e58",
+        "#f6e2a8",
+        "#c4474a",
+        "#3d6e96",
+        "#f0c14e",
+        "#8a5a3c",
+        "#e2cbb4",
+        "#d7a8b8",
+        "#5f8a52",
+        "#f7f1e6",
+    ]
+    s = Scene(c, {0, 1, 12}, 373)
+    s.bands(0, 0, 320, 300, [0, 1])
+    s.rect(0, 300, 320, 160, 12)
+    s.rect(36, 70, 120, 150, 2)
+    s.rect(48, 86, 96, 110, 3)
+    s.rect(36, 70, 22, 150, 4)
+    s.rect(134, 70, 22, 150, 4)
+    s.ellipse(210, 230, 70, 78, 5)
+    s.ellipse(210, 250, 64, 36, 6)
+    s.ellipse(200, 268, 40, 18, 15)
+    s.rect(250, 150, 16, 90, 11)
+    s.ellipse(258, 140, 28, 16, 7)
+    s.circle(258, 168, 6, 10)
+    s.rect(250, 188, 54, 130, 15)
+    spines = [8, 9, 10, 8, 5, 4, 10, 9]
+    for i, idx in enumerate(spines):
+        s.rect(258 + (i % 4) * 12, 200 + (i // 4) * 48, 8, 36, idx)
+    s.ellipse(120, 390, 70, 22, 13)
+    s.ellipse(70, 340, 18, 16, 14)
+    s.capsule(70, 360, 70, 400, 6, 11)
+    s.rect(40, 250, 28, 8, 15)
+    return s
+
+
 PICTURES = [
     ("cat-nap", "animals", "Cat Nap", "A curled cat in a square of sun.", scene_cat),
     ("garden-fox", "animals", "Garden Fox", "A fox sitting among the flowers.", scene_fox),
@@ -1076,6 +1652,20 @@ PICTURES = [
     ("still-swan", "birds", "Still Swan", "A swan on flat water.", scene_swan),
     ("rose-cottage", "places", "Rose Cottage", "A small house behind a garden fence.", scene_cottage),
     ("night-windows", "places", "Night Windows", "A city block with a few lights on.", scene_city),
+    ("palm-sunset", "beach", "Palm Sunset", "Two palms against a warm sea.", scene_palm_sunset),
+    ("tide-pool", "beach", "Tide Pool", "Shells and a starfish in a quiet pool.", scene_tide_pool),
+    ("lighthouse-cove", "beach", "Lighthouse Cove", "A striped light above a small cove.", scene_lighthouse),
+    ("beach-huts", "beach", "Beach Huts", "A row of huts facing the water.", scene_beach_huts),
+    ("dusk-skyline", "city", "Dusk Skyline", "Towers against a fading sun.", scene_dusk_skyline),
+    ("street-cafe", "city", "Street Café", "An awning, two tables, and a flower box.", scene_street_cafe),
+    ("canal-bridge", "city", "Canal Bridge", "A low bridge over still water.", scene_canal),
+    ("rainy-lights", "city", "Rainy Lights", "Wet pavement and a few glowing windows.", scene_rainy_lights),
+    ("zen-garden", "peaceful", "Zen Garden", "Raked gravel, stones, and a maple.", scene_zen_garden),
+    ("snow-cabin", "peaceful", "Snow Cabin", "A cabin under a quiet snow sky.", scene_snow_cabin),
+    ("lavender-rows", "peaceful", "Lavender Rows", "Purple rows running toward a small house.", scene_lavender),
+    ("forest-falls", "peaceful", "Forest Falls", "A white fall into a green pool.", scene_waterfall),
+    ("balloon-valley", "peaceful", "Balloon Valley", "Three balloons over a wide valley.", scene_balloons),
+    ("reading-nook", "peaceful", "Reading Nook", "A chair, a lamp, and a shelf of books.", scene_reading_nook),
 ]
 
 

@@ -193,6 +193,9 @@ export class App {
       });
     });
     this.must("#credits").addEventListener("click", () => this.openCredits());
+    const tabRow = this.root.querySelector<HTMLElement>(".categories");
+    const selectedTab = this.root.querySelector<HTMLElement>('[data-category][aria-selected="true"]');
+    if (tabRow && selectedTab) tabRow.scrollLeft = Math.max(0, selectedTab.offsetLeft - 16);
     this.bindSound();
   }
 

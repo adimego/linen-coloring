@@ -10,11 +10,11 @@ export const VW = PAGE.w;
 export const VH = PAGE.h;
 
 export const GATE = {
-  minRegions: 80,
-  maxRegions: 200,
-  minRadiusVu: 6.2,
-  minAreaVu: 150,
-  maxFraction: 0.18,
+  minRegions: 180,
+  maxRegions: 320,
+  minRadiusVu: 5.15,
+  minAreaVu: 82,
+  maxFraction: 0.16,
   minMixedCells: 14,
   cellCols: 4,
   cellRows: 6,
@@ -22,9 +22,11 @@ export const GATE = {
   minFocalRadiusVu: 16,
   minColorDistance: 28,
   minLightSpan: 0.34,
-  minColors: 7,
-  maxColors: 16,
-  maxHueClusters: 7,
+  minColors: 12,
+  maxColors: 30,
+  maxHueClusters: 10,
+  maxChecker: 0.2,
+  maxEqualBands: 6,
 } as const;
 
 export type QualityReport = {
@@ -215,7 +217,57 @@ export function pictureFromCanvas(canvas: Canvas, meta: PageMeta, merge = true):
   const picture = tracePicture(canvas, meta);
   report.regions = picture.regions.length;
   report.colors = picture.colors.length;
+  if (picture.regions.length < GATE.minRegions || picture.regions.length > GATE.maxRegions) {
+    report.ok = false;
+    if (!report.reasons.some((reason) => reason.startsWith("regions"))) report.reasons.push(`traced ${picture.regions.length}`);
+  }
+  if (picture.colors.length < GATE.minColors || picture.colors.length > GATE.maxColors) {
+    report.ok = false;
+    if (!report.reasons.some((reason) => reason.startsWith("colors"))) report.reasons.push(`traced colors ${picture.colors.length}`);
+  }
   return { picture, report };
+}
+
+/** Coarse average color, used to reject a daily picture that repeats a recent day. */
+export function fingerprint(canvas: Canvas): number[] {
+  const cols = 16;
+  const rows = 23;
+  const { buf, w, h, colors } = canvas;
+  const out: number[] = [];
+  for (let row = 0; row < rows; row += 1) {
+    const y0 = Math.floor((row * h) / rows);
+    const y1 = Math.max(y0 + 1, Math.floor(((row + 1) * h) / rows));
+    for (let col = 0; col < cols; col += 1) {
+      const x0 = Math.floor((col * w) / cols);
+      const x1 = Math.max(x0 + 1, Math.floor(((col + 1) * w) / cols));
+      let red = 0;
+      let green = 0;
+      let blue = 0;
+      let count = 0;
+      for (let y = y0; y < y1; y += 2) {
+        const line = y * w;
+        for (let x = x0; x < x1; x += 2) {
+          const hex = colors[buf[line + x] ?? 0] ?? "#000000";
+          const channel = rgb(hex);
+          red += channel[0];
+          green += channel[1];
+          blue += channel[2];
+          count += 1;
+        }
+      }
+      const divisor = count || 1;
+      out.push(red / divisor, green / divisor, blue / divisor);
+    }
+  }
+  return out;
+}
+
+export function fingerprintDistance(a: number[], b: number[]): number {
+  const count = Math.min(a.length, b.length);
+  if (!count) return 0;
+  let sum = 0;
+  for (let index = 0; index < count; index += 1) sum += Math.abs((a[index] ?? 0) - (b[index] ?? 0));
+  return sum / count;
 }
 
 function tidy(canvas: Canvas, minAreaVu: number = GATE.minAreaVu, minRadiusVu: number = GATE.minRadiusVu): void {
@@ -331,6 +383,9 @@ function measure(canvas: Canvas): QualityReport {
   const minColorDistance = palette.length ? pairwiseMin(palette) : 0;
   const lightSpan = palette.length ? luminanceSpan(palette) : 0;
   const hueClusters = palette.length ? clusterHues(palette) : 0;
+  const checker = checkerScore(buf, w, h);
+  const equalBands = equalBandRun(buf, w, h);
+  const dotRows = dotGridRows(stats);
 
   if (uncovered > 0) reasons.push(`uncovered ${uncovered}`);
   if (regions < GATE.minRegions || regions > GATE.maxRegions) reasons.push(`regions ${regions}`);
@@ -345,6 +400,9 @@ function measure(canvas: Canvas): QualityReport {
   if (minColorDistance < GATE.minColorDistance) reasons.push(`contrast ${minColorDistance.toFixed(1)}`);
   if (lightSpan < GATE.minLightSpan) reasons.push(`light span ${lightSpan.toFixed(2)}`);
   if (hueClusters > GATE.maxHueClusters) reasons.push(`hue clusters ${hueClusters}`);
+  if (checker > GATE.maxChecker) reasons.push(`checker ${(checker * 100).toFixed(0)}%`);
+  if (equalBands > GATE.maxEqualBands) reasons.push(`equal bands ${equalBands}`);
+  if (dotRows >= 3) reasons.push(`dot grid ${dotRows}`);
 
   return {
     ok: reasons.length === 0,
@@ -756,6 +814,99 @@ function polygonArea(pts: Array<[number, number]>): number {
     sum += a[0] * b[1] - b[0] * a[1];
   }
   return sum / 2;
+}
+
+function checkerScore(buf: Uint8Array, w: number, h: number): number {
+  const scales = [10, 14, 18, 22, 28];
+  let worst = 0;
+  for (const tileVu of scales) {
+    const tile = Math.max(4, Math.round(tileVu * SCALE));
+    const step = Math.max(4, Math.floor(tile / 2));
+    let hits = 0;
+    let total = 0;
+    for (let y = tile; y < h - tile * 2; y += step) {
+      const row = y * w;
+      const down = (y + tile) * w;
+      for (let x = tile; x < w - tile * 2; x += step) {
+        const a = buf[row + x] ?? 0;
+        const b = buf[row + x + tile] ?? 0;
+        const c = buf[down + x] ?? 0;
+        const d = buf[down + x + tile] ?? 0;
+        const e = buf[row + x + tile * 2] ?? 0;
+        if (!a || !b) continue;
+        total += 1;
+        if (a === d && b === c && a !== b && a === e) hits += 1;
+      }
+    }
+    if (total >= 48) worst = Math.max(worst, hits / total);
+  }
+  return worst;
+}
+
+function equalBandRun(buf: Uint8Array, w: number, h: number): number {
+  const runs: number[] = [];
+  let current = 0;
+  let height = 0;
+  const stride = 3;
+  for (let y = 0; y < h; y += 1) {
+    const row = y * w;
+    const first = buf[row] ?? 0;
+    let same = 0;
+    let samples = 0;
+    for (let x = 0; x < w; x += stride) {
+      samples += 1;
+      if ((buf[row + x] ?? 0) === first) same += 1;
+    }
+    const solid = first > 0 && same / samples >= 0.92 ? first : 0;
+    if (solid && solid === current) height += 1;
+    else {
+      if (current && height >= 12) runs.push(height);
+      current = solid;
+      height = solid ? 1 : 0;
+    }
+  }
+  if (current && height >= 12) runs.push(height);
+  let best = 0;
+  for (let start = 0; start < runs.length; start += 1) {
+    const base = runs[start] ?? 0;
+    let end = start;
+    while (end < runs.length) {
+      const heightAt = runs[end] ?? 0;
+      if (Math.abs(heightAt - base) / base > 0.16) break;
+      end += 1;
+    }
+    if (end - start > best) best = end - start;
+  }
+  return best;
+}
+
+function dotGridRows(stats: CompStat[]): number {
+  const blobs = stats.filter((stat) => {
+    const area = stat.area / (SCALE * SCALE);
+    const radius = stat.maxDist / SCALE;
+    return area >= 70 && area <= 780 && radius >= 5 && radius <= 13;
+  });
+  if (blobs.length < 12) return 0;
+  const sorted = [...blobs].sort((a, b) => a.ly - b.ly);
+  const rows: CompStat[][] = [];
+  for (const blob of sorted) {
+    const row = rows[rows.length - 1];
+    const anchor = row?.[0];
+    if (row && anchor && Math.abs(anchor.ly - blob.ly) < 11) row.push(blob);
+    else rows.push([blob]);
+  }
+  let regular = 0;
+  for (const row of rows) {
+    if (row.length < 4) continue;
+    const xs = row.map((blob) => blob.lx).sort((a, b) => a - b);
+    const gaps: number[] = [];
+    for (let index = 1; index < xs.length; index += 1) gaps.push((xs[index] ?? 0) - (xs[index - 1] ?? 0));
+    const mean = gaps.reduce((sum, gap) => sum + gap, 0) / gaps.length;
+    if (mean < 18) continue;
+    const variance = gaps.reduce((sum, gap) => sum + (gap - mean) ** 2, 0) / gaps.length;
+    if (Math.sqrt(variance) / mean < 0.065) regular += 1;
+  }
+  return regular;
 }
 
 function countMixed(buf: Uint8Array, w: number, h: number): number {

@@ -1,80 +1,85 @@
 # Region size audit
 
-Measured on the page viewBox (320×460). At the default fit on a 390×844 phone the picture is 390px wide, so one viewBox unit is 1.22 CSS pixels.
+Measured on the page viewBox (320×460). At the default fit on a 390×844 phone the picture is 390px wide, so one viewBox unit is 1.22 CSS pixels. A region about 5.15 units in inscribed radius is 12.5px across.
 
-A region is too small when its area is under 0.15% of the page (221 square units) or its inscribed diameter is under 12 viewBox units (about 15px, enough for a two-digit number). Those regions were merged into the most similar touching neighbor. Very large leftovers were divided again, but only into pieces that still clear the floor.
+This pass splits sky, water, petals, fabric, hills, and other broad shapes into light, mid, and dark steps. Pieces stay large enough to tap: inscribed radius at least about 5.4 viewBox units here, and adjacent swatches are at least 34 apart in RGB. The gallery gate is 180–320 regions and 12–30 colors.
 
-| Picture | Category | Regions before | Smallest area before | Smallest diameter before | Regions after | Smallest area after | Smallest diameter after |
-| --- | --- | ---: | ---: | ---: | ---: | ---: | ---: |
-| Cat Nap | animals | 170 | 0.12% | 7.0px | 158 | 0.17% | 15.5px |
-| Garden Fox | animals | 185 | 0.03% | 6.3px | 162 | 0.18% | 15.5px |
-| Beach Huts | beach | 182 | 0.03% | 3.1px | 164 | 0.18% | 15.5px |
-| Lighthouse Cove | beach | 185 | 0.08% | 8.5px | 173 | 0.16% | 15.1px |
-| Palm Sunset | beach | 185 | 0.10% | 4.7px | 173 | 0.18% | 15.5px |
-| Tide Pool | beach | 185 | 0.03% | 6.2px | 160 | 0.17% | 16.0px |
-| Garden Robin | birds | 170 | 0.04% | 5.2px | 140 | 0.22% | 17.1px |
-| Still Swan | birds | 170 | 0.03% | 5.4px | 154 | 0.17% | 15.5px |
-| Blue Wing | butterflies | 185 | 0.05% | 6.3px | 116 | 0.17% | 15.6px |
-| Monarch | butterflies | 185 | 0.03% | 5.6px | 121 | 0.18% | 16.4px |
-| Canal Bridge | city | 170 | 0.10% | 3.8px | 149 | 0.19% | 16.3px |
-| Dusk Skyline | city | 170 | 0.03% | 4.7px | 168 | 0.21% | 17.1px |
-| Rainy Lights | city | 170 | 0.06% | 3.1px | 112 | 0.27% | 15.5px |
-| Street Café | city | 170 | 0.05% | 3.1px | 141 | 0.22% | 15.5px |
-| Open Rose | flowers | 170 | 0.03% | 6.3px | 151 | 0.21% | 16.3px |
-| Sunflower | flowers | 170 | 0.03% | 5.6px | 132 | 0.23% | 17.1px |
-| Berry Tart | food | 185 | 0.04% | 4.7px | 142 | 0.17% | 14.7px |
-| Lemon Tea | food | 170 | 0.03% | 3.8px | 145 | 0.17% | 15.5px |
-| Doodle Collage | fun-designs | 170 | 0.07% | 9.3px | 163 | 0.17% | 16.2px |
-| Hearts and Stars | fun-designs | 170 | 0.24% | 18.9px | 170 | 0.27% | 20.0px |
-| Kaleidoscope | fun-designs | 170 | 0.03% | 5.3px | 125 | 0.25% | 16.9px |
-| Quilt Blocks | fun-designs | 168 | 0.13% | 7.0px | 115 | 0.23% | 17.1px |
-| Retro Swirls | fun-designs | 170 | 0.06% | 8.6px | 82 | 0.24% | 17.8px |
-| Stained Glass | fun-designs | 170 | 0.05% | 3.1px | 150 | 0.19% | 15.2px |
-| Drop Earrings | jewelry | 170 | 0.07% | 10.8px | 150 | 0.17% | 14.7px |
-| Gem Brooch | jewelry | 170 | 0.06% | 9.6px | 144 | 0.17% | 16.3px |
-| Gem Ring | jewelry | 170 | 0.06% | 8.5px | 147 | 0.19% | 15.9px |
-| Jewelry Box | jewelry | 170 | 0.08% | 7.8px | 156 | 0.17% | 16.6px |
-| Pearl Strand | jewelry | 170 | 0.03% | 6.2px | 133 | 0.18% | 15.5px |
-| Pendant Necklace | jewelry | 170 | 0.03% | 6.3px | 146 | 0.19% | 16.3px |
-| Coast Path | landscapes | 170 | 0.11% | 11.6px | 162 | 0.20% | 15.4px |
-| Lake Evening | landscapes | 170 | 0.13% | 7.0px | 163 | 0.19% | 15.6px |
-| Petal Mandala | mandalas | 185 | 0.06% | 7.5px | 164 | 0.21% | 15.1px |
-| Star Mandala | mandalas | 185 | 0.04% | 7.8px | 148 | 0.18% | 17.1px |
-| At the Harp | music | 200 | 0.04% | 2.3px | 94 | 0.17% | 14.7px |
-| At the Piano | music | 223 | 0.08% | 4.7px | 120 | 0.19% | 16.3px |
-| Flute Player | music | 170 | 0.08% | 10.1px | 155 | 0.20% | 15.5px |
-| Maple and Shamisen | music | 170 | 0.03% | 4.7px | 158 | 0.17% | 15.5px |
-| Still Guitar | music | 249 | 0.04% | 4.5px | 116 | 0.18% | 15.6px |
-| The Arts: Music | music | 205 | 0.06% | 2.3px | 111 | 0.21% | 15.5px |
-| Violin and Score | music | 223 | 0.02% | 2.3px | 87 | 0.19% | 16.3px |
-| With a Koto | music | 170 | 0.08% | 5.3px | 142 | 0.18% | 16.3px |
-| Balloon Valley | peaceful | 170 | 0.12% | 6.3px | 155 | 0.17% | 17.0px |
-| Forest Falls | peaceful | 185 | 0.10% | 5.4px | 176 | 0.18% | 17.1px |
-| Lavender Rows | peaceful | 185 | 0.06% | 6.2px | 158 | 0.17% | 15.5px |
-| Reading Nook | peaceful | 170 | 0.05% | 5.4px | 150 | 0.18% | 15.5px |
-| Snow Cabin | peaceful | 170 | 0.03% | 4.2px | 149 | 0.17% | 15.5px |
-| Zen Garden | peaceful | 170 | 0.14% | 10.8px | 165 | 0.18% | 16.3px |
-| Cherry Blossoms | pink | 170 | 0.04% | 4.6px | 108 | 0.30% | 16.7px |
-| Flamingo | pink | 170 | 0.03% | 3.9px | 141 | 0.23% | 16.6px |
-| Peony | pink | 170 | 0.06% | 6.3px | 162 | 0.18% | 14.7px |
-| Pink Bedroom | pink | 170 | 0.07% | 5.4px | 157 | 0.23% | 15.5px |
-| Pink Cupcakes | pink | 170 | 0.10% | 6.2px | 141 | 0.18% | 17.1px |
-| Vanity Table | pink | 170 | 0.06% | 5.4px | 154 | 0.19% | 14.7px |
-| Night Windows | places | 170 | 0.03% | 6.2px | 163 | 0.20% | 16.3px |
-| Rose Cottage | places | 185 | 0.03% | 3.1px | 155 | 0.19% | 15.5px |
-| Clear Morning | relaxing-landscapes | 234 | 0.02% | 3.9px | 89 | 0.35% | 15.5px |
-| Inume Pass | relaxing-landscapes | 175 | 0.02% | 3.8px | 95 | 0.26% | 14.7px |
-| Lake at Hakone | relaxing-landscapes | 179 | 0.02% | 3.1px | 94 | 0.20% | 15.5px |
-| Mishima Pass | relaxing-landscapes | 246 | 0.03% | 4.1px | 105 | 0.20% | 16.3px |
-| Sea at Satta | relaxing-landscapes | 212 | 0.03% | 1.6px | 90 | 0.20% | 15.5px |
-| Sunset Hill | relaxing-landscapes | 170 | 0.03% | 3.1px | 145 | 0.19% | 14.7px |
-| Village at Kusatsu | relaxing-landscapes | 170 | 0.05% | 7.8px | 161 | 0.18% | 14.7px |
-| Wind over the Fields | relaxing-landscapes | 216 | 0.05% | 4.5px | 108 | 0.18% | 16.3px |
-| Besler Tulips | tulips | 246 | 0.04% | 1.6px | 85 | 0.30% | 15.5px |
-| Garden Path | tulips | 170 | 0.03% | 7.1px | 113 | 0.19% | 14.7px |
-| Single Tulip | tulips | 170 | 0.04% | 7.8px | 162 | 0.19% | 16.3px |
-| Sweet Tulip | tulips | 170 | 0.02% | 3.8px | 93 | 0.20% | 17.1px |
-| Tulip Bouquet | tulips | 170 | 0.08% | 7.0px | 155 | 0.20% | 16.3px |
-| Tulip Field | tulips | 170 | 0.03% | 6.1px | 163 | 0.18% | 17.1px |
-| Tulip Mandala | tulips | 170 | 0.03% | 5.8px | 132 | 0.18% | 15.5px |
-| Watering Can | tulips | 170 | 0.05% | 3.1px | 142 | 0.18% | 14.7px |
+- Pictures: 72
+- Regions: 189–320
+- Colors: 15–30
+- Smallest inscribed radius: 5.41 viewBox units (about 13.2px)
+
+| Picture | Category | Regions | Colors | Min radius |
+| --- | --- | ---: | ---: | ---: |
+| Cat Nap | animals | 296 | 30 | 5.48 |
+| Garden Fox | animals | 307 | 30 | 5.41 |
+| Beach Huts | beach | 310 | 30 | 5.41 |
+| Lighthouse Cove | beach | 320 | 29 | 5.73 |
+| Palm Sunset | beach | 318 | 30 | 5.41 |
+| Tide Pool | beach | 317 | 24 | 5.41 |
+| Garden Robin | birds | 315 | 28 | 5.41 |
+| Still Swan | birds | 290 | 30 | 5.41 |
+| Blue Wing | butterflies | 270 | 21 | 5.41 |
+| Monarch | butterflies | 279 | 19 | 5.73 |
+| Canal Bridge | city | 297 | 30 | 5.69 |
+| Dusk Skyline | city | 281 | 30 | 5.41 |
+| Rainy Lights | city | 240 | 30 | 5.41 |
+| Street Café | city | 293 | 30 | 5.41 |
+| Open Rose | flowers | 312 | 27 | 5.41 |
+| Sunflower | flowers | 302 | 29 | 5.73 |
+| Berry Tart | food | 291 | 25 | 5.41 |
+| Lemon Tea | food | 308 | 30 | 5.41 |
+| Doodle Collage | fun-designs | 288 | 24 | 5.73 |
+| Hearts and Stars | fun-designs | 320 | 27 | 5.73 |
+| Kaleidoscope | fun-designs | 302 | 30 | 5.41 |
+| Quilt Blocks | fun-designs | 189 | 29 | 5.48 |
+| Retro Swirls | fun-designs | 231 | 22 | 5.41 |
+| Stained Glass | fun-designs | 294 | 30 | 5.41 |
+| Drop Earrings | jewelry | 317 | 29 | 5.55 |
+| Gem Brooch | jewelry | 294 | 18 | 5.66 |
+| Gem Ring | jewelry | 315 | 23 | 5.41 |
+| Jewelry Box | jewelry | 313 | 26 | 5.41 |
+| Pearl Strand | jewelry | 299 | 15 | 5.41 |
+| Pendant Necklace | jewelry | 320 | 22 | 5.41 |
+| Coast Path | landscapes | 309 | 30 | 5.69 |
+| Lake Evening | landscapes | 320 | 30 | 5.41 |
+| Petal Mandala | mandalas | 303 | 30 | 5.41 |
+| Star Mandala | mandalas | 308 | 28 | 5.41 |
+| At the Harp | music | 212 | 30 | 5.41 |
+| At the Piano | music | 218 | 30 | 5.73 |
+| Flute Player | music | 320 | 27 | 5.73 |
+| Maple and Shamisen | music | 315 | 29 | 5.41 |
+| Still Guitar | music | 253 | 30 | 5.41 |
+| The Arts: Music | music | 247 | 29 | 5.73 |
+| Violin and Score | music | 226 | 29 | 5.73 |
+| With a Koto | music | 313 | 30 | 5.41 |
+| Balloon Valley | peaceful | 304 | 30 | 5.41 |
+| Forest Falls | peaceful | 320 | 30 | 5.73 |
+| Lavender Rows | peaceful | 312 | 30 | 5.73 |
+| Reading Nook | peaceful | 290 | 30 | 5.41 |
+| Snow Cabin | peaceful | 319 | 30 | 5.73 |
+| Zen Garden | peaceful | 320 | 30 | 5.73 |
+| Cherry Blossoms | pink | 251 | 30 | 5.73 |
+| Flamingo | pink | 271 | 30 | 5.73 |
+| Peony | pink | 316 | 27 | 5.48 |
+| Pink Bedroom | pink | 307 | 30 | 5.73 |
+| Pink Cupcakes | pink | 301 | 25 | 5.73 |
+| Vanity Table | pink | 317 | 30 | 5.41 |
+| Night Windows | places | 274 | 27 | 5.41 |
+| Rose Cottage | places | 315 | 28 | 5.73 |
+| Clear Morning | relaxing-landscapes | 245 | 30 | 5.55 |
+| Inume Pass | relaxing-landscapes | 228 | 30 | 5.41 |
+| Lake at Hakone | relaxing-landscapes | 237 | 30 | 5.41 |
+| Mishima Pass | relaxing-landscapes | 238 | 30 | 5.41 |
+| Sea at Satta | relaxing-landscapes | 233 | 30 | 5.73 |
+| Sunset Hill | relaxing-landscapes | 289 | 30 | 5.73 |
+| Village at Kusatsu | relaxing-landscapes | 319 | 30 | 5.41 |
+| Wind over the Fields | relaxing-landscapes | 245 | 30 | 5.73 |
+| Besler Tulips | tulips | 230 | 30 | 5.73 |
+| Garden Path | tulips | 282 | 30 | 5.41 |
+| Single Tulip | tulips | 320 | 29 | 5.41 |
+| Sweet Tulip | tulips | 271 | 15 | 5.41 |
+| Tulip Bouquet | tulips | 310 | 30 | 5.73 |
+| Tulip Field | tulips | 283 | 30 | 5.41 |
+| Tulip Mandala | tulips | 278 | 16 | 5.41 |
+| Watering Can | tulips | 312 | 25 | 5.41 |

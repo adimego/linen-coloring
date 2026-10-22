@@ -6,7 +6,7 @@ The gallery is a soft pink room. Each card shows the finished picture. Open one 
 
 ## Pictures
 
-Music and Relaxing Landscapes are adapted from public-domain art on Wikimedia Commons: instrument still lifes, an Art Nouveau music poster, Japanese prints of musicians, and Hiroshige and Hokusai landscapes. The other pages are original illustrations drawn for Linen — not copied from another coloring app. Beach, city, and peaceful places sit beside animals, flowers, mandalas, landscapes, food, butterflies, birds, and home. Every page has its own palette and about 100–300 regions. Sources are listed on the Image credits screen and in [CREDITS.md](CREDITS.md).
+Music and Relaxing Landscapes are adapted from public-domain art on Wikimedia Commons: instrument still lifes, an Art Nouveau music poster, Japanese prints of musicians, and Hiroshige and Hokusai landscapes. The other pages are original illustrations drawn for Linen — not copied from another coloring app. Beach, city, and peaceful places sit beside animals, flowers, mandalas, landscapes, food, butterflies, birds, and home. Every page has its own palette, about 12–30 numbered colors, and about 180–320 regions. Broad areas such as sky, water, petals, and hills are split into light, mid, and dark steps so the page stays interesting to color. The smallest region is still large enough to tap on a phone. Sources are listed on the Image credits screen and in [CREDITS.md](CREDITS.md).
 
 ## Run it
 
@@ -39,7 +39,7 @@ Zen, on the Match home page, is the same pieces with no levels and no goal. Matc
 
 ## Daily pictures
 
-From 22 October 2026, each calendar day has one original picture. It is drawn on the phone from that date, so the same day is the same picture everywhere, and older days can be opened again from Daily. Today sits at the top of the color home. Coloring progress uses the same save as the rest of the book. A date that would fail the size and composition checks is replaced by the next prepared variation of that day.
+From 22 October 2026, each calendar day has one original picture. It is drawn on the phone from that date, so the same day is the same picture everywhere, and older days can be opened again from Daily. Eighteen scenes rotate, so the same scene does not return within a week, and a later visit to that scene uses a different time of day. Today sits at the top of the color home. Coloring progress uses the same save as the rest of the book. A picture has to clear the same size bar as the gallery (at least 180 regions, no checkerboard filler) before it is kept.
 
 ## Your photo
 

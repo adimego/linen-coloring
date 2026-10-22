@@ -83,6 +83,14 @@ function year(): void {
     assert(used.size === picture.colors.length, `${iso} unused color`);
     templates.set(template, (templates.get(template) ?? 0) + 1);
     variants.set(variant, (variants.get(variant) ?? 0) + 1);
+    if (i >= 6) {
+      const recent = new Set<string>();
+      for (let back = 0; back < 7; back += 1) {
+        const earlier = addDays(LAUNCH_DATE, i - back);
+        recent.add(buildDaily(earlier).template);
+      }
+      assert(recent.size === 7, `${iso} repeats a template inside 7 days`);
+    }
     if (picture.regions.length < minRegions) minRegions = picture.regions.length;
     if (picture.regions.length > maxRegions) maxRegions = picture.regions.length;
     if (report.minRadiusVu < minRadius) minRadius = report.minRadiusVu;
@@ -98,6 +106,7 @@ function year(): void {
     assert(again.picture.regions.map((region) => region.d).join("|") === frozen[index], `${iso} recomputed differently`);
   });
   const seconds = ((Date.now() - started) / 1000).toFixed(1);
+  assert(templates.size >= 16, `only ${templates.size} templates`);
   console.log(`365 days in ${seconds}s`);
   console.log(`regions ${minRegions}–${maxRegions}, smallest radius ${minRadius.toFixed(2)} vu`);
   console.log("templates", Object.fromEntries(templates));

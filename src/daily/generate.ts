@@ -1,10 +1,15 @@
 import { mulberry32 } from "../match/logic.ts";
 import type { Picture } from "../pictures/types.ts";
 import { measureCanvas, pictureFromCanvas, type QualityReport } from "./raster.ts";
-import { TEMPLATES, type Painted } from "./scenes.ts";
+import { MOODS, TEMPLATES, type Painted } from "./scenes.ts";
 
 export const LAUNCH_DATE = "2026-10-22";
-const MAX_VARIANTS = TEMPLATES.length * 2;
+const MAX_VARIANTS = 4;
+
+export function dayNumber(iso: string): number {
+  const ms = Date.parse(`${iso}T00:00:00Z`) - Date.parse(`${LAUNCH_DATE}T00:00:00Z`);
+  return Math.round(ms / 86400000);
+}
 
 export type DailyResult = {
   picture: Picture;
@@ -71,12 +76,14 @@ export function buildDaily(iso: string): DailyResult {
   const cached = cache.get(iso);
   if (cached) return cached;
   const seed = hashDate(iso);
+  const index = dayNumber(iso);
+  const template = TEMPLATES[((index % TEMPLATES.length) + TEMPLATES.length) % TEMPLATES.length];
+  const mood = MOODS[((Math.floor(index / TEMPLATES.length) % MOODS.length) + MOODS.length) % MOODS.length] ?? "day";
   let last = "no variant";
   for (let variant = 0; variant < MAX_VARIANTS; variant += 1) {
-    const template = TEMPLATES[(seed + variant) % TEMPLATES.length];
     if (!template) continue;
     const rng = mulberry32((seed + Math.imul(variant + 1, 0x85ebca6b)) >>> 0);
-    const painted: Painted = template(rng);
+    const painted: Painted = template(rng, mood);
     const report = measureCanvas(painted.canvas, true);
     if (!report.ok) {
       last = `${painted.id} v${variant}: ${report.reasons.join(", ")}`;

@@ -10,22 +10,26 @@ export const VW = PAGE.w;
 export const VH = PAGE.h;
 
 export const GATE = {
-  minRegions: 80,
-  maxRegions: 200,
-  minRadiusVu: 6.2,
-  minAreaVu: 150,
-  maxFraction: 0.18,
+  minRegions: 40,
+  maxRegions: 280,
+  minRadiusVu: 5.4,
+  minAreaVu: 100,
+  maxFraction: 0.17,
   minMixedCells: 14,
   cellCols: 4,
   cellRows: 6,
-  minFocalFraction: 0.07,
-  minFocalRadiusVu: 16,
+  minFocalFraction: 0.05,
+  minFocalRadiusVu: 14,
   minColorDistance: 28,
   minLightSpan: 0.34,
-  minColors: 7,
-  maxColors: 16,
-  maxHueClusters: 7,
+  minColors: 8,
+  maxColors: 26,
+  maxHueClusters: 8,
 } as const;
+
+/** Photo pages keep the older, slightly larger tidy floor. */
+const PHOTO_AREA = 150;
+const PHOTO_RADIUS = 6.2;
 
 export type QualityReport = {
   ok: boolean;
@@ -198,13 +202,13 @@ export function pictureFromIndexed(
     if (value < 1 || value > palette.length) throw new Error("Photo color index is out of range.");
   }
   canvas.buf.set(indexed);
-  tidy(canvas);
-  let area = GATE.minAreaVu;
+  tidy(canvas, PHOTO_AREA, PHOTO_RADIUS);
+  let area = PHOTO_AREA;
   for (let step = 0; step < 8; step += 1) {
     const report = measure(canvas);
     if (report.regions <= maxRegions) break;
     area *= 1.55;
-    tidy(canvas, area, GATE.minRadiusVu);
+    tidy(canvas, area, PHOTO_RADIUS);
   }
   return pictureFromCanvas(canvas, meta, false);
 }

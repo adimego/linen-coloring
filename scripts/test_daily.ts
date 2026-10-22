@@ -66,6 +66,7 @@ function year(): void {
   clearDailyCache();
   const days = 365;
   const templates = new Map<string, number>();
+  const order: string[] = [];
   const variants = new Map<number, number>();
   let minRegions = Infinity;
   let maxRegions = 0;
@@ -82,6 +83,7 @@ function year(): void {
     const used = new Set(picture.regions.map((region) => region.n));
     assert(used.size === picture.colors.length, `${iso} unused color`);
     templates.set(template, (templates.get(template) ?? 0) + 1);
+    order.push(template);
     variants.set(variant, (variants.get(variant) ?? 0) + 1);
     if (picture.regions.length < minRegions) minRegions = picture.regions.length;
     if (picture.regions.length > maxRegions) maxRegions = picture.regions.length;
@@ -100,6 +102,11 @@ function year(): void {
   const seconds = ((Date.now() - started) / 1000).toFixed(1);
   console.log(`365 days in ${seconds}s`);
   console.log(`regions ${minRegions}–${maxRegions}, smallest radius ${minRadius.toFixed(2)} vu`);
+  for (let i = 0; i <= order.length - 7; i += 1) {
+    const window = new Set(order.slice(i, i + 7));
+    assert(window.size === 7, `templates repeat inside the week starting ${addDays(LAUNCH_DATE, i)}`);
+  }
+  assert(templates.size >= 16, `only ${templates.size} templates`);
   console.log("templates", Object.fromEntries(templates));
   console.log("variants", Object.fromEntries(variants));
 }

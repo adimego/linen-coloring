@@ -182,8 +182,8 @@ function assertPictures(list: Picture[]): void {
     if (ids.has(picture.id)) throw new Error(`Duplicate picture ${picture.id}`);
     ids.add(picture.id);
     const count = picture.regions.length;
-    if (count < 80 || count > 300) throw new Error(`${picture.id} has ${count} regions; want 80–300`);
-    if (picture.colors.length < 6 || picture.colors.length > 24) {
+    if (count < 110 || count > 280) throw new Error(`${picture.id} has ${count} regions; want 110–280`);
+    if (picture.colors.length < 8 || picture.colors.length > 28) {
       throw new Error(`${picture.id} has ${picture.colors.length} colors`);
     }
     const seen = new Set<string>();

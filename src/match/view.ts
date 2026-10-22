@@ -22,6 +22,7 @@ import {
   type Grid,
   type PieceAt,
 } from "./logic.ts";
+import { playCascade, slideSwap } from "./motion.ts";
 import { pieceByKind, veilMarkup } from "./pieces.ts";
 import {
   applySnapshot,
@@ -358,24 +359,28 @@ function renderBoard(root: HTMLElement, level: LevelDef, ctx: MatchCtx, record: 
     }
   }
 
-  function cellSize(): number {
-    return frame.clientWidth / grid.cols;
-  }
-
-  async function glide(a: CellPos, b: CellPos, forward: boolean): Promise<void> {
-    const first = pieces.querySelector(`[data-r="${a.r}"][data-c="${a.c}"]`);
-    const second = pieces.querySelector(`[data-r="${b.r}"][data-c="${b.c}"]`);
-    if (!(first instanceof HTMLElement) || !(second instanceof HTMLElement)) return;
-    const sign = forward ? 1 : -1;
-    const dx = ((b.c - a.c) / grid.cols) * frame.clientWidth * sign;
-    const dy = ((b.r - a.r) / grid.rows) * frame.clientHeight * sign;
-    const ms = reduce ? 0 : 160;
-    for (const el of [first, second]) {
-      el.style.transition = ms ? `transform ${ms}ms ease` : "none";
-    }
-    first.style.transform = forward ? `translate(${dx}px, ${dy}px)` : "none";
-    second.style.transform = forward ? `translate(${-dx}px, ${-dy}px)` : "none";
-    await pause(ms + 20);
+  function motionHost() {
+    return {
+      frame,
+      layer: pieces,
+      cols: grid.cols,
+      rows: grid.rows,
+      reduce,
+      make: makePiece,
+      find: pieceEl,
+      locate: (r: number, c: number) => {
+        const node = pieces.querySelector(`[data-r="${r}"][data-c="${c}"]`);
+        return node instanceof HTMLElement ? node : null;
+      },
+      place: (el: HTMLElement, piece: PieceAt) => {
+        const pos = posOf(piece.r, piece.c);
+        el.dataset.r = String(piece.r);
+        el.dataset.c = String(piece.c);
+        el.dataset.kind = String(piece.kind);
+        el.style.left = pos.left;
+        el.style.top = pos.top;
+      },
+    };
   }
 
   function applyCovers(covers: number[][]): void {
@@ -386,51 +391,12 @@ function renderBoard(root: HTMLElement, level: LevelDef, ctx: MatchCtx, record: 
   }
 
   async function animateFrames(frames: Frame[]): Promise<void> {
-    for (const frameStep of frames) {
-      if (!alive()) return;
-      applyCovers(frameStep.covers);
-      for (const cell of frameStep.cleared) {
-        const el = pieceEl(cell.id);
-        if (!el) continue;
-        el.style.transition = reduce ? "none" : "transform 200ms ease, opacity 200ms ease";
-        el.style.transform = "scale(0.45)";
-        el.style.opacity = "0";
-      }
-      if (!(await pause(200))) return;
-      for (const cell of frameStep.cleared) pieceEl(cell.id)?.remove();
-      let fall = 0;
-      const seen = new Set<number>();
-      for (const piece of frameStep.pieces) {
-        seen.add(piece.id);
-        const existing = pieceEl(piece.id);
-        if (!existing) {
-          const el = makePiece(piece);
-          el.style.transform = `translateY(${-cellSize()}px)`;
-          pieces.append(el);
-          if (!reduce) {
-            void el.offsetWidth;
-            el.style.transition = "transform 240ms cubic-bezier(.2,.7,.3,1)";
-            el.style.transform = "none";
-          } else {
-            el.style.transform = "none";
-          }
-          fall = Math.max(fall, 240);
-          continue;
-        }
-        const oldR = Number(existing.dataset.r);
-        const oldC = Number(existing.dataset.c);
-        const dist = Math.abs(piece.r - oldR) + Math.abs(piece.c - oldC);
-        const ms = dist === 0 ? 0 : 180 + dist * 40;
-        const pos = posOf(piece.r, piece.c);
-        existing.dataset.r = String(piece.r);
-        existing.dataset.c = String(piece.c);
-        existing.style.transition = ms ? `left ${ms}ms cubic-bezier(.2,.7,.3,1), top ${ms}ms cubic-bezier(.2,.7,.3,1)` : "none";
-        existing.style.left = pos.left;
-        existing.style.top = pos.top;
-        fall = Math.max(fall, ms);
-      }
-      if (!(await pause(fall))) return;
-    }
+    await playCascade(motionHost(), frames, {
+      onCovers: applyCovers,
+      chime: () => ctx.cue("match"),
+      haptic: () => ctx.haptic(),
+      alive,
+    });
   }
 
   function remember(pendingReveal: boolean): void {
@@ -477,11 +443,11 @@ function renderBoard(root: HTMLElement, level: LevelDef, ctx: MatchCtx, record: 
     selected = null;
     paintSelect();
     clearHint();
-    await glide(a, b, true);
+    await slideSwap(motionHost(), a, b, true);
     if (!alive()) return;
     const rng = mulberry32((seed + moves * 10007 + 17) >>> 0);
     if (!swapOnly(grid, a, b)) {
-      await glide(a, b, false);
+      await slideSwap(motionHost(), a, b, false);
       busy = false;
       board.setAttribute("aria-busy", "false");
       armHint();
@@ -492,8 +458,6 @@ function renderBoard(root: HTMLElement, level: LevelDef, ctx: MatchCtx, record: 
     moves += 1;
     const finished = isWon(grid);
     remember(finished);
-    if (!finished) ctx.cue("match");
-    ctx.haptic();
     await animateFrames(frames);
     if (!alive()) return;
     paintMeter();

@@ -2,6 +2,7 @@
 
 Music and Relaxing Landscapes are adapted from public-domain art on Wikimedia Commons.
 Every other coloring page is an original illustration drawn for this app.
+Pink, Jewelry, and Fun Designs are original illustrations drawn for this app.
 Those original pages are not copied from Happy Color, Color by Number, or any other coloring product.
 
 ## Music
@@ -457,6 +458,183 @@ A small house behind a garden fence.
 A city block with a few lights on.
 
 - **Night Windows**
+  - Author: Linen
+  - Source: original illustration created for Linen
+  - License: original work, created for Linen
+
+
+## Pink
+
+Original illustrations created for Linen. No brands, logos, or third-party templates.
+
+### Cherry Blossoms
+
+A branch of pink blossoms against a pale sky.
+
+- **Cherry Blossoms**
+  - Author: Linen
+  - Source: original illustration created for Linen
+  - License: original work, created for Linen
+
+### Flamingo
+
+A flamingo standing in shallow water.
+
+- **Flamingo**
+  - Author: Linen
+  - Source: original illustration created for Linen
+  - License: original work, created for Linen
+
+### Peony
+
+A full peony with soft leaves.
+
+- **Peony**
+  - Author: Linen
+  - Source: original illustration created for Linen
+  - License: original work, created for Linen
+
+### Pink Cupcakes
+
+Three cupcakes with cherries on top.
+
+- **Pink Cupcakes**
+  - Author: Linen
+  - Source: original illustration created for Linen
+  - License: original work, created for Linen
+
+### Vanity Table
+
+A mirror, a few bottles, and a pink stool.
+
+- **Vanity Table**
+  - Author: Linen
+  - Source: original illustration created for Linen
+  - License: original work, created for Linen
+
+### Pink Bedroom
+
+A bed, curtains, and a small lamp.
+
+- **Pink Bedroom**
+  - Author: Linen
+  - Source: original illustration created for Linen
+  - License: original work, created for Linen
+
+
+## Jewelry
+
+Original illustrations created for Linen. No brands, logos, or third-party templates.
+
+### Gem Ring
+
+A gold band with a faceted stone.
+
+- **Gem Ring**
+  - Author: Linen
+  - Source: original illustration created for Linen
+  - License: original work, created for Linen
+
+### Pearl Strand
+
+A strand of pearls on folded cloth.
+
+- **Pearl Strand**
+  - Author: Linen
+  - Source: original illustration created for Linen
+  - License: original work, created for Linen
+
+### Drop Earrings
+
+A pair of earrings with pearl drops.
+
+- **Drop Earrings**
+  - Author: Linen
+  - Source: original illustration created for Linen
+  - License: original work, created for Linen
+
+### Gem Brooch
+
+A flower brooch set with round stones.
+
+- **Gem Brooch**
+  - Author: Linen
+  - Source: original illustration created for Linen
+  - License: original work, created for Linen
+
+### Pendant Necklace
+
+A chain and a teardrop pendant.
+
+- **Pendant Necklace**
+  - Author: Linen
+  - Source: original illustration created for Linen
+  - License: original work, created for Linen
+
+### Jewelry Box
+
+An open box with a ring and a few pearls.
+
+- **Jewelry Box**
+  - Author: Linen
+  - Source: original illustration created for Linen
+  - License: original work, created for Linen
+
+
+## Fun Designs
+
+Original illustrations created for Linen. No brands, logos, or third-party templates.
+
+### Kaleidoscope
+
+A geometric kaleidoscope in candy colors.
+
+- **Kaleidoscope**
+  - Author: Linen
+  - Source: original illustration created for Linen
+  - License: original work, created for Linen
+
+### Hearts and Stars
+
+A repeating pattern of hearts and stars.
+
+- **Hearts and Stars**
+  - Author: Linen
+  - Source: original illustration created for Linen
+  - License: original work, created for Linen
+
+### Retro Swirls
+
+Candy-colored swirls on a dark ground.
+
+- **Retro Swirls**
+  - Author: Linen
+  - Source: original illustration created for Linen
+  - License: original work, created for Linen
+
+### Doodle Collage
+
+Stars, moons, hearts, and little flowers.
+
+- **Doodle Collage**
+  - Author: Linen
+  - Source: original illustration created for Linen
+  - License: original work, created for Linen
+
+### Stained Glass
+
+An arched window of colored panes.
+
+- **Stained Glass**
+  - Author: Linen
+  - Source: original illustration created for Linen
+  - License: original work, created for Linen
+
+### Quilt Blocks
+
+A patchwork of simple quilt squares.
+
+- **Quilt Blocks**
   - Author: Linen
   - Source: original illustration created for Linen
   - License: original work, created for Linen

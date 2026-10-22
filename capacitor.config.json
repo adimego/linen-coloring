@@ -1,0 +1,13 @@
+{
+  "appId": "app.linen.coloring",
+  "appName": "Linen",
+  "webDir": "dist",
+  "backgroundColor": "#f6d0dc",
+  "ios": {
+    "contentInset": "automatic",
+    "backgroundColor": "#f6d0dc"
+  },
+  "android": {
+    "backgroundColor": "#f6d0dc"
+  }
+}

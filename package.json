@@ -1,0 +1,19 @@
+{
+  "name": "linen",
+  "private": true,
+  "version": "1.0.0",
+  "type": "module",
+  "scripts": {
+    "dev": "vite --host 127.0.0.1 --port 43123",
+    "build": "tsc && vite build",
+    "preview": "vite preview --host 127.0.0.1 --port 43123"
+  },
+  "dependencies": {
+    "@fontsource/fraunces": "^5.2.9",
+    "@fontsource/nunito": "^5.2.7"
+  },
+  "devDependencies": {
+    "typescript": "~6.0.3",
+    "vite": "^8.3.4"
+  }
+}

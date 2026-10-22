@@ -31,9 +31,7 @@ export function renderSvg(picture: Picture, fills: Record<string, string>, opts:
   svg.classList.add(opts.layout === "stage" ? "stage-svg" : "thumb-svg");
   if (opts.hints) svg.classList.add("hints-on");
 
-  svg.append(
-    el("rect", { width: "320", height: "460", fill: PAPER }),
-  );
+  svg.append(el("rect", { width: "320", height: "460", fill: PAPER }));
 
   if (picture.clips.length) {
     const defs = el("defs", {});
@@ -66,37 +64,22 @@ export function renderSvg(picture: Picture, fills: Record<string, string>, opts:
 
   for (const region of picture.regions) {
     const color = fills[region.id] ?? PAPER;
-    const group = el("g", {
-      transform: region.transform,
-      "clip-path": region.clipId ? `url(#${picture.id}-${region.clipId})` : undefined,
-    });
-    group.dataset.region = region.id;
-    group.dataset.open = fills[region.id] ? "false" : "true";
-    if (opts.interactive) {
-      group.setAttribute("role", "button");
-      group.setAttribute("aria-label", `Region ${region.n}`);
-    }
     const path = el("path", {
       d: region.d,
       fill: color,
-      "fill-rule": region.evenodd ? "evenodd" : undefined,
-    });
-    path.classList.add("region");
-    path.style.fill = color;
-    group.append(path);
-
-    const outline = el("path", {
-      d: region.d,
-      fill: "none",
       stroke: INK,
-      "stroke-width": "2.25",
+      "stroke-width": "1.5",
       "stroke-linejoin": "round",
       "stroke-linecap": "round",
       "fill-rule": region.evenodd ? "evenodd" : undefined,
-      "pointer-events": "none",
+      transform: region.transform,
+      "clip-path": region.clipId ? `url(#${picture.id}-${region.clipId})` : undefined,
     });
-    outline.classList.add("outline");
-    group.append(outline);
+    path.classList.add("region");
+    path.dataset.region = region.id;
+    path.dataset.open = fills[region.id] ? "false" : "true";
+    path.style.fill = color;
+    svg.append(path);
 
     if (region.label && opts.interactive) {
       const hint = el("text", {
@@ -104,7 +87,7 @@ export function renderSvg(picture: Picture, fills: Record<string, string>, opts:
         y: String(region.label[1]),
         "text-anchor": "middle",
         "dominant-baseline": "middle",
-        "font-size": String(region.hintSize ?? 12),
+        "font-size": String(region.hintSize ?? 8),
         fill: "#7a5364",
         "font-family": "Nunito, sans-serif",
         "font-weight": "700",
@@ -112,41 +95,24 @@ export function renderSvg(picture: Picture, fills: Record<string, string>, opts:
       });
       hint.classList.add("hint");
       hint.textContent = String(region.n);
-      group.append(hint);
+      svg.append(hint);
     }
-    svg.append(group);
   }
 
   for (const stroke of picture.strokes) {
     if (stroke.layer !== "under") svg.append(paintStroke(stroke.d, stroke.w, stroke.transform, stroke.fill));
   }
 
-  svg.append(
-    el("rect", {
-      x: "10",
-      y: "10",
-      width: "300",
-      height: "440",
-      rx: "22",
-      fill: "none",
-      stroke: "#edd5d8",
-      "stroke-width": "3",
-      "pointer-events": "none",
-    }),
-  );
-
   return svg;
 }
 
 export function setRegionFill(svg: SVGSVGElement, regionId: string, color: string | null): void {
-  const group = svg.querySelector(`[data-region="${cssEscape(regionId)}"]`);
-  if (!(group instanceof SVGGElement)) return;
-  const path = group.querySelector(".region");
+  const path = svg.querySelector(`[data-region="${cssEscape(regionId)}"]`);
   if (!(path instanceof SVGPathElement)) return;
   const next = color ?? PAPER;
   path.setAttribute("fill", next);
   path.style.fill = next;
-  group.dataset.open = color ? "false" : "true";
+  path.dataset.open = color ? "false" : "true";
   path.classList.remove("bloom");
   void path.getBoundingClientRect();
   path.classList.add("bloom");

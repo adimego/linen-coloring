@@ -1,81 +1,112 @@
 import {
   capsule,
-  centroid,
   circlePath,
-  cloudPath,
+  diamondPath,
   ellipsePath,
   flamePath,
   polygon,
   rectPath,
-  ringPath,
   roundRectPath,
   smoothClosed,
-  stadiumVertical,
-  waveBand,
+  starPath,
+  teardropPath,
 } from "./geometry.ts";
+import {
+  bloom,
+  bricks,
+  cloud,
+  fan,
+  frame,
+  inEllipse,
+  inFrame,
+  inPoly,
+  lattice,
+  paisleyField,
+  Pen,
+  rosette,
+  scallops,
+  teardropRing,
+  tone,
+} from "./patterns.ts";
 import { Sheet } from "./sheet.ts";
 import type { Picture } from "./types.ts";
 
+function mirror(pts: readonly [number, number][]): [number, number][] {
+  return pts.map(([x, y]) => [320 - x, y]);
+}
+
+function lerp(a: [number, number], b: [number, number], t: number): [number, number] {
+  return [a[0] + (b[0] - a[0]) * t, a[1] + (b[1] - a[1]) * t];
+}
+
 function truck(): Picture {
   const s = new Sheet();
-  s.region("sky", rectPath(0, 0, 320, 268), 5, [70, 80]);
-  s.region("sun", circlePath(250, 78, 28), 2, [250, 78]);
-  s.region("cloud-a", cloudPath(78, 64, 26), 8, [78, 68]);
-  s.region("cloud-b", cloudPath(168, 48, 18), 8, [168, 50]);
-  s.region(
-    "hill-far",
-    "M 0 214 C 50 176, 110 188, 160 206 C 220 228, 270 168, 320 190 L 320 300 L 0 300 Z",
-    4,
-    [80, 230],
-  );
-  s.region(
-    "hill-near",
-    "M 0 250 C 70 214, 130 236, 190 252 C 250 270, 280 236, 320 246 L 320 318 L 0 318 Z",
-    3,
-    [60, 276],
-  );
-  s.region("road", rectPath(0, 300, 320, 160), 7, [160, 390]);
+  frame(s);
+  const p = new Pen(s, "tr");
 
-  [46, 92, 138].forEach((x, i) => {
-    s.region(`post-${i}`, rectPath(x, 214, 7, 48), 8, [x + 3, 236]);
-  });
-  s.stroke("M 46 226 L 148 226 M 46 242 L 148 242", 2, { layer: "under" });
+  fan(p, 84, 112, -0.4, 1.35, [
+    [12, 24],
+    [24, 36],
+  ], 7, 4);
+  p.add(circlePath(84, 112, 10), 2, [84, 112], 16);
+  cloud(p, 200, 104, 22, 1);
+  cloud(p, 250, 124, 16, 3);
 
-  const bed: [number, number][] = [
-    [34, 236],
-    [154, 228],
-    [154, 292],
-    [46, 292],
+  const body: [number, number][] = [
+    [48, 268],
+    [48, 210],
+    [142, 210],
+    [146, 164],
+    [198, 158],
+    [220, 178],
+    [256, 198],
+    [272, 214],
+    [272, 268],
   ];
-  const cab: [number, number][] = [
-    [150, 228],
-    [150, 206],
-    [214, 198],
-    [236, 230],
-    [258, 248],
-    [262, 292],
-    [150, 292],
+  bricks(p, 56, 218, 80, 42, 4, 3, 5);
+  lattice(p, 154, 206, 208, 258, 13, 3, (x, y) => x > 152 && x < 210 && y > 204 && y < 262 && !(x > 158 && x < 204 && y < 198));
+  const panes: [number, number, number, number][] = [
+    [152, 170, 24, 16],
+    [178, 168, 26, 16],
+    [152, 188, 24, 14],
+    [178, 186, 26, 14],
   ];
-  const glass: [number, number][] = [
-    [164, 214],
-    [208, 208],
-    [226, 236],
-    [164, 242],
-  ];
-  s.region("bed", polygon(bed), 1, [96, 262]);
-  s.region("cab", polygon(cab), 6, [196, 256]);
-  s.region("window", polygon(glass), 5, centroid(glass));
-  s.region("bumper", polygon([[258, 268], [276, 268], [276, 292], [258, 292]]), 8, [267, 280]);
-  s.region("headlight", circlePath(252, 258, 8), 2, [252, 258]);
-  s.region("taillight", roundRectPath(40, 250, 12, 16, 3), 2, [46, 258]);
-  s.region("tire-r", circlePath(108, 300, 30), 4, [108, 300]);
-  s.region("hub-r", circlePath(108, 300, 12), 8, [108, 300]);
-  s.region("tire-f", circlePath(214, 300, 30), 4, [214, 300]);
-  s.region("hub-f", circlePath(214, 300, 12), 8, [214, 300]);
+  for (const [x, y, w, h] of panes) p.add(rectPath(x, y, w, h), tone(x, y, 2), [x + w / 2, y + h / 2], 12);
+  for (let i = 0; i < 3; i++) p.add(rectPath(228, 220 + i * 10, 28, 6), 6, [242, 223 + i * 10], 10);
+  p.add(circlePath(264, 236, 6), 1, [264, 236], 12);
+  p.add(rectPath(50, 228, 8, 12), 8, [54, 234], 10);
+  p.add(circlePath(206, 176, 4.5), 7, [206, 176], 9);
+  p.add(rectPath(186, 236, 10, 4), 4, [191, 238], 8);
 
-  s.stroke("M 154 228 L 154 292", 2);
-  s.stroke("M 40 292 L 250 292", 2);
-  s.stroke("M 70 360 H 130 M 190 360 H 250 M 40 390 H 90 M 150 390 H 210 M 250 390 H 300", 2.2);
+  const wheel = (cx: number, cy: number, n: number) => {
+    rosette(p, cx, cy, 18, 28, 12, n);
+    fan(p, cx, cy, 0, Math.PI * 2, [[6, 16]], 6, n + 2);
+    p.add(circlePath(cx, cy, 5.5), n + 4, [cx, cy], 11);
+  };
+  wheel(96, 294, 1);
+  wheel(214, 294, 3);
+
+  bricks(p, 48, 330, 224, 28, 7, 2, 6, 2);
+  for (let i = 0; i < 8; i++) p.add(rectPath(58 + i * 26, 344, 14, 5), 8, [65 + i * 26, 346.5], 8);
+  for (let x = 56; x <= 260; x += 18) {
+    p.add(teardropPath(x, 318, 5.2, -Math.PI / 2), tone(x, 318), [x, 318], 10);
+  }
+  for (const [x, y] of [
+    [64, 372],
+    [108, 380],
+    [168, 374],
+    [214, 382],
+    [256, 370],
+  ] as [number, number][]) {
+    bloom(p, x, y, 8, 3.1, 5, tone(x, y, 1));
+  }
+
+  s.stroke(smoothClosed(body, 0.16), 3.3);
+  s.stroke(polygon([[150, 168], [196, 164], [210, 190], [150, 196]]), 2.4);
+  s.stroke("M 176 168 V 194 M 150 182 H 208", 1.2);
+  s.stroke(circlePath(96, 294, 29), 3);
+  s.stroke(circlePath(214, 294, 29), 3);
+  s.stroke("M 46 330 H 274", 2.2);
 
   return s.build({
     id: "od-truck",
@@ -87,64 +118,59 @@ function truck(): Picture {
 
 function hatBoots(): Picture {
   const s = new Sheet();
-  s.region("floor", rectPath(0, 392, 320, 68), 3, [160, 424]);
-  s.region("shadow-l", ellipsePath(80, 404, 52, 8), 7, null);
-  s.region("shadow-r", ellipsePath(230, 404, 52, 8), 7, null);
-  s.region("brim", ellipsePath(160, 168, 124, 28), 1, [52, 168]);
-  const crown = smoothClosed(
-    [
-      [116, 168],
-      [108, 96],
-      [126, 68],
-      [160, 58],
-      [196, 68],
-      [214, 96],
-      [206, 168],
-    ],
-    0.18,
-  );
-  s.region("crown", crown, 6, [160, 112]);
-  s.region("dent", ellipsePath(160, 86, 26, 12), 2, [160, 86]);
-  s.region("band", roundRectPath(116, 128, 88, 18, 6), 4, [160, 137]);
-  s.region("buckle", roundRectPath(196, 130, 16, 14, 3), 2, [204, 137]);
+  frame(s);
+  const p = new Pen(s, "hb");
 
-  const boot = (prefix: string, x: number) => {
-    const shaft: [number, number][] = [
-      [x + 18, 236],
-      [x + 78, 230],
-      [x + 86, 328],
-      [x + 36, 346],
-      [x + 8, 300],
-    ];
-    const foot: [number, number][] = [
-      [x + 8, 318],
-      [x + 86, 330],
-      [x + 118, 352],
-      [x + 108, 378],
-      [x + 16, 378],
-      [x + 4, 350],
-    ];
-    const heel: [number, number][] = [
-      [x + 16, 370],
-      [x + 48, 366],
-      [x + 48, 396],
-      [x + 12, 396],
-    ];
-    const cuff: [number, number][] = [
-      [x + 16, 230],
-      [x + 76, 224],
-      [x + 80, 250],
-      [x + 14, 256],
-    ];
-    s.region(`${prefix}-shaft`, polygon(shaft), 1, [x + 48, 290]);
-    s.region(`${prefix}-foot`, polygon(foot), 6, [x + 64, 360]);
-    s.region(`${prefix}-heel`, polygon(heel), 4, centroid(heel));
-    s.region(`${prefix}-cuff`, polygon(cuff), 8, centroid(cuff));
-    s.stroke(`M ${x + 28} 268 C ${x + 48} 278, ${x + 60} 276, ${x + 74} 262`, 1.7);
-    s.stroke(`M ${x + 24} 352 L ${x + 96} 362`, 1.6);
-  };
-  boot("l", 18);
-  boot("r", 168);
+  const crown: [number, number][] = [
+    [134, 158],
+    [128, 116],
+    [142, 84],
+    [160, 74],
+    [178, 84],
+    [192, 116],
+    [186, 158],
+  ];
+  paisleyField(p, 132, 86, 190, 140, 14, 5.6, 2, (x, y) => inPoly(x, y, crown) && y < 128);
+  for (let x = 136; x <= 184; x += 12) p.add(diamondPath(x, 138, 4.6, 5.2), 4, [x, 138], 9);
+  teardropRing(p, 160, 166, 96, 12, 22, 5.2, 6);
+
+  const leftBoot: [number, number][] = [
+    [150, 228],
+    [112, 224],
+    [104, 248],
+    [100, 308],
+    [86, 326],
+    [62, 336],
+    [66, 352],
+    [96, 356],
+    [148, 358],
+    [158, 344],
+    [148, 328],
+    [142, 300],
+    [148, 246],
+  ];
+  const rightBoot = mirror(leftBoot);
+  lattice(p, 70, 232, 152, 350, 13, 3, (x, y) => inPoly(x, y, leftBoot));
+  lattice(p, 168, 232, 252, 350, 13, 5, (x, y) => inPoly(x, y, rightBoot));
+  p.add(teardropPath(124, 220, 6, Math.PI), 1, [124, 220], 11);
+  p.add(teardropPath(136, 218, 6, Math.PI), 2, [136, 218], 11);
+  p.add(teardropPath(184, 218, 6, Math.PI), 1, [184, 218], 11);
+  p.add(teardropPath(196, 220, 6, Math.PI), 2, [196, 220], 11);
+  p.add(starPath(150, 338, 5.5, 2.4), 8, [150, 338], 10);
+  p.add(starPath(170, 338, 5.5, 2.4), 8, [170, 338], 10);
+
+  bloom(p, 78, 118, 11, 4, 6, 2);
+  bloom(p, 242, 118, 11, 4, 6, 4);
+  bloom(p, 160, 204, 8, 3, 5, 6);
+  paisleyField(p, 50, 90, 112, 200, 18, 5.4, 7, (x, y) => inFrame(x, y, 4) && x < 118 && !inPoly(x, y, crown));
+  paisleyField(p, 208, 90, 270, 200, 18, 5.4, 1, (x, y) => inFrame(x, y, 4) && x > 202);
+
+  s.stroke(smoothClosed(crown, 0.2), 3.2);
+  s.stroke(ellipsePath(160, 166, 108, 18), 3.2);
+  s.stroke("M 136 138 H 184", 2);
+  s.stroke("M 148 86 C 154 104, 166 104, 172 86", 1.5);
+  s.stroke(smoothClosed(leftBoot, 0.16), 3.2);
+  s.stroke(smoothClosed(rightBoot, 0.16), 3.2);
 
   return s.build({
     id: "od-hat",
@@ -156,86 +182,82 @@ function hatBoots(): Picture {
 
 function instruments(): Picture {
   const s = new Sheet();
-  s.region("rail", roundRectPath(16, 118, 288, 16, 6), 5, [160, 126]);
-  s.region("plank-1", rectPath(0, 338, 320, 32), 3, [40, 354]);
-  s.region("plank-2", rectPath(0, 370, 320, 30), 4, [200, 384]);
-  s.region("plank-3", rectPath(0, 400, 320, 28), 3, [80, 414]);
-  s.region("plank-4", rectPath(0, 428, 320, 32), 8, [220, 444]);
-  for (let x = 28; x < 300; x += 28) {
-    s.stroke(`M ${x} 134 L ${x} 168`, 2, { layer: "under" });
-  }
+  frame(s);
+  const p = new Pen(s, "in");
 
-  const banjo = "rotate(-8 108 280)";
-  s.region("b-neck", roundRectPath(98, 86, 22, 150, 6), 6, [109, 150], { transform: banjo });
-  const peg: [number, number][] = [
-    [96, 92],
-    [92, 62],
-    [108, 46],
-    [128, 46],
-    [136, 70],
-  ];
-  s.region("b-peghead", polygon(peg), 4, centroid(peg), { transform: banjo });
-  s.region("b-pot", circlePath(110, 262, 62), 8, [110, 300], { transform: banjo });
-  s.region("b-rim", ringPath(110, 248, 58, 44), 3, [110, 198], { evenodd: true, transform: banjo });
-  s.region("b-head", circlePath(110, 248, 44), 1, [110, 248], { transform: banjo });
-  s.region("b-bridge", roundRectPath(96, 246, 28, 8, 2), 4, [110, 250], { transform: banjo });
-  (
-    [
-      [88, 78],
-      [90, 60],
-      [136, 60],
-      [134, 78],
-    ] as [number, number][]
-  ).forEach(([x, y], i) => {
-    s.region(`b-pin-${i}`, circlePath(x, y, 5), 2, [x, y], { transform: banjo });
+  rosette(p, 112, 214, 8, 22, 10, 1);
+  rosette(p, 112, 214, 22, 36, 14, 2);
+  rosette(p, 112, 214, 36, 50, 18, 3);
+  p.add(circlePath(112, 214, 6), 8, [112, 214], 12);
+  for (let i = 0; i < 18; i++) {
+    const a = (i / 18) * Math.PI * 2;
+    p.add(circlePath(112 + Math.cos(a) * 54, 214 + Math.sin(a) * 54, 3.4), 4 + (i % 2), [112 + Math.cos(a) * 54, 214 + Math.sin(a) * 54], 7);
+  }
+  for (let i = 0; i < 6; i++) p.add(rectPath(104, 96 + i * 14, 16, 10), 1 + (i % 4), [112, 101 + i * 14], 10);
+  for (const [x, y] of [
+    [96, 78],
+    [128, 78],
+    [92, 92],
+    [132, 92],
+  ] as [number, number][]) {
+    p.add(circlePath(x, y, 4.8), tone(x, y), [x, y], 10);
+  }
+  p.add(rectPath(100, 168, 24, 5), 6, [112, 170.5], 8);
+
+  const inBody = (x: number, y: number) =>
+    inEllipse(x, y, 214, 304, 40, 52) && (x - 214) ** 2 + (y - 300) ** 2 > 22 ** 2;
+  for (let y = 268; y <= 348; y += 26) {
+    for (let x = 184; x <= 246; x += 26) {
+      if (inBody(x, y)) bloom(p, x, y, 9, 3.4, 5, tone(x, y));
+    }
+  }
+  rosette(p, 214, 300, 8, 18, 12, 5);
+  for (let i = 0; i < 6; i++) p.add(rectPath(206, 132 + i * 14, 16, 10), 2 + (i % 3), [214, 137 + i * 14], 10);
+  for (const y of [146, 174, 202]) p.add(diamondPath(214, y, 3.4, 4), 8, [214, y], 8);
+  for (const [x, y] of [
+    [188, 112],
+    [214, 104],
+    [240, 112],
+    [184, 126],
+    [244, 126],
+  ] as [number, number][]) {
+    p.add(circlePath(x, y, 4.6), tone(x, y, 2), [x, y], 9);
+  }
+  p.add(rectPath(202, 332, 24, 6), 7, [214, 335], 10);
+
+  paisleyField(p, 48, 80, 272, 380, 22, 6, 4, (x, y) => {
+    if (!inFrame(x, y, 6)) return false;
+    if ((x - 112) ** 2 + (y - 214) ** 2 < 68 ** 2) return false;
+    if (inEllipse(x, y, 214, 304, 58, 74)) return false;
+    if (x > 96 && x < 136 && y < 214 && y > 70) return false;
+    if (x > 196 && x < 236 && y < 250 && y > 96) return false;
+    return true;
   });
-  for (let i = 0; i < 5; i++) {
-    const x = 100 + i * 5;
-    s.stroke(`M ${x} 70 L ${x} 250`, 1.2, { transform: banjo });
-  }
-  for (let y = 110; y <= 200; y += 16) {
-    s.stroke(`M 100 ${y} L 120 ${y}`, 1.4, { transform: banjo });
-  }
 
-  const guitar = "rotate(7 214 300)";
-  const body = smoothClosed(
-    [
-      [214, 214],
-      [186, 224],
-      [172, 252],
-      [176, 276],
-      [166, 308],
-      [190, 340],
-      [214, 350],
-      [238, 340],
-      [262, 308],
-      [252, 276],
-      [258, 252],
-      [244, 224],
-    ],
-    0.22,
+  s.stroke(circlePath(112, 214, 58), 3.3);
+  s.stroke(roundRectPath(102, 86, 20, 128, 6), 2.6);
+  s.stroke(roundRectPath(88, 70, 48, 28, 8), 2.4);
+  s.stroke(
+    smoothClosed(
+      [
+        [214, 236],
+        [246, 252],
+        [258, 292],
+        [246, 334],
+        [214, 356],
+        [182, 334],
+        [170, 292],
+        [182, 252],
+      ],
+      0.26,
+    ),
+    3.3,
   );
-  s.region("g-neck", rectPath(204, 108, 20, 120), 6, [214, 160], { transform: guitar });
-  const head: [number, number][] = [
-    [202, 116],
-    [198, 84],
-    [208, 68],
-    [226, 68],
-    [234, 86],
-    [228, 116],
-  ];
-  s.region("g-head", polygon(head), 4, centroid(head), { transform: guitar });
-  s.region("g-body", body, 1, [196, 280], { transform: guitar });
-  s.region("g-board", rectPath(206, 100, 16, 140), 3, [214, 150], { transform: guitar });
-  s.region("g-hole", circlePath(214, 286, 16), 5, [214, 286], { transform: guitar });
-  s.region("g-ring", ringPath(214, 286, 24, 16), 8, [214, 262], { evenodd: true, transform: guitar });
-  [[198, 92], [230, 92]].forEach(([x, y], i) => {
-    s.region(`g-pin-${i}`, circlePath(x, y, 5), 2, [x, y], { transform: guitar });
-  });
-  for (let i = 0; i < 6; i++) {
-    const x = 207 + i * 2.4;
-    s.stroke(`M ${x} 96 L ${x} 320`, 1.15, { transform: guitar });
-  }
+  s.stroke(roundRectPath(204, 124, 20, 116, 6), 2.6);
+  s.stroke(roundRectPath(180, 96, 68, 36, 10), 2.4);
+  s.stroke(circlePath(214, 300, 19), 2);
+  for (let i = 0; i < 4; i++) s.stroke(`M ${106 + i * 4} 78 V 214`, 0.7);
+  for (let i = 0; i < 6; i++) s.stroke(`M ${205 + i * 3.2} 108 V 332`, 0.7);
 
   return s.build({
     id: "od-instruments",
@@ -247,87 +269,87 @@ function instruments(): Picture {
 
 function tower(): Picture {
   const s = new Sheet();
-  s.region("sky-top", rectPath(0, 0, 320, 150), 5, [60, 70]);
-  s.region("sky-mid", rectPath(0, 150, 320, 80), 2, [50, 186]);
-  s.region("sky-low", rectPath(0, 230, 320, 70), 6, [40, 258]);
-  s.region("sun", circlePath(214, 236, 32), 2, [214, 226]);
-  s.region(
-    "hill",
-    "M 0 300 C 60 250, 120 274, 180 286 C 240 300, 280 260, 320 278 L 320 400 L 0 400 Z",
-    3,
-    [70, 330],
-  );
-  s.region("ground", rectPath(0, 360, 320, 100), 4, [160, 420]);
+  frame(s);
+  const p = new Pen(s, "tw");
+
+  fan(p, 262, 102, Math.PI * 0.55, Math.PI * 1.45, [
+    [10, 22],
+    [22, 34],
+  ], 6, 4);
+  p.add(circlePath(262, 102, 8), 2, [262, 102], 14);
+  cloud(p, 78, 108, 18, 1);
+  cloud(p, 124, 92, 12, 5);
 
   const roof: [number, number][] = [
-    [108, 156],
-    [160, 102],
-    [212, 156],
+    [160, 118],
+    [236, 162],
+    [84, 162],
   ];
-  s.region("roof", polygon(roof), 7, [160, 132]);
-
-  const tank = stadiumVertical(160, 124, 248, 52);
-  s.clip("tank", tank);
-  s.region("band-1", rectPath(100, 124, 120, 42), 1, [160, 156], { clipId: "tank" });
-  s.region("band-2", rectPath(100, 166, 120, 40), 8, [160, 186], { clipId: "tank" });
-  s.region("band-3", rectPath(100, 206, 120, 48), 1, [160, 220], { clipId: "tank" });
-  s.stroke(tank, 2.5);
-  s.region("hatch", roundRectPath(148, 176, 18, 22, 4), 4, [157, 187]);
-  s.region("walk", ellipsePath(160, 236, 64, 12), 7, [210, 236]);
-
-  const leg = (pts: [number, number][], id: string) => {
-    s.region(id, polygon(pts), 6, centroid(pts));
-  };
-  leg(
-    [
-      [118, 236],
-      [134, 236],
-      [96, 372],
-      [74, 372],
-    ],
-    "leg-fl",
-  );
-  leg(
-    [
-      [186, 236],
-      [202, 236],
-      [246, 372],
-      [224, 372],
-    ],
-    "leg-fr",
-  );
-  leg(
-    [
-      [142, 240],
-      [154, 240],
-      [140, 360],
-      [126, 360],
-    ],
-    "leg-bl",
-  );
-  leg(
-    [
-      [166, 240],
-      [178, 240],
-      [194, 360],
-      [180, 360],
-    ],
-    "leg-br",
-  );
-
-  s.stroke("M 196 248 L 196 360 M 204 248 L 204 360", 1.8);
-  for (let y = 268; y < 350; y += 16) {
-    s.stroke(`M 196 ${y} L 204 ${y}`, 1.5);
+  for (let i = 0; i < 8; i++) {
+    const u0 = i / 8;
+    const u1 = (i + 1) / 8;
+    const a = lerp([84, 162], [236, 162], u0);
+    const b = lerp([84, 162], [236, 162], u1);
+    const mid: [number, number] = [(160 + a[0] + b[0]) / 3, (118 + a[1] + b[1]) / 3];
+    p.add(polygon([[160, 122], b, a]), 1 + (i % 4), mid, 16);
   }
-  s.stroke("M 100 280 L 150 330 M 150 280 L 100 330 M 170 280 L 220 330 M 220 280 L 170 330", 1.8);
+  bricks(p, 96, 166, 128, 52, 6, 3, 3, 3.2);
+  p.add(roundRectPath(146, 176, 28, 30, 4), 6, [160, 194], 16);
+  p.add(circlePath(160, 188, 5), 1, [160, 188], 10);
 
-  s.region("tree-a", ellipsePath(48, 332, 22, 26), 3, [48, 328]);
-  s.region("trunk-a", rectPath(44, 348, 8, 28), 6, [48, 360]);
-  s.region("tree-b", ellipsePath(286, 324, 18, 22), 3, [286, 320]);
-  s.region("trunk-b", rectPath(282, 340, 8, 26), 6, [286, 352]);
-  s.region("house", rectPath(250, 332, 28, 24), 8, [264, 344]);
-  s.region("house-roof", polygon([[246, 332], [264, 316], [282, 332]]), 2, [264, 326]);
-  s.stroke("M 40 80 l 10 6 l -10 6 M 300 96 l -12 7 l 12 7", 1.8);
+  const tops: [number, number][] = [
+    [108, 218],
+    [142, 218],
+    [178, 218],
+    [212, 218],
+  ];
+  const feet: [number, number][] = [
+    [72, 368],
+    [128, 364],
+    [192, 364],
+    [248, 368],
+  ];
+  tops.forEach((top, i) => {
+    const foot = feet[i];
+    for (let k = 0; k < 4; k++) {
+      const a = lerp(top, foot, k / 4);
+      const b = lerp(top, foot, (k + 1) / 4);
+      p.add(capsule(a, b, 6.5), 2 + (k % 3), [(a[0] + b[0]) / 2, (a[1] + b[1]) / 2], 14);
+    }
+  });
+  for (let i = 0; i < 3; i++) {
+    const y0 = 250 + i * 36;
+    const y1 = y0 + 28;
+    for (let leg = 0; leg < 3; leg++) {
+      const a: [number, number] = lerp(tops[leg], feet[leg], (y0 - 218) / (368 - 218));
+      const b: [number, number] = lerp(tops[leg + 1], feet[leg + 1], (y1 - 218) / (368 - 218));
+      const c: [number, number] = lerp(tops[leg], feet[leg], (y1 - 218) / (368 - 218));
+      const d: [number, number] = lerp(tops[leg + 1], feet[leg + 1], (y0 - 218) / (368 - 218));
+      p.add(capsule(a, b, 3.6), 6, [(a[0] + b[0]) / 2, (a[1] + b[1]) / 2], 12);
+      p.add(capsule(c, d, 3.6), 7, [(c[0] + d[0]) / 2, (c[1] + d[1]) / 2], 12);
+    }
+  }
+  for (let i = 0; i < 8; i++) {
+    const y = 236 + i * 16;
+    p.add(capsule([152, y], [168, y], 3.2), 5, [160, y], 10);
+  }
+  for (let row = 0; row < 4; row++) {
+    for (let col = 0; col < 7; col++) {
+      const x = 96 + col * (128 / 6);
+      const y = 166 + row * (52 / 3);
+      if (Math.hypot(x - 160, y - 190) < 16) continue;
+      p.add(circlePath(x, y, 3.4), 8, [x, y], 7);
+    }
+  }
+
+  scallops(p, 378, 52, 268, 12, 2, 20);
+  for (let x = 58; x <= 262; x += 16) p.add(teardropPath(x, 366, 5, -Math.PI / 2), tone(x, 366), [x, 366], 9);
+
+  s.stroke(ellipsePath(160, 162, 78, 16), 2.6);
+  s.stroke(ellipsePath(160, 214, 78, 14), 2.6);
+  s.stroke("M 82 162 V 214 M 238 162 V 214", 3);
+  s.stroke(polygon(roof), 3);
+  s.stroke(roundRectPath(146, 176, 28, 30, 4), 1.8);
 
   return s.build({
     id: "od-tower",
@@ -339,53 +361,79 @@ function tower(): Picture {
 
 function bonfire(): Picture {
   const s = new Sheet();
-  s.region("sky", rectPath(0, 0, 320, 250), 5, [60, 80]);
-  s.region("horizon", rectPath(0, 250, 320, 90), 8, [50, 290]);
-  s.region("ground", rectPath(0, 330, 320, 130), 4, [160, 420]);
-  const stars: [number, number][] = [
-    [36, 48],
-    [84, 36],
-    [140, 64],
-    [210, 40],
-    [268, 58],
-    [300, 96],
-    [48, 120],
-    [180, 100],
-  ];
-  stars.forEach(([x, y], i) => {
-    s.region(`star-${i}`, circlePath(x, y, i % 3 === 0 ? 4 : 2.6), 2, i % 3 === 0 ? [x, y] : null);
-  });
+  frame(s);
+  const p = new Pen(s, "bf");
 
-  s.region("pole-l", roundRectPath(26, 150, 12, 190, 4), 6, [32, 240]);
-  s.region("pole-r", roundRectPath(282, 150, 12, 190, 4), 6, [288, 240]);
-  let wire = "";
   const bulbs: [number, number][] = [];
-  for (let i = 0; i <= 8; i++) {
-    const t = i / 8;
-    const x = 38 + t * 244;
-    const y = 156 + Math.sin(Math.PI * t) * 46;
-    wire += `${i === 0 ? "M" : "L"} ${x} ${y} `;
-    if (i > 0 && i < 8) bulbs.push([x, y]);
+  let wire = "";
+  for (let i = 0; i < 14; i++) {
+    const t = i / 13;
+    const x = 58 + t * 204;
+    const y = 108 + Math.sin(t * Math.PI) * 46;
+    bulbs.push([x, y]);
+    wire += `${i === 0 ? "M" : "L"} ${x} ${y - 9} `;
+    p.add(diamondPath(x, y - 10, 3.2, 4), 4, [x, y - 10], 8);
+    p.add(circlePath(x, y, 6.2), 1 + (i % 5), [x, y], 12);
   }
-  s.stroke(wire, 2);
-  bulbs.forEach(([x, y], i) => {
-    s.region(`bulb-${i}`, circlePath(x, y + 8, 8), i % 2 === 0 ? 2 : 7, [x, y + 8]);
-  });
+  s.stroke(wire, 1.5);
 
-  s.region("blanket", ellipsePath(86, 400, 62, 20), 1, [86, 400]);
-  s.region("rock-a", ellipsePath(78, 348, 22, 14), 8, [78, 348]);
-  s.region("rock-b", ellipsePath(246, 352, 26, 16), 6, [246, 352]);
-  s.region("rock-c", ellipsePath(210, 366, 16, 10), 8, [210, 366]);
-  s.region("log-a", capsule([108, 332], [214, 348], 12), 3, [160, 340]);
-  s.region("log-b", capsule([118, 356], [206, 328], 11), 6, [170, 348]);
-  s.region("flame-out", flamePath(160, 292, 78, 92), 2, [160, 270]);
-  s.region("flame-mid", flamePath(160, 300, 48, 70), 7, [160, 286]);
-  s.region("flame-in", flamePath(160, 308, 24, 46), 8, [160, 300]);
-  [[132, 214], [188, 200], [150, 186], [176, 228]].forEach(([x, y], i) => {
-    s.region(`spark-${i}`, circlePath(x, y, 3.5), 2, null);
-  });
-  s.stroke("M 250 330 L 292 292", 2);
-  s.region("marshmallow", roundRectPath(280, 278, 16, 20, 8), 8, [288, 288]);
+  for (let y = 172; y <= 228; y += 18) {
+    const row = Math.round((y - 172) / 18);
+    for (let x = 56 + (row % 2 ? 9 : 0); x <= 264; x += 18) {
+      if (!inFrame(x, y, 2)) continue;
+      const k = (row + x) % 4;
+      if (k === 0) p.add(starPath(x, y, 5, 2.1), tone(x, y), [x, y], 9);
+      else if (k === 1) p.add(circlePath(x, y, 4.2), tone(x, y, 1), [x, y], 8);
+      else if (k === 2) p.add(diamondPath(x, y, 4.4, 5), tone(x, y, 2), [x, y], 9);
+      else p.add(teardropPath(x, y, 4.6, row % 2 ? 0.5 : -0.8), tone(x, y, 3), [x, y], 9);
+    }
+  }
+
+  const specs: [number, number][] = [
+    [160, 48],
+    [140, 40],
+    [180, 40],
+    [122, 34],
+    [150, 36],
+    [176, 36],
+    [198, 34],
+    [112, 28],
+    [134, 30],
+    [160, 32],
+    [186, 30],
+    [208, 28],
+    [108, 24],
+    [128, 24],
+    [148, 26],
+    [172, 26],
+    [192, 24],
+    [214, 24],
+  ];
+  for (const [x, h] of specs) {
+    const hParam = h * 0.48;
+    const cy = 332 - hParam * 0.2;
+    p.add(flamePath(x, cy, 10, hParam), tone(x, cy, 2), [x, cy - hParam * 0.25], 12);
+  }
+  for (let i = 0; i < 10; i++) {
+    const x = 118 + (i % 5) * 22;
+    const y = 248 + Math.floor(i / 5) * 16;
+    p.add(starPath(x, y, 3.6, 1.5), 8, [x, y], 7);
+  }
+
+  p.add(capsule([108, 348], [214, 338], 7), 6, [160, 344], 16);
+  p.add(capsule([100, 358], [230, 354], 6.5), 7, [165, 356], 16);
+  p.add(capsule([124, 364], [206, 360], 5), 5, [164, 362], 14);
+  for (const [x, y] of [
+    [96, 336],
+    [86, 352],
+    [236, 334],
+    [246, 350],
+    [118, 370],
+    [210, 372],
+  ] as [number, number][]) {
+    p.add(ellipsePath(x, y, 8, 5.5, 0.4), tone(x, y), [x, y], 12);
+  }
+  bricks(p, 70, 376, 180, 16, 8, 2, 3, 1.4);
 
   return s.build({
     id: "od-bonfire",
@@ -395,75 +443,59 @@ function bonfire(): Picture {
   });
 }
 
-function sailboat(): Picture {
+function sail(): Picture {
   const s = new Sheet();
-  s.region("sky", rectPath(0, 0, 320, 210), 5, [60, 70]);
-  s.region("sun", circlePath(64, 72, 26), 2, [64, 72]);
-  s.region("cloud", cloudPath(230, 64, 28), 8, [230, 68]);
-  s.region(
-    "shore",
-    "M 0 196 C 80 176, 140 188, 210 180 C 260 174, 290 186, 320 178 L 320 220 L 0 220 Z",
-    4,
-    [40, 200],
-  );
-  s.region("water-far", waveBand(200, 280, 7, 0.2), 6, [160, 240]);
-  s.region("water-mid", waveBand(268, 360, 8, 1.1), 5, [80, 310]);
-  s.region("water-near", waveBand(348, 470, 6, 0.4), 8, [200, 400]);
+  frame(s);
+  const p = new Pen(s, "sa");
 
-  s.region(
-    "reflect-sail",
-    polygon([
-      [168, 312],
-      [176, 360],
-      [230, 348],
-      [188, 312],
-    ]),
-    1,
-    [196, 336],
-  );
-  s.region(
-    "reflect-hull",
-    polygon([
-      [112, 312],
-      [214, 312],
-      [196, 340],
-      [128, 340],
-    ]),
-    3,
-    [164, 326],
-  );
+  cloud(p, 86, 96, 16, 1);
+  cloud(p, 230, 88, 18, 3);
+  fan(p, 262, 118, Math.PI * 0.7, Math.PI * 1.55, [
+    [8, 18],
+    [18, 30],
+  ], 6, 4);
+  p.add(circlePath(262, 118, 7), 2, [262, 118], 12);
 
-  const hull = smoothClosed(
-    [
-      [86, 250],
-      [236, 246],
-      [228, 286],
-      [196, 308],
-      [124, 308],
-      [92, 286],
-    ],
-    0.16,
+  const apex: [number, number] = [164, 132];
+  const clew: [number, number] = [236, 236];
+  const tack: [number, number] = [164, 236];
+  const cut = 0.2;
+  const tl = lerp(apex, tack, cut);
+  const tr = lerp(apex, clew, cut);
+  p.add(polygon([apex, tr, tl]), 1, [(apex[0] + tr[0] + tl[0]) / 3, (apex[1] + tr[1] + tl[1]) / 3], 16);
+  sailMesh(p, tl, tr, clew, tack, 4, 3, 2);
+
+  const jibTop: [number, number] = [152, 150];
+  const jibL: [number, number] = [78, 230];
+  const jibR: [number, number] = [152, 232];
+  const jl = lerp(jibTop, jibL, 0.24);
+  const jr = lerp(jibTop, jibR, 0.24);
+  p.add(polygon([jibTop, jr, jl]), 5, [(jibTop[0] + jr[0] + jl[0]) / 3, (jibTop[1] + jr[1] + jl[1]) / 3], 14);
+  sailMesh(p, jl, jr, jibR, jibL, 3, 2, 6);
+
+  for (let i = 0; i < 8; i++) p.add(rectPath(158, 124 + i * 14, 10, 11), 3 + (i % 3), [163, 129.5 + i * 14], 10);
+  p.add(polygon([[164, 112], [176, 124], [164, 124]]), 8, [168, 120], 10);
+  bricks(p, 96, 252, 128, 32, 6, 3, 4, 1.5);
+  for (let i = 0; i < 4; i++) p.add(circlePath(112 + i * 26, 270, 5.5), 1 + i, [112 + i * 26, 270], 11);
+
+  for (const y of [318, 340, 362, 384]) scallops(p, y, 52, 270, 11, y < 350 ? 6 : 7, 18);
+
+  s.stroke(polygon([apex, clew, tack]), 3);
+  s.stroke(polygon([jibTop, jibR, jibL]), 3);
+  s.stroke(
+    smoothClosed(
+      [
+        [64, 246],
+        [256, 246],
+        [236, 292],
+        [84, 292],
+      ],
+      0.12,
+    ),
+    3.3,
   );
-  s.region("hull", hull, 3, [160, 286]);
-  s.region("deck", polygon([[100, 252], [220, 250], [214, 266], [106, 268]]), 4, [160, 258]);
-  s.region("cabin", roundRectPath(142, 228, 46, 28, 6), 7, [165, 242]);
-  s.region("porthole", circlePath(165, 242, 6), 2, [165, 242]);
-  s.region(
-    "main-sail",
-    "M 176 78 C 188 140, 196 200, 188 246 L 248 240 C 220 180, 196 120, 176 78 Z",
-    1,
-    [210, 170],
-  );
-  s.region(
-    "jib",
-    "M 168 108 C 150 150, 132 200, 150 242 L 104 236 C 124 180, 150 130, 168 108 Z",
-    8,
-    [140, 180],
-  );
-  s.stroke("M 172 70 L 172 300", 2.4);
-  s.stroke("M 108 242 L 246 238", 2);
-  s.stroke("M 40 48 l 12 8 l -12 8 M 292 120 l -14 8 l 14 8", 1.8);
-  s.region("flag", polygon([[172, 70], [196, 78], [172, 88]]), 2, [182, 78]);
+  s.stroke("M 160 114 V 248", 2.6);
+  s.stroke("M 164 236 H 232", 2.2);
 
   return s.build({
     id: "od-sail",
@@ -473,6 +505,36 @@ function sailboat(): Picture {
   });
 }
 
+function sailMesh(
+  p: Pen,
+  tl: [number, number],
+  tr: [number, number],
+  br: [number, number],
+  bl: [number, number],
+  rows: number,
+  cols: number,
+  n: number,
+): void {
+  for (let r = 0; r < rows; r++) {
+    const t0 = r / rows;
+    const t1 = (r + 1) / rows;
+    const l0 = lerp(tl, bl, t0);
+    const r0 = lerp(tr, br, t0);
+    const l1 = lerp(tl, bl, t1);
+    const r1 = lerp(tr, br, t1);
+    const use = Math.max(1, Math.round(cols * (0.55 + (0.45 * (r + 1)) / rows)));
+    for (let c = 0; c < use; c++) {
+      const u0 = c / use;
+      const u1 = (c + 1) / use;
+      const q: [number, number][] = [lerp(l0, r0, u0), lerp(l0, r0, u1), lerp(l1, r1, u1), lerp(l1, r1, u0)];
+      const cx = q.reduce((sum, pt) => sum + pt[0], 0) / 4;
+      const cy = q.reduce((sum, pt) => sum + pt[1], 0) / 4;
+      const shrunk = q.map(([x, y]) => [cx + (x - cx) * 0.86, cy + (y - cy) * 0.86] as [number, number]);
+      p.add(polygon(shrunk), n + ((r + c) % 4), [cx, cy], 12);
+    }
+  }
+}
+
 export function dominionPictures(): Picture[] {
-  return [truck(), hatBoots(), instruments(), tower(), bonfire(), sailboat()];
+  return [truck(), hatBoots(), instruments(), tower(), bonfire(), sail()];
 }

@@ -25,6 +25,40 @@ export function ringPath(cx: number, cy: number, rOut: number, rIn: number): str
   return `${circlePath(cx, cy, rOut)} ${circlePath(cx, cy, rIn)}`;
 }
 
+/** Annular sector. r0 of 0 draws a pie slice. Angles are radians, y grows downward. */
+export function wedgePath(cx: number, cy: number, r0: number, r1: number, a0: number, a1: number): string {
+  const polar = (r: number, a: number): [number, number] => [cx + Math.cos(a) * r, cy + Math.sin(a) * r];
+  const [x0, y0] = polar(r1, a0);
+  const [x1, y1] = polar(r1, a1);
+  const large = Math.abs(a1 - a0) > Math.PI ? 1 : 0;
+  if (r0 < 0.75) {
+    return `M ${f(cx)} ${f(cy)} L ${f(x0)} ${f(y0)} A ${f(r1)} ${f(r1)} 0 ${large} 1 ${f(x1)} ${f(y1)} Z`;
+  }
+  const [x2, y2] = polar(r0, a1);
+  const [x3, y3] = polar(r0, a0);
+  return `M ${f(x0)} ${f(y0)} A ${f(r1)} ${f(r1)} 0 ${large} 1 ${f(x1)} ${f(y1)} L ${f(x2)} ${f(y2)} A ${f(r0)} ${f(r0)} 0 ${large} 0 ${f(x3)} ${f(y3)} Z`;
+}
+
+export function teardropPath(cx: number, cy: number, s: number, rot = 0): string {
+  const local: [number, number][] = [
+    [0, -1.05],
+    [0.58, -0.28],
+    [0.4, 0.38],
+    [0.1, 1],
+    [-0.1, 1],
+    [-0.4, 0.38],
+    [-0.58, -0.28],
+  ];
+  const c = Math.cos(rot);
+  const sn = Math.sin(rot);
+  const pts = local.map(([x, y]) => {
+    const X = x * s;
+    const Y = y * s;
+    return [cx + X * c - Y * sn, cy + X * sn + Y * c] as [number, number];
+  });
+  return smoothClosed(pts, 0.34);
+}
+
 export function rectPath(x: number, y: number, w: number, h: number): string {
   return `M ${f(x)} ${f(y)} H ${f(x + w)} V ${f(y + h)} H ${f(x)} Z`;
 }

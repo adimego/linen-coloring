@@ -6,7 +6,7 @@ The gallery is a soft pink room. Each picture opens on warm paper so the colors 
 
 ## Theme packs
 
-Two packs of original line art. They are inspired by a mood, not by official artwork. There are no portraits, likenesses, logos, album covers, or lyrics, and the app is not affiliated with either artist.
+Two packs of original line art, drawn as dense adult coloring pages: fine interior patterns, floral and geometric fills, and a repeating border. They are inspired by a mood, not by official artwork. There are no portraits, likenesses, logos, album covers, or lyrics, and the app is not affiliated with either artist. Pinch in when a region is small.
 
 **Taylor Swift** — concert lights, a sparkly acoustic guitar, friendship bracelets, two cats, a snake in flowers, a cardigan, and a mirrorball.
 

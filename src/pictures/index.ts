@@ -23,7 +23,10 @@ function assertPictures(list: Picture[]): void {
     if (ids.has(picture.id)) throw new Error(`Duplicate picture ${picture.id}`);
     ids.add(picture.id);
     const regions = new Set<string>();
-    if (picture.regions.length < 8) throw new Error(`${picture.id} needs more regions`);
+    const count = picture.regions.length;
+    if (count < 150 || count > 400) {
+      throw new Error(`${picture.id} has ${count} regions; want 150–400`);
+    }
     for (const region of picture.regions) {
       if (regions.has(region.id)) throw new Error(`${picture.id} repeats region ${region.id}`);
       regions.add(region.id);

@@ -17,6 +17,7 @@ const paths: Record<string, string> = {
   pause: `<path d="M8 6.5v11M16 6.5v11" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/>`,
   image: `<rect x="4.5" y="6" width="15" height="12" rx="1.8" fill="none" stroke="currentColor" stroke-width="1.7"/><circle cx="9" cy="10.2" r="1.2" fill="currentColor"/><path d="m6.5 16 3.2-3.2 2.2 2.1L15 11l2.5 5" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round"/>`,
   waves: `<path d="M4 15.5c2-2 3.2-2 5.2 0s3.2 2 5.2 0 3.2-2 5.2 0" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"/><path d="M4 10c2-2 3.2-2 5.2 0s3.2 2 5.2 0 3.2-2 5.2 0" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"/>`,
+  refresh: `<path d="M18.5 12a6.5 6.5 0 1 1-1.7-4.4" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/><path d="M18.6 4.6V8h-3.4" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>`,
 };
 
 export function icon(name: keyof typeof paths): string {

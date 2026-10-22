@@ -6,6 +6,8 @@ import { icon } from "./icons.ts";
 import { renderZen } from "./match/zen.ts";
 import { levelFromHash } from "./match/levels.ts";
 import { renderMatchHome, renderMatchLevel, type MatchCtx } from "./match/view.ts";
+import { LEVEL_COUNT as SORT_COUNT } from "./sort/logic.ts";
+import { renderSortHome, renderSortLevel, renderSortZen, type SortCtx } from "./sort/view.ts";
 import { difficultyPlan, posterizeFile } from "./photo/posterize.ts";
 import { deletePhoto, loadPhotoCache, photoById, photoRecords, savePhoto } from "./photo/store.ts";
 import { getPicture, picturesIn } from "./pictures/index.ts";
@@ -45,6 +47,14 @@ function esc(value: string): string {
     if (char === '"') return "&quot;";
     return "&#39;";
   });
+}
+
+function sortIdFromHash(hash: string): number | undefined {
+  const match = /^#s=(\d+)$/.exec(hash);
+  if (!match) return undefined;
+  const id = Number(match[1]);
+  if (id < 1 || id > SORT_COUNT) return undefined;
+  return id;
 }
 
 function haptic(): void {
@@ -101,6 +111,7 @@ export class App {
     const hash = location.hash;
     const base = location.pathname + location.search;
     const matchLevel = /^#m=\d+$/.test(hash);
+    const sortLevel = /^#s=\d+$/.test(hash);
     const pictureId = pictureIdFromHash() ?? "";
     const stacked =
       hash.startsWith("#p=") ||
@@ -108,6 +119,9 @@ export class App {
       hash === "#match" ||
       matchLevel ||
       hash === "#zen" ||
+      hash === "#sort" ||
+      sortLevel ||
+      hash === "#sort-zen" ||
       hash === "#daily" ||
       hash === "#photos" ||
       hash === "#photo" ||
@@ -115,6 +129,7 @@ export class App {
     if (stacked) {
       history.replaceState({ view: "gallery" }, "", base);
       if (matchLevel || hash === "#zen") history.pushState({ view: "match" }, "", "#match");
+      if (sortLevel || hash === "#sort-zen") history.pushState({ view: "sort" }, "", "#sort");
       if (hash === "#photo" || pictureId.startsWith("photo-")) history.pushState({ view: "photos" }, "", "#photos");
       if (pictureId.startsWith("daily-")) history.pushState({ view: "daily" }, "", "#daily");
       const view = hash === "#credits"
@@ -125,9 +140,15 @@ export class App {
             ? "level"
             : hash === "#zen"
               ? "zen"
-              : hash.startsWith("#")
-                ? hash.slice(1)
-                : "color";
+              : hash === "#sort"
+                ? "sort"
+                : sortLevel
+                  ? "sort-level"
+                  : hash === "#sort-zen"
+                    ? "sort-zen"
+                    : hash.startsWith("#")
+                      ? hash.slice(1)
+                      : "color";
       history.pushState({ view }, "", hash);
     } else {
       history.replaceState({ view: "gallery" }, "", base || "./");
@@ -154,12 +175,15 @@ export class App {
     this.cleanupView();
     const hash = location.hash;
     const matchRoute = hash === "#match" || hash.startsWith("#m=");
+    const sortRoute = hash === "#sort" || hash.startsWith("#s=") || hash === "#sort-zen";
     const credits = hash === "#credits";
-    const picture = credits || matchRoute || hash === "#zen" || hash === "#daily" || hash === "#photos" || hash === "#photo" || hash === "#tones"
+    const picture = credits || matchRoute || sortRoute || hash === "#zen" || hash === "#daily" || hash === "#photos" || hash === "#photo" || hash === "#tones"
       ? undefined
       : this.currentPicture();
     if (credits) this.renderCredits();
     else if (hash === "#zen") this.renderZenRoute();
+    else if (hash === "#sort-zen") this.renderSortZen();
+    else if (sortRoute) this.renderSortRoute();
     else if (matchRoute) this.renderMatchRoute();
     else if (hash === "#tones") this.renderTones();
     else if (hash === "#daily") this.renderDaily();
@@ -759,11 +783,12 @@ export class App {
     };
   }
 
-  private modeSwitch(active: "color" | "match"): string {
+  private modeSwitch(active: "color" | "match" | "sort"): string {
     return `
       <div class="modes" role="tablist" aria-label="Game">
         <button type="button" role="tab" data-mode="color" aria-selected="${active === "color"}">Color</button>
         <button type="button" role="tab" data-mode="match" aria-selected="${active === "match"}">Match</button>
+        <button type="button" role="tab" data-mode="sort" aria-selected="${active === "sort"}">Sort</button>
       </div>
     `;
   }
@@ -772,6 +797,7 @@ export class App {
     this.root.querySelectorAll<HTMLButtonElement>("[data-mode]").forEach((button) => {
       button.addEventListener("click", () => {
         if (button.dataset.mode === "match") this.openMatch();
+        else if (button.dataset.mode === "sort") this.openSort();
         else this.openColor();
       });
     });
@@ -1165,6 +1191,51 @@ export class App {
   private openZen(): void {
     history.pushState({ view: "zen" }, "", "#zen");
     this.render();
+  }
+
+  private openSort(): void {
+    if (location.hash === "#sort") return;
+    history.pushState({ view: "sort" }, "", "#sort");
+    this.render();
+  }
+
+  private openSortLevel(id: number): void {
+    history.pushState({ view: "sort-level", id }, "", `#s=${id}`);
+    this.render();
+  }
+
+  private openSortZen(): void {
+    if (location.hash === "#sort-zen") return;
+    history.pushState({ view: "sort-zen" }, "", "#sort-zen");
+    this.render();
+  }
+
+  private renderSortRoute(): void {
+    this.root.className = "app is-gallery";
+    const id = sortIdFromHash(location.hash);
+    if (!id) {
+      this.viewCleanups.push(renderSortHome(this.root, this.sortCtx()));
+      return;
+    }
+    this.viewCleanups.push(renderSortLevel(this.root, id, this.sortCtx()));
+  }
+
+  private renderSortZen(): void {
+    this.root.className = "app is-gallery is-sort";
+    this.viewCleanups.push(renderSortZen(this.root, this.sortCtx()));
+  }
+
+  private sortCtx(): SortCtx {
+    return {
+      soundHtml: this.headerTools(),
+      openSort: () => this.openSort(),
+      openLevel: (id) => this.openSortLevel(id),
+      openZen: () => this.openSortZen(),
+      back: () => history.back(),
+      say: (message) => this.say(message),
+      cue: (kind) => this.playCue(kind),
+      haptic: () => haptic(),
+    };
   }
 
   private playCue(kind: Cue): void {

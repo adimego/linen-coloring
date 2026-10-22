@@ -27,15 +27,21 @@ Open [http://127.0.0.1:43123](http://127.0.0.1:43123). The layout is meant for a
 - Undo and redo sit in the top bar.
 - When the last region is filled, the numbers and outlines fade and the finished picture stays in the gallery.
 - Save PNG downloads the picture, or opens the share sheet when the phone supports it.
-- The speaker button plays a soft generated tone (Web Audio only — no recordings). The same mute setting covers Color, Match, and Zen. The waves button opens soundscapes: rain, ocean, birdsong, piano, forest, or the original Linen drone, plus a volume slider. The choice is saved in `localStorage` under `linen.settings.v1`.
+- The speaker button plays a soft generated tone (Web Audio only — no recordings). The same mute setting covers Color, Match, Sort, and Zen. The waves button opens soundscapes: rain, ocean, birdsong, piano, forest, or the original Linen drone, plus a volume slider. The choice is saved in `localStorage` under `linen.settings.v1`.
 - The sun, moon, or monitor button cycles Light, Night, and System. Night is a warm dim room. The picture paper stays the same color so the art does not invert. That choice is in `linen.settings.v1` too.
 - Coloring progress and the mute setting save themselves in `localStorage` under `linen.coloring.v2`.
 
 ## Match
 
-The home page has Color and Match tabs. Match is a quiet match-3: drag or tap two pieces that touch. The two pieces slide past each other, and a swap that does not match slides back. A line of three or more shells, flowers, tulips, gems, leaves, or hearts glows, then pops with a small sparkle in that piece’s color, a soft chime, and a light vibration when the phone allows it. Mute turns the chime off. The pieces underneath slide down into the gaps and new ones fall from above, with a small settle as they land. A chain plays one step at a time. If the phone asks for less motion, matched pieces fade instead. Each level sits over one of Linen’s original pictures. Tiles start under leaves or dust; a match lifts the cover on those tiles, and a few later levels have a second layer. The level is won when the whole board is uncovered. There is no clock, no lives, and no fail state. If no swap is left, the pieces reshuffle themselves. After a few quiet seconds a possible swap glows. Twenty levels open one by one, from a small square to shaped boards. Progress saves in `localStorage` under `linen.match.v1`, separate from coloring, and the same pages work offline once the app is installed.
+The home page has Color, Match, and Sort tabs. Match is a quiet match-3: drag or tap two pieces that touch. The two pieces slide past each other, and a swap that does not match slides back. A line of three or more shells, flowers, tulips, gems, leaves, or hearts glows, then pops with a small sparkle in that piece’s color, a soft chime, and a light vibration when the phone allows it. Mute turns the chime off. The pieces underneath slide down into the gaps and new ones fall from above, with a small settle as they land. A chain plays one step at a time. If the phone asks for less motion, matched pieces fade instead. Each level sits over one of Linen’s original pictures. Tiles start under leaves or dust; a match lifts the cover on those tiles, and a few later levels have a second layer. The level is won when the whole board is uncovered. There is no clock, no lives, and no fail state. If no swap is left, the pieces reshuffle themselves. After a few quiet seconds a possible swap glows. Twenty levels open one by one, from a small square to shaped boards. Progress saves in `localStorage` under `linen.match.v1`, separate from coloring, and the same pages work offline once the app is installed.
 
 Zen, on the Match home page, is the same pieces with no levels and no goal. Matches refill the board. Pause stops the board and the hint. Today’s picture can fade in slowly behind the pieces.
+
+## Sort
+
+Sort is a quiet pouring puzzle on the same home page. Vases hold sea glass, beads, petals, candies, gems, and the other pastel pieces drawn for Linen. Tap a vase to lift the top run of one color, then tap another. They pour across if that vase is empty or its top color matches, and only as many as will fit. A table is finished when every vase is a single color or empty. A finished vase gets a lid and a small sparkle, and the pieces clink as they land. Mute turns the clink off. If the phone asks for less motion, the pieces fade into place instead of arcing.
+
+There is no clock and no way to lose. Undo, Again, and a hint (the next pour a solver would make) are always there, and each table can add one empty vase. One hundred ten tables are made on the phone and checked with a solver before they open, from four colors up to twelve, with fewer spare vases as you go. Later tables sometimes hide buried pieces until they reach the top, or include a narrower vase or a taller one. Tables open one by one. Progress saves in `localStorage` under `linen.sort.v1`, separate from coloring and Match. Zen Sort deals another solvable table whenever you ask.
 
 ## Daily pictures
 
@@ -79,6 +85,7 @@ Then open the native project with `npx cap open ios` or `npx cap open android`. 
 - `CREDITS.md` — authorship for every page
 - `src/app.ts` — gallery, coloring screen, match screens, and controls
 - `src/match` — match-3 rules, twenty levels, and saved progress
+- `src/sort` — vase-sort rules, the solver, 110 tables, and saved progress (`npm run test:sort`)
 - `src/gestures.ts` — tap, pan, pinch, and find-next zoom
 - `src/audio.ts` — generated beds: the Linen drone, rain, ocean, birds, piano, and forest
 - `src/daily` — date-seeded pictures and the quality gate (`npm run test:daily`)

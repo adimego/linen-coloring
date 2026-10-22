@@ -644,7 +644,7 @@ A patchwork of simple quilt squares.
 
 ### Tulip Field
 
-Rows of tulips and a windmill.
+Rows of tulips on stems, and a windmill.
 
 - **Tulip Field**
   - Author: Linen

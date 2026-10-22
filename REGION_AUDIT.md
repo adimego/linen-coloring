@@ -55,7 +55,7 @@ A region is too small when its area is under 0.15% of the page (221 square units
 | Snow Cabin | peaceful | 185 | 0.04% | 4.7px | 163 | 0.17% | 15.5px |
 | Zen Garden | peaceful | 185 | 0.06% | 6.3px | 139 | 0.17% | 15.5px |
 | Cherry Blossoms | pink | 170 | 0.04% | 4.6px | 108 | 0.30% | 16.7px |
-| Flamingo | pink | 170 | 0.04% | 5.3px | 142 | 0.18% | 15.6px |
+| Flamingo | pink | 170 | 0.03% | 3.9px | 141 | 0.23% | 16.6px |
 | Peony | pink | 170 | 0.06% | 6.3px | 162 | 0.18% | 14.7px |
 | Pink Bedroom | pink | 170 | 0.15% | 7.8px | 156 | 0.19% | 14.7px |
 | Pink Cupcakes | pink | 170 | 0.10% | 6.2px | 141 | 0.18% | 17.1px |

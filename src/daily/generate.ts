@@ -1,10 +1,9 @@
-import { mulberry32 } from "../match/logic.ts";
 import type { Picture } from "../pictures/types.ts";
-import { measureCanvas, pictureFromCanvas, type QualityReport } from "./raster.ts";
-import { MOODS, TEMPLATES, type Painted } from "./scenes.ts";
+import { composeDaily } from "./compose.ts";
+import type { QualityReport } from "./raster.ts";
+import { MOODS, TEMPLATES } from "./scenes.ts";
 
 export const LAUNCH_DATE = "2026-10-22";
-const MAX_VARIANTS = 4;
 
 export function dayNumber(iso: string): number {
   const ms = Date.parse(`${iso}T00:00:00Z`) - Date.parse(`${LAUNCH_DATE}T00:00:00Z`);
@@ -75,35 +74,21 @@ export function buildDaily(iso: string): DailyResult {
   if (!isIsoDate(iso)) throw new Error(`Bad date ${iso}`);
   const cached = cache.get(iso);
   if (cached) return cached;
-  const seed = hashDate(iso);
   const index = dayNumber(iso);
   const template = TEMPLATES[((index % TEMPLATES.length) + TEMPLATES.length) % TEMPLATES.length];
   const mood = MOODS[((Math.floor(index / TEMPLATES.length) % MOODS.length) + MOODS.length) % MOODS.length] ?? "day";
-  let last = "no variant";
-  for (let variant = 0; variant < MAX_VARIANTS; variant += 1) {
-    if (!template) continue;
-    const rng = mulberry32((seed + Math.imul(variant + 1, 0x85ebca6b)) >>> 0);
-    const painted: Painted = template(rng, mood);
-    const report = measureCanvas(painted.canvas, true);
-    if (!report.ok) {
-      last = `${painted.id} v${variant}: ${report.reasons.join(", ")}`;
-      continue;
-    }
-    const { picture, report: traced } = pictureFromCanvas(painted.canvas, {
-      id: dailyId(iso),
-      title: painted.title,
-      caption: painted.caption,
-      category: "daily",
-    }, false);
-    const result: DailyResult = { picture, report: traced.ok ? traced : report, template: painted.id, variant };
-    if (!result.report.ok) {
-      last = `${painted.id} v${variant} trace: ${result.report.reasons.join(", ")}`;
-      continue;
-    }
-    cache.set(iso, result);
-    return result;
-  }
-  throw new Error(`${iso} failed every variant (${last})`);
+  if (!template) throw new Error(`${iso} has no scene`);
+  const { picture, report } = composeDaily(template.source, mood, {
+    id: dailyId(iso),
+    title: template.titles[mood],
+    caption: template.caption,
+    minRadiusVu: template.minRadiusVu,
+    minAreaVu: template.minAreaVu,
+  });
+  if (!report.ok) throw new Error(`${iso} ${template.id} ${report.reasons.join(", ")}`);
+  const result: DailyResult = { picture, report, template: template.id, variant: 0 };
+  cache.set(iso, result);
+  return result;
 }
 
 export function dailyPicture(iso: string): Picture {

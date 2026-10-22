@@ -10,8 +10,8 @@ export const VW = PAGE.w;
 export const VH = PAGE.h;
 
 export const GATE = {
-  minRegions: 40,
-  maxRegions: 280,
+  minRegions: 150,
+  maxRegions: 220,
   minRadiusVu: 5.4,
   minAreaVu: 100,
   maxFraction: 0.17,

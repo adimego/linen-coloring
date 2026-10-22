@@ -1,8 +1,7 @@
-import { paletteById } from "./pictures/palettes.ts";
-import type { PackId, Picture } from "./pictures/types.ts";
+import type { CategoryId, Picture } from "./pictures/types.ts";
 
-export type Tool = "fill" | "erase";
 export type Filter = "all" | "finished";
+export type CategoryFilter = CategoryId | "all";
 
 export type Action = {
   regionId: string;
@@ -14,35 +13,32 @@ export type PictureSave = {
   fills: Record<string, string>;
   undo: Action[];
   redo: Action[];
+  colorIndex: number;
 };
 
 export type SaveData = {
-  version: 1;
-  pack: PackId;
+  version: 2;
+  category: CategoryFilter;
   filter: Filter;
-  paletteId: string;
-  colorIndex: number;
-  tool: Tool;
-  hints: boolean;
   sound: boolean;
   pictures: Record<string, PictureSave>;
 };
 
-const KEY = "linen.coloring.v1";
-const UNDO_LIMIT = 60;
+const KEY = "linen.coloring.v2";
+const UNDO_LIMIT = 80;
 
 export function blankSave(): SaveData {
   return {
-    version: 1,
-    pack: "swift",
+    version: 2,
+    category: "all",
     filter: "all",
-    paletteId: "petal",
-    colorIndex: 0,
-    tool: "fill",
-    hints: false,
     sound: false,
     pictures: {},
   };
+}
+
+function blankPicture(): PictureSave {
+  return { fills: {}, undo: [], redo: [], colorIndex: 0 };
 }
 
 export function loadSave(): SaveData {
@@ -50,13 +46,15 @@ export function loadSave(): SaveData {
     const raw = localStorage.getItem(KEY);
     if (!raw) return blankSave();
     const parsed = JSON.parse(raw) as Partial<SaveData>;
-    if (parsed.version !== 1) return blankSave();
+    if (parsed.version !== 2) return blankSave();
     const base = blankSave();
     return {
       ...base,
-      ...parsed,
+      category: parsed.category ?? "all",
+      filter: parsed.filter === "finished" ? "finished" : "all",
+      sound: Boolean(parsed.sound),
       pictures: parsed.pictures ?? {},
-      version: 1,
+      version: 2,
     };
   } catch {
     return blankSave();
@@ -72,7 +70,14 @@ export function writeSave(save: SaveData): void {
 }
 
 export function pictureSave(save: SaveData, id: string): PictureSave {
-  return save.pictures[id] ?? { fills: {}, undo: [], redo: [] };
+  const found = save.pictures[id];
+  if (!found) return blankPicture();
+  return {
+    fills: found.fills ?? {},
+    undo: Array.isArray(found.undo) ? found.undo : [],
+    redo: Array.isArray(found.redo) ? found.redo : [],
+    colorIndex: Number.isInteger(found.colorIndex) ? found.colorIndex : 0,
+  };
 }
 
 export function filledCount(picture: Picture, save: SaveData): number {
@@ -81,28 +86,49 @@ export function filledCount(picture: Picture, save: SaveData): number {
 }
 
 export function isComplete(picture: Picture, save: SaveData): boolean {
-  return filledCount(picture, save) === picture.regions.length;
+  return picture.regions.length > 0 && filledCount(picture, save) === picture.regions.length;
 }
 
-export function selectedColor(save: SaveData): string {
-  const palette = paletteById(save.paletteId);
-  return palette.colors[save.colorIndex] ?? palette.colors[0];
+export function colorProgress(picture: Picture, save: SaveData, n: number): { done: number; total: number } {
+  const fills = pictureSave(save, picture.id).fills;
+  const regions = picture.regions.filter((region) => region.n === n);
+  return { done: regions.filter((region) => Boolean(fills[region.id])).length, total: regions.length };
 }
 
-export function applyFill(save: SaveData, picture: Picture, regionId: string, color: string | null): SaveData {
+export function firstOpenIndex(picture: Picture, save: SaveData, prefer: number): number {
+  const fills = pictureSave(save, picture.id).fills;
+  const count = picture.colors.length;
+  for (let step = 0; step < count; step += 1) {
+    const index = (prefer + step + count) % count;
+    const n = index + 1;
+    if (picture.regions.some((region) => region.n === n && !fills[region.id])) return index;
+  }
+  return Math.min(Math.max(prefer, 0), Math.max(0, count - 1));
+}
+
+export function withColor(save: SaveData, pictureId: string, colorIndex: number): SaveData {
+  const current = pictureSave(save, pictureId);
+  return {
+    ...save,
+    pictures: {
+      ...save.pictures,
+      [pictureId]: { ...current, colorIndex },
+    },
+  };
+}
+
+export function applyFill(save: SaveData, picture: Picture, regionId: string, color: string): SaveData {
   const current = pictureSave(save, picture.id);
   const from = current.fills[regionId] ?? null;
   if (from === color) return save;
-  const fills = { ...current.fills };
-  if (color) fills[regionId] = color;
-  else delete fills[regionId];
+  const fills = { ...current.fills, [regionId]: color };
   const undo = [...current.undo, { regionId, from, to: color }];
   if (undo.length > UNDO_LIMIT) undo.shift();
   return {
     ...save,
     pictures: {
       ...save.pictures,
-      [picture.id]: { fills, undo, redo: [] },
+      [picture.id]: { fills, undo, redo: [], colorIndex: current.colorIndex },
     },
   };
 }
@@ -122,6 +148,7 @@ export function applyUndo(save: SaveData, pictureId: string): SaveData {
         fills,
         undo: current.undo.slice(0, -1),
         redo: [...current.redo, action],
+        colorIndex: current.colorIndex,
       },
     },
   };
@@ -142,6 +169,7 @@ export function applyRedo(save: SaveData, pictureId: string): SaveData {
         fills,
         undo: [...current.undo, action],
         redo: current.redo.slice(0, -1),
+        colorIndex: current.colorIndex,
       },
     },
   };

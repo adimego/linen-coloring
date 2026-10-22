@@ -10,6 +10,7 @@ const paths: Record<string, string> = {
   minus: `<path d="M6 12h12" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/>`,
   plus: `<path d="M12 6v12M6 12h12" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/>`,
   fit: `<path d="M8 4.5H4.5V8M16 4.5h3.5V8M8 19.5H4.5V16M16 19.5h3.5V16" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"/>`,
+  find: `<circle cx="10.5" cy="10.5" r="4.2" fill="none" stroke="currentColor" stroke-width="1.7"/><path d="m13.8 13.8 4.2 4.2" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"/>`,
 };
 
 export function icon(name: keyof typeof paths): string {

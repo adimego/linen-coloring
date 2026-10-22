@@ -2,7 +2,7 @@
   "id": "/linen-coloring/",
   "name": "Linen — quiet coloring",
   "short_name": "Linen",
-  "description": "A calm coloring book for your phone. Tap a region, fill it with a pastel, and pick up where you left off.",
+  "description": "A calm color-by-number book for your phone. Match a number, fill the region, and pick up where you left off.",
   "start_url": "/linen-coloring/",
   "scope": "/linen-coloring/",
   "display": "standalone",

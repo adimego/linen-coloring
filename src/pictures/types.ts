@@ -1,57 +1,41 @@
 export const PAGE = { w: 320, h: 460, viewBox: "0 0 320 460" } as const;
 
-export type PackId = "swift" | "dominion";
+export const categories = [
+  { id: "animals", name: "Animals" },
+  { id: "flowers", name: "Flowers" },
+  { id: "mandalas", name: "Mandalas" },
+  { id: "landscapes", name: "Landscapes" },
+  { id: "food", name: "Food" },
+  { id: "butterflies", name: "Butterflies" },
+  { id: "birds", name: "Birds" },
+  { id: "places", name: "Places" },
+] as const;
+
+export type CategoryId = (typeof categories)[number]["id"];
 
 export type Region = {
   id: string;
   d: string;
-  /** Color-by-number slot, 1 through 8. */
+  /** 1-based index into the picture palette. */
   n: number;
   label: [number, number] | null;
-  evenodd?: boolean;
-  transform?: string;
-  clipId?: string;
   hintSize?: number;
+  evenodd?: boolean;
 };
 
-export type Stroke = {
+export type Ink = {
   d: string;
   w: number;
-  transform?: string;
-  /** Ink-filled decoration such as an eye. Omit for a plain line. */
-  fill?: string;
-  layer: "under" | "over";
-};
-
-export type Clip = {
-  id: string;
-  d: string;
-};
-
-export type Credit = {
-  work: string;
-  author: string;
-  sourceUrl: string;
-  license: string;
-  licenseUrl: string;
 };
 
 export type Picture = {
   id: string;
-  pack: PackId;
+  category: CategoryId;
   title: string;
   caption: string;
   viewBox: string;
-  /** Outline thickness in viewBox units. Zero keeps the traced ink overlay as the only line. */
-  regionStroke: number;
-  credits: Credit[];
-  regions: Region[];
-  strokes: Stroke[];
-  clips: Clip[];
-};
-
-export type Palette = {
-  id: string;
-  name: string;
   colors: string[];
+  regions: Region[];
+  outline: string;
+  ink: Ink[];
 };

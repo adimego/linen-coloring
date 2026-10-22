@@ -1,134 +1,175 @@
 # Image credits
 
-Linen's coloring pages are traced from public-domain and CC0 line art so the regions can be tapped and filled. Nothing here is album art, a logo, or a portrait of a performer.
+Every coloring page in Linen is an original illustration drawn for this app.
+They are not copied from Happy Color, Color by Number, or any other coloring product,
+and they are not traced from someone else's artwork.
 
-Public domain and CC0 works can be reused in an app. Each page below names the source, the author when one is known, and the license.
+Author: Linen
+License: original work, created for Linen
 
-## Taylor Swift
+## Animals
 
-### Concert Lights
+### Cat Nap
 
-Curtains, spotlights, and an empty stage.
+A curled cat in a square of sun.
 
-- **Theater stage clipart**
-  - Author: Unknown
-  - Source: https://www.rawpixel.com/image/6328855/vector-sticker-public-domain-illustrations
-  - License: [CC0 1.0](https://creativecommons.org/publicdomain/zero/1.0/)
+- **Cat Nap**
+  - Author: Linen
+  - Source: original illustration created for Linen
+  - License: original work, created for Linen
 
-### Sparkle Guitar
+### Garden Fox
 
-An acoustic guitar with a little glitter.
+A fox sitting among the flowers.
 
-- **Acoustic guitar clipart**
-  - Author: Unknown
-  - Source: https://www.rawpixel.com/image/6588592/vector-sticker-public-domain-black
-  - License: [CC0 1.0](https://creativecommons.org/publicdomain/zero/1.0/)
+- **Garden Fox**
+  - Author: Linen
+  - Source: original illustration created for Linen
+  - License: original work, created for Linen
 
-### Bracelets
 
-A stack of beaded friendship bracelets.
+## Flowers
 
-- **Beaded bracelet illustration**
-  - Author: Francis Akuka for the Wikimedia Foundation
-  - Source: https://commons.wikimedia.org/wiki/File:Beaded_bracelet_illustration.png
-  - License: [CC0 1.0](https://creativecommons.org/publicdomain/zero/1.0/)
+### Open Rose
 
-### Two Cats
+A rose opened all the way.
 
-A pair of cats keeping each other company.
+- **Open Rose**
+  - Author: Linen
+  - Source: original illustration created for Linen
+  - License: original work, created for Linen
 
-- **Love Letters of a Cat**
-  - Author: Louis Wain
-  - Source: https://commons.wikimedia.org/wiki/File:Love_Letters_of_a_Cat_by_Louis_Wain_%281860%E2%80%931939%29.png
-  - License: [Public domain](https://creativecommons.org/publicdomain/mark/1.0/)
+### Sunflower
 
-### Garden Snake
+A tall sunflower against the sky.
 
-A snake resting in the flowers.
+- **Sunflower**
+  - Author: Linen
+  - Source: original illustration created for Linen
+  - License: original work, created for Linen
 
-- **Rattlesnake clipart**
-  - Author: Unknown
-  - Source: https://www.rawpixel.com/image/6503958/vector-sticker-vintage-public-domain
-  - License: [CC0 1.0](https://creativecommons.org/publicdomain/zero/1.0/)
-- **Rose flower drawing**
-  - Author: Unknown
-  - Source: https://www.rawpixel.com/image/6303590/image-plant-flower-vintage
-  - License: [CC0 1.0](https://creativecommons.org/publicdomain/zero/1.0/)
 
-### Cardigan
+## Mandalas
 
-An oversized cardigan for a quiet day.
+### Star Mandala
 
-- **Green sweater illustration**
-  - Author: Unknown
-  - Source: https://www.rawpixel.com/image/7613269/vector-cartoon-illustrations-public-domain
-  - License: [CC0 1.0](https://creativecommons.org/publicdomain/zero/1.0/)
+An eight-point star, colored inward.
 
-### Mirrorball
+- **Star Mandala**
+  - Author: Linen
+  - Source: original illustration created for Linen
+  - License: original work, created for Linen
 
-A hanging ball of tiny mirrors.
+### Petal Mandala
 
-- **Disco ball sticker**
-  - Author: Unknown
-  - Source: https://www.rawpixel.com/image/6431607/vector-sticker-public-domain-shape
-  - License: [CC0 1.0](https://creativecommons.org/publicdomain/zero/1.0/)
+Rings of petals around a quiet center.
 
-## Old Dominion
+- **Petal Mandala**
+  - Author: Linen
+  - Source: original illustration created for Linen
+  - License: original work, created for Linen
 
-### Country Road
 
-A pickup on a long, easy road.
+## Landscapes
 
-- **Pickup truck clipart**
-  - Author: Unknown
-  - Source: https://www.rawpixel.com/image/6449242/vector-sticker-public-domain-illustrations
-  - License: [CC0 1.0](https://creativecommons.org/publicdomain/zero/1.0/)
+### Lake Evening
 
-### Hat & Boots
+Mountains resting in a still lake.
 
-A hat waiting beside a pair of boots.
+- **Lake Evening**
+  - Author: Linen
+  - Source: original illustration created for Linen
+  - License: original work, created for Linen
 
-- **Cowboy boot and hat**
-  - Author: gnokii (Openclipart)
-  - Source: https://commons.wikimedia.org/wiki/File:Cowboy_boot_and_hat.svg
-  - License: [CC0 1.0](https://creativecommons.org/publicdomain/zero/1.0/)
+### Coast Path
 
-### Porch Pair
+A warm sky over a quiet shore.
 
-A banjo and a guitar leaning together.
+- **Coast Path**
+  - Author: Linen
+  - Source: original illustration created for Linen
+  - License: original work, created for Linen
 
-- **Banjo**
-  - Author: Pearson Scott Foresman
-  - Source: https://commons.wikimedia.org/wiki/File:Banjo_%28PSF%29.png
-  - License: [Public domain](https://creativecommons.org/publicdomain/mark/1.0/)
-- **Acoustic guitar clipart**
-  - Author: Unknown
-  - Source: https://www.rawpixel.com/image/6588592/vector-sticker-public-domain-black
-  - License: [CC0 1.0](https://creativecommons.org/publicdomain/zero/1.0/)
 
-### Water Tower
+## Food
 
-A small-town tower against a sunset.
+### Berry Tart
 
-- **Reservoir water tower**
-  - Author: Unknown
-  - Source: https://www.rawpixel.com/image/6726099/image-vintage-public-domain-house
-  - License: [CC0 1.0](https://creativecommons.org/publicdomain/zero/1.0/)
+A tart piled with berries.
 
-### String Lights
+- **Berry Tart**
+  - Author: Linen
+  - Source: original illustration created for Linen
+  - License: original work, created for Linen
 
-A bonfire under a line of bulbs.
+### Lemon Tea
 
-- **Bonfire clipart**
-  - Author: Unknown
-  - Source: https://www.rawpixel.com/image/6864204/vector-sticker-public-domain-fire
-  - License: [CC0 1.0](https://creativecommons.org/publicdomain/zero/1.0/)
+Tea, a lemon, and a quiet table.
 
-### Lake Boat
+- **Lemon Tea**
+  - Author: Linen
+  - Source: original illustration created for Linen
+  - License: original work, created for Linen
 
-A sailboat on still water.
 
-- **Sailboat clipart**
-  - Author: Unknown
-  - Source: https://www.rawpixel.com/image/6673060/vector-sticker-public-domain-illustrations
-  - License: [CC0 1.0](https://creativecommons.org/publicdomain/zero/1.0/)
+## Butterflies
+
+### Monarch
+
+Open wings in amber and black.
+
+- **Monarch**
+  - Author: Linen
+  - Source: original illustration created for Linen
+  - License: original work, created for Linen
+
+### Blue Wing
+
+A butterfly the color of evening water.
+
+- **Blue Wing**
+  - Author: Linen
+  - Source: original illustration created for Linen
+  - License: original work, created for Linen
+
+
+## Birds
+
+### Garden Robin
+
+A robin perched on a branch.
+
+- **Garden Robin**
+  - Author: Linen
+  - Source: original illustration created for Linen
+  - License: original work, created for Linen
+
+### Still Swan
+
+A swan on flat water.
+
+- **Still Swan**
+  - Author: Linen
+  - Source: original illustration created for Linen
+  - License: original work, created for Linen
+
+
+## Places
+
+### Rose Cottage
+
+A small house behind a garden fence.
+
+- **Rose Cottage**
+  - Author: Linen
+  - Source: original illustration created for Linen
+  - License: original work, created for Linen
+
+### Night Windows
+
+A city block with a few lights on.
+
+- **Night Windows**
+  - Author: Linen
+  - Source: original illustration created for Linen
+  - License: original work, created for Linen

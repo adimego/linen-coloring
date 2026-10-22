@@ -39,7 +39,7 @@ Zen, on the Match home page, is the same pieces with no levels and no goal. Matc
 
 ## Daily pictures
 
-From 22 October 2026, each calendar day has one original picture. It is drawn on the phone from that date, so the same day is the same picture everywhere, and older days can be opened again from Daily. Eighteen scenes rotate, so the same scene does not return within a week, and a later visit to that scene uses a different time of day. Today sits at the top of the color home. Coloring progress uses the same save as the rest of the book. Each scene is an illustration: a rose window, a flamingo, a harbor, a cottage, and the others. Shading is a few wavy bands, and the extra pieces are petals, panes, roof tiles, and trees. The smallest piece stays large enough to tap.
+From 22 October 2026, each calendar day has one picture. It is built on the phone from that date, so the same day is the same picture everywhere, and older days can be opened again from Daily. Twenty gallery drawings take turns — the monarch, the cat, the tea table, the flamingo, the peony, the cherry tree, and the rest — so the same scene does not return within a week. The next visit recolors that drawing for dawn, day, dusk, or night, and night also turns it around. The regions are the gallery paths, bands included, about 166–210 a page. Today sits at the top of the color home. Coloring progress uses the same save as the rest of the book.
 
 ## Your photo
 

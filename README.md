@@ -1,6 +1,6 @@
 # Linen
 
-A quiet color-by-number book for your phone. Each region has a number and a color that belongs to it. Tap the matching swatch, then tap the region. There are no ads and no timers. Progress stays in this browser.
+A quiet color-by-number book, plus a gentle match game, for your phone. In Color, each region has a number and a color that belongs to it. Tap the matching swatch, then tap the region. In Match, swap pastel pieces to uncover a finished picture. There are no ads, no timers, and no way to lose. Progress stays in this browser.
 
 The gallery is a soft pink room. Each card shows the finished picture. Open one and the page becomes a numbered line drawing on warm paper.
 
@@ -27,8 +27,12 @@ Open [http://127.0.0.1:43123](http://127.0.0.1:43123). The layout is meant for a
 - Undo and redo sit in the top bar.
 - When the last region is filled, the numbers and outlines fade and the finished picture stays in the gallery.
 - Save PNG downloads the picture, or opens the share sheet when the phone supports it.
-- The speaker button plays a soft generated tone (Web Audio only — no recordings).
-- Progress and the sound setting save themselves in `localStorage` under `linen.coloring.v2`.
+- The speaker button plays a soft generated tone (Web Audio only — no recordings). The same mute setting covers Color and Match.
+- Coloring progress and the sound setting save themselves in `localStorage` under `linen.coloring.v2`.
+
+## Match
+
+The home page has Color and Match tabs. Match is a quiet match-3: drag or tap two pieces that touch. A line of three or more shells, flowers, tulips, gems, leaves, or hearts clears, and new pieces fall in. Each level sits over one of Linen’s original pictures. Tiles start under leaves or dust; a match lifts the cover on those tiles, and a few later levels have a second layer. The level is won when the whole board is uncovered. There is no clock, no lives, and no fail state. If no swap is left, the pieces reshuffle themselves. After a few quiet seconds a possible swap glows. Twenty levels open one by one, from a small square to shaped boards. Progress saves in `localStorage` under `linen.match.v1`, separate from coloring, and the same pages work offline once the app is installed.
 
 ## Install and play offline
 
@@ -62,7 +66,8 @@ Then open the native project with `npx cap open ios` or `npx cap open android`. 
 - `scripts/trace_landscapes.py` — rebuilds Relaxing Landscapes from the public-domain prints
 - `scripts/trace_music.py` — rebuilds Music from the public-domain artworks
 - `CREDITS.md` — authorship for every page
-- `src/app.ts` — gallery, coloring screen, and controls
+- `src/app.ts` — gallery, coloring screen, match screens, and controls
+- `src/match` — match-3 rules, twenty levels, and saved progress
 - `src/gestures.ts` — tap, pan, pinch, and find-next zoom
 - `src/audio.ts` — the generated ambient tone
 - `src/state.ts` — undo, redo, and `localStorage`

@@ -1,10 +1,12 @@
-import { Ambience } from "./audio.ts";
+import { Ambience, type Cue } from "./audio.ts";
 import { exportPng } from "./exportPng.ts";
 import { GestureController } from "./gestures.ts";
 import { icon } from "./icons.ts";
 import { getPicture, picturesIn } from "./pictures/index.ts";
 import { categories, type Picture, type Region } from "./pictures/types.ts";
 import { markHot, referenceFills, renderSvg, setRegionFill } from "./render.ts";
+import { levelFromHash } from "./match/levels.ts";
+import { renderMatchHome, renderMatchLevel, type MatchCtx } from "./match/view.ts";
 import {
   applyFill,
   applyRedo,
@@ -77,9 +79,12 @@ export class App {
   private installHistory(): void {
     const hash = location.hash;
     const base = location.pathname + location.search;
-    if (hash.startsWith("#p=") || hash === "#credits") {
+    const matchLevel = /^#m=\d+$/.test(hash);
+    if (hash.startsWith("#p=") || hash === "#credits" || hash === "#match" || matchLevel) {
       history.replaceState({ view: "gallery" }, "", base);
-      history.pushState({ view: hash === "#credits" ? "credits" : "color" }, "", hash);
+      if (matchLevel) history.pushState({ view: "match" }, "", "#match");
+      const view = hash === "#credits" ? "credits" : hash === "#match" ? "match" : matchLevel ? "level" : "color";
+      history.pushState({ view }, "", hash);
     } else {
       history.replaceState({ view: "gallery" }, "", base || "./");
     }
@@ -103,12 +108,17 @@ export class App {
 
   private render(): void {
     this.cleanupView();
-    const credits = location.hash === "#credits";
-    const picture = credits ? undefined : this.currentPicture();
+    const hash = location.hash;
+    const matchRoute = hash === "#match" || hash.startsWith("#m=");
+    const credits = hash === "#credits";
+    const picture = credits || matchRoute ? undefined : this.currentPicture();
     if (credits) this.renderCredits();
+    else if (matchRoute) this.renderMatchRoute();
     else if (picture) this.renderStudio(picture);
     else this.renderGallery();
-    document.querySelector('meta[name="theme-color"]')?.setAttribute("content", picture ? "#f6efe8" : "#f6d0dc");
+    const studio = this.root.classList.contains("is-studio");
+    document.querySelector('meta[name="theme-color"]')?.setAttribute("content", studio ? "#f6efe8" : "#f6d0dc");
+    this.finishChrome();
   }
 
   private currentPicture(): Picture | undefined {
@@ -141,6 +151,7 @@ export class App {
         </div>
         ${this.soundButton()}
       </header>
+      ${this.modeSwitch("color")}
       <main class="gallery">
         <p class="blurb">Choose a shade, then tap every region that wears its number.</p>
         <div class="categories" role="tablist" aria-label="Categories">
@@ -164,7 +175,7 @@ export class App {
             ? `<div class="grid">${visible.map((picture) => this.card(picture)).join("")}</div>`
             : `<div class="empty"><p>Nothing finished in this view.</p><p>Color every region and the picture will wait here.</p></div>`
         }
-        <p class="install-note">Add Linen to your home screen to keep coloring offline.</p>
+        <p class="install-note">Add Linen to your home screen to keep it offline.</p>
       </main>
       <p class="live" id="live" aria-live="polite"></p>
     `;
@@ -196,7 +207,6 @@ export class App {
     const tabRow = this.root.querySelector<HTMLElement>(".categories");
     const selectedTab = this.root.querySelector<HTMLElement>('[data-category][aria-selected="true"]');
     if (tabRow && selectedTab) tabRow.scrollLeft = Math.max(0, selectedTab.offsetLeft - 16);
-    this.bindSound();
   }
 
   private renderCredits(): void {
@@ -337,7 +347,6 @@ export class App {
     this.paintSwatches(picture);
     this.paintMeter(picture);
     this.bindStudio(picture);
-    this.bindSound();
   }
 
   private soundButton(): string {
@@ -595,6 +604,74 @@ export class App {
   private open(id: string): void {
     history.pushState({ view: "color" }, "", `#p=${id}`);
     this.render();
+  }
+
+  private openColor(): void {
+    if (location.hash === "") return;
+    history.pushState({ view: "gallery" }, "", location.pathname + location.search);
+    this.render();
+  }
+
+  private openMatch(): void {
+    if (location.hash === "#match") return;
+    history.pushState({ view: "match" }, "", "#match");
+    this.render();
+  }
+
+  private openLevel(id: number): void {
+    history.pushState({ view: "level", id }, "", `#m=${id}`);
+    this.render();
+  }
+
+  private renderMatchRoute(): void {
+    this.root.className = "app is-gallery";
+    const level = location.hash.startsWith("#m=") ? levelFromHash(location.hash) : undefined;
+    if (!level) {
+      this.viewCleanups.push(renderMatchHome(this.root, this.matchCtx()));
+      return;
+    }
+    this.viewCleanups.push(renderMatchLevel(this.root, level, this.matchCtx()));
+  }
+
+  private matchCtx(): MatchCtx {
+    return {
+      soundHtml: this.soundButton(),
+      openMatch: () => this.openMatch(),
+      openLevel: (id) => this.openLevel(id),
+      back: () => history.back(),
+      say: (message) => this.say(message),
+      cue: (kind) => this.playCue(kind),
+      haptic: () => haptic(),
+    };
+  }
+
+  private modeSwitch(active: "color" | "match"): string {
+    return `
+      <div class="modes" role="tablist" aria-label="Game">
+        <button type="button" role="tab" data-mode="color" aria-selected="${active === "color"}">Color</button>
+        <button type="button" role="tab" data-mode="match" aria-selected="${active === "match"}">Match</button>
+      </div>
+    `;
+  }
+
+  private bindModes(): void {
+    this.root.querySelectorAll<HTMLButtonElement>("[data-mode]").forEach((button) => {
+      button.addEventListener("click", () => {
+        if (button.dataset.mode === "match") this.openMatch();
+        else this.openColor();
+      });
+    });
+  }
+
+  private finishChrome(): void {
+    if (this.root.querySelector("#sound")) this.bindSound();
+    if (this.root.querySelector("[data-mode]")) this.bindModes();
+  }
+
+  private playCue(kind: Cue): void {
+    if (!this.save.sound) return;
+    this.audio.start();
+    this.audio.cue(kind);
   }
 
   private openCredits(): void {

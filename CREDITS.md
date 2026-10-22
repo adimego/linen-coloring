@@ -3,6 +3,7 @@
 Music and Relaxing Landscapes are adapted from public-domain art on Wikimedia Commons.
 Every other coloring page is an original illustration drawn for this app.
 Pink, Jewelry, and Fun Designs are original illustrations drawn for this app.
+Tulips mixes original illustrations with public-domain botanical plates.
 Those original pages are not copied from Happy Color, Color by Number, or any other coloring product.
 
 ## Music
@@ -469,7 +470,7 @@ Original illustrations created for Linen. No brands, logos, or third-party templ
 
 ### Cherry Blossoms
 
-A branch of pink blossoms against a pale sky.
+A blossoming tree against the sky.
 
 - **Cherry Blossoms**
   - Author: Linen
@@ -496,7 +497,7 @@ A full peony with soft leaves.
 
 ### Pink Cupcakes
 
-Three cupcakes with cherries on top.
+Three cupcakes on a cake stand.
 
 - **Pink Cupcakes**
   - Author: Linen
@@ -528,7 +529,7 @@ Original illustrations created for Linen. No brands, logos, or third-party templ
 
 ### Gem Ring
 
-A gold band with a faceted stone.
+A closed gold band with a faceted stone.
 
 - **Gem Ring**
   - Author: Linen
@@ -537,7 +538,7 @@ A gold band with a faceted stone.
 
 ### Pearl Strand
 
-A strand of pearls on folded cloth.
+A full strand of pearls with a clasp.
 
 - **Pearl Strand**
   - Author: Linen
@@ -546,7 +547,7 @@ A strand of pearls on folded cloth.
 
 ### Drop Earrings
 
-A pair of earrings with pearl drops.
+A matching pair, from hook to drop.
 
 - **Drop Earrings**
   - Author: Linen
@@ -564,7 +565,7 @@ A flower brooch set with round stones.
 
 ### Pendant Necklace
 
-A chain and a teardrop pendant.
+A chain joined to a teardrop pendant.
 
 - **Pendant Necklace**
   - Author: Linen
@@ -573,7 +574,7 @@ A chain and a teardrop pendant.
 
 ### Jewelry Box
 
-An open box with a ring and a few pearls.
+An open box with a lid, a drawer, and a few pieces.
 
 - **Jewelry Box**
   - Author: Linen
@@ -638,3 +639,77 @@ A patchwork of simple quilt squares.
   - Author: Linen
   - Source: original illustration created for Linen
   - License: original work, created for Linen
+
+## Tulips
+
+### Tulip Field
+
+Rows of tulips and a windmill.
+
+- **Tulip Field**
+  - Author: Linen
+  - Source: original illustration created for Linen
+  - License: original work, created for Linen
+
+### Tulip Bouquet
+
+A vase filled with tulips.
+
+- **Tulip Bouquet**
+  - Author: Linen
+  - Source: original illustration created for Linen
+  - License: original work, created for Linen
+
+### Single Tulip
+
+One tulip, close enough to count the petals.
+
+- **Single Tulip**
+  - Author: Linen
+  - Source: original illustration created for Linen
+  - License: original work, created for Linen
+
+### Tulip Mandala
+
+Tulips arranged in a ring.
+
+- **Tulip Mandala**
+  - Author: Linen
+  - Source: original illustration created for Linen
+  - License: original work, created for Linen
+
+### Garden Path
+
+A path between two beds of tulips.
+
+- **Garden Path**
+  - Author: Linen
+  - Source: original illustration created for Linen
+  - License: original work, created for Linen
+
+### Watering Can
+
+Tulips growing from a watering can.
+
+- **Watering Can**
+  - Author: Linen
+  - Source: original illustration created for Linen
+  - License: original work, created for Linen
+
+### Sweet Tulip
+
+A botanical tulip from Redouté's Liliacées.
+
+- **Tulipa suaveolens, from Les Liliacées**
+  - Author: Pierre-Joseph Redouté
+  - Source: https://commons.wikimedia.org/wiki/File:Tulipa_suaveolens_in_Les_liliacees.jpg
+  - License: Public domain — https://creativecommons.org/publicdomain/mark/1.0/
+
+### Besler Tulips
+
+Three tulips from a Hortus Eystettensis plate.
+
+- **Tulipa, from Hortus Eystettensis**
+  - Author: Basilius Besler
+  - Source: https://commons.wikimedia.org/wiki/File:Besler_H.E._tulipa_2.jpg
+  - License: Public domain — https://creativecommons.org/publicdomain/mark/1.0/

@@ -45,6 +45,38 @@ def blob_along(scene: Scene, pts: list[tuple[float, float]], radius: float, idx:
         scene.circle(x, y, radius, idx)
 
 
+def resample(pts: list[tuple[float, float]], step: float) -> list[tuple[float, float]]:
+    if len(pts) < 2:
+        return list(pts)
+    out = [pts[0]]
+    carry = 0.0
+    for (x0, y0), (x1, y1) in zip(pts, pts[1:]):
+        dist = math.hypot(x1 - x0, y1 - y0)
+        if dist < 1e-6:
+            continue
+        pos = step - carry
+        while pos <= dist + 1e-6:
+            t = min(1.0, pos / dist)
+            out.append((x0 + (x1 - x0) * t, y0 + (y1 - y0) * t))
+            pos += step
+        carry = dist - (pos - step)
+    if math.hypot(out[-1][0] - pts[-1][0], out[-1][1] - pts[-1][1]) > step * 0.4:
+        out.append(pts[-1])
+    return out
+
+
+def beads(scene: Scene, pts: list[tuple[float, float]], radius: float, idx: int, shine: int | None = None) -> None:
+    for x, y in resample(pts, max(4.0, radius * 1.15)):
+        scene.circle(x, y, radius, idx)
+        if shine is not None:
+            scene.circle(x - radius * 0.28, y - radius * 0.28, max(2.2, radius * 0.32), shine)
+
+
+def thick(scene: Scene, pts: list[tuple[float, float]], width: float, idx: int) -> None:
+    scene.stroke(pts, width, idx)
+    beads(scene, pts, width * 0.52, idx)
+
+
 def arc_points(cx: float, cy: float, rx: float, ry: float, a0: float, a1: float, n: int) -> list[tuple[float, float]]:
     return [
         (cx + math.cos(a0 + (a1 - a0) * i / n) * rx, cy + math.sin(a0 + (a1 - a0) * i / n) * ry)
@@ -52,39 +84,62 @@ def arc_points(cx: float, cy: float, rx: float, ry: float, a0: float, a1: float,
     ]
 
 
+def blossom(scene: Scene, x: float, y: float, scale: float, shade: int, center: int) -> None:
+    for k in range(5):
+        a0 = -math.pi / 2 + k * math.tau / 5
+        petal(scene, x, y, 2.4 * scale, 11 * scale, a0 - 0.34, a0 + 0.34, shade, 1.28, 1)
+    scene.circle(x, y, 3.2 * scale, center)
+
+
 def scene_cherry() -> Scene:
     c = [
         "#fde7ef",
-        "#f7c2d4",
+        "#f7c5d6",
         "#f3a0bc",
         "#e56b93",
         "#c4476e",
         "#6d3b32",
         "#8d5344",
         "#f7f0c8",
-        "#f2d0e4",
+        "#f4d0e2",
         "#c9e6c4",
-        "#7eae78",
-        "#fbf7f2",
+        "#6ea36a",
+        "#f6efe4",
+        "#e7c2cf",
     ]
-    s = Scene(c, {0, 1}, 31)
+    s = Scene(c, {0, 1, 11}, 31)
     s.img[:] = 0
-    s.bands(0, 0, 320, 300, [0, 1])
-    s.ellipse(160, 430, 210, 90, 11)
-    s.ellipse(40, 390, 70, 28, 10)
-    s.ellipse(250, 400, 80, 26, 9)
-    branch = arc_points(40, 430, 280, 90, math.pi * 1.05, math.pi * 1.72, 16)
-    blob_along(s, branch, 7, 5)
-    blob_along(s, branch[4:12], 3.2, 6)
-    flowers = [(70, 250), (110, 190), (150, 150), (196, 168), (230, 210), (268, 160), (86, 300), (176, 230), (248, 250)]
-    for i, (x, y) in enumerate(flowers):
-        for k in range(5):
-            a0 = -math.pi / 2 + k * math.tau / 5
-            petal(s, x, y, 4, 16, a0 - 0.35, a0 + 0.35, 2 if i % 2 == 0 else 3, 1.35, 1)
-        s.circle(x, y, 4.2, 7 if i % 3 else 4)
-    for x, y, ang in ((48, 330, -30), (300, 280, 20), (130, 340, 10), (210, 310, -15)):
-        s.ellipse(x, y, 16, 7, 10, ang)
-    s.circle(292, 48, 16, 8)
+    s.bands(0, 0, 320, 360, [0, 1])
+    s.circle(268, 58, 22, 7)
+    s.ellipse(70, 330, 110, 48, 12)
+    s.ellipse(250, 318, 120, 42, 12)
+    s.ellipse(160, 500, 250, 130, 11)
+    s.ellipse(50, 430, 70, 18, 10)
+    s.ellipse(270, 440, 80, 20, 9)
+    trunk = [(168, 452), (160, 360), (154, 280), (162, 210)]
+    limbs = [
+        [(160, 230), (100, 180), (36, 130)],
+        [(164, 214), (220, 160), (292, 112)],
+        [(156, 250), (90, 240), (28, 270)],
+        [(166, 246), (230, 230), (300, 250)],
+        [(158, 200), (190, 140), (214, 78)],
+        [(152, 300), (90, 330), (40, 370)],
+        [(170, 290), (230, 320), (286, 360)],
+    ]
+    for branch in [trunk, *limbs]:
+        thick(s, branch, 16 if branch is trunk else 11, 5)
+        thick(s, branch, 6, 6)
+    spots: list[tuple[float, float]] = []
+    for branch in [trunk, *limbs]:
+        spots.extend(resample(branch, 26))
+    for i, (x, y) in enumerate(spots):
+        if y > 430:
+            continue
+        blossom(s, x, y, 1.05, 2 if i % 2 == 0 else 3, 7 if i % 3 else 4)
+    for x, y, ang in ((64, 390, -24), (210, 400, 18), (130, 360, -8), (250, 370, 30)):
+        s.ellipse(x, y, 18, 7, 10, ang)
+    for i, (x, y) in enumerate(((48, 418), (110, 448), (190, 430), (250, 452), (300, 410))):
+        s.ellipse(x, y, 7, 3.5, 8 if i % 2 == 0 else 3, i * 18)
     return s
 
 
@@ -112,21 +167,28 @@ def scene_flamingo() -> Scene:
     s.rect(0, 250, 320, 210, 4)
     s.ellipse(160, 268, 200, 18, 3)
     s.rect(0, 330, 320, 130, 5)
-    s.ellipse(168, 300, 58, 32, 7)
-    s.ellipse(188, 292, 36, 18, 8)
-    neck = arc_points(150, 210, 70, 90, -0.2, 2.4, 14)
-    blob_along(s, neck, 11, 8)
-    blob_along(s, neck, 6, 9)
-    s.circle(118, 148, 16, 9)
-    s.circle(112, 144, 2.8, 12)
-    s.poly([(128, 146), (168, 154), (128, 162)], 10)
-    s.poly([(128, 150), (158, 156), (128, 160)], 11)
-    for i, ang in enumerate((-40, -10, 18, 46)):
-        s.ellipse(176, 286, 28, 9, 13 if i % 2 == 0 else 7, ang)
-    s.capsule(150, 328, 138, 420, 3.4, 10)
-    s.capsule(186, 328, 198, 420, 3.4, 10)
-    s.ellipse(128, 424, 12, 4, 11)
-    s.ellipse(210, 424, 12, 4, 11)
+    s.ellipse(196, 300, 64, 34, 7)
+    s.ellipse(220, 292, 36, 18, 8)
+    for i, ang in enumerate((-48, -18, 10, 38)):
+        s.ellipse(206, 292, 30, 10, 13 if i % 2 == 0 else 7, ang)
+    # An S from inside the body up to the head, sampled densely so it cannot gap.
+    neck = []
+    for i in range(42):
+        t = i / 41
+        x = 178 - 78 * math.sin(t * math.pi) + 18 * math.sin(t * math.pi * 2)
+        y = 292 - 158 * t
+        neck.append((x, y))
+    thick(s, neck, 24, 8)
+    thick(s, neck, 10, 9)
+    hx, hy = neck[-1]
+    s.circle(hx, hy - 6, 18, 9)
+    s.poly([(hx + 8, hy - 10), (hx + 46, hy - 2), (hx + 8, hy + 6)], 10)
+    s.poly([(hx + 8, hy - 6), (hx + 34, hy - 1), (hx + 8, hy + 4)], 11)
+    s.circle(hx - 6, hy - 10, 4.5, 12)
+    s.capsule(176, 318, 156, 412, 4.4, 10)
+    s.capsule(210, 318, 226, 412, 4.4, 10)
+    s.ellipse(146, 416, 14, 4.5, 11)
+    s.ellipse(236, 416, 14, 4.5, 11)
     s.ellipse(70, 360, 18, 8, 6)
     s.ellipse(270, 380, 22, 8, 3)
     return s
@@ -189,23 +251,26 @@ def scene_cupcakes() -> Scene:
     ]
     s = Scene(c, {0}, 43)
     s.img[:] = 0
-    s.rect(0, 300, 320, 160, 1)
-    s.ellipse(160, 312, 200, 16, 7)
-    spots = [(70, 210), (160, 188), (250, 214)]
+    for col in range(4):
+        for row in range(4):
+            s.circle(36 + col * 84, 36 + row * 72, 10, 2 if (col + row) % 2 == 0 else 12)
+    s.rect(0, 292, 320, 168, 1)
+    s.ellipse(160, 300, 200, 18, 7)
+    s.ellipse(160, 430, 54, 14, 9)
+    s.capsule(160, 318, 160, 424, 9, 8)
+    s.ellipse(160, 308, 128, 20, 7)
+    s.ellipse(160, 300, 108, 14, 1)
+    spots = [(78, 168), (160, 150), (242, 168)]
     for i, (x, y) in enumerate(spots):
-        s.poly([(x - 28, y + 20), (x + 28, y + 20), (x + 20, y + 78), (x - 20, y + 78)], 8)
+        s.poly([(x - 30, y + 28), (x + 30, y + 28), (x + 22, y + 96), (x - 22, y + 96)], 8)
         for k in range(4):
-            s.rect(x - 22, y + 24 + k * 14, 44, 8, 9 if k % 2 == 0 else 5)
-        s.ellipse(x, y + 18, 30, 16, 2 if i != 1 else 3)
-        s.circle(x, y - 6, 18, 3 if i != 1 else 4)
-        s.circle(x - 10, y - 16, 10, 2)
-        s.circle(x + 12, y - 12, 9, 12 if i == 2 else 6)
-        s.circle(x, y - 28, 7, 10)
-        s.ellipse(x, y + 86, 26, 6, 7)
-    s.rect(24, 300, 272, 8, 6)
-    s.circle(40, 70, 10, 4)
-    s.circle(280, 60, 8, 11)
-    heart(s, 160, 70, 16, 3)
+            s.rect(x - 24, y + 32 + k * 16, 48, 10, 9 if k % 2 == 0 else 5)
+        s.ellipse(x, y + 24, 34, 16, 2 if i != 1 else 3)
+        s.circle(x - 8, y + 4, 16, 3 if i != 1 else 4)
+        s.circle(x + 12, y + 8, 14, 4 if i == 0 else 6)
+        s.circle(x, y - 16, 8, 10)
+        s.ellipse(x, y + 100, 28, 7, 7)
+    heart(s, 160, 64, 18, 4)
     return s
 
 
@@ -300,6 +365,7 @@ def scene_ring() -> Scene:
     c = [
         "#2c2438",
         "#4a3d5c",
+        "#6a5878",
         "#f3e2b0",
         "#e7c56a",
         "#c9843a",
@@ -310,56 +376,62 @@ def scene_ring() -> Scene:
         "#f4b4c8",
         "#e36d97",
         "#c9f0e4",
-        "#3e9a86",
     ]
-    s = Scene(c, {0}, 61)
+    s = Scene(c, {0, 1}, 61)
     s.img[:] = 0
-    s.ellipse(160, 250, 150, 180, 1)
-    s.ellipse(160, 268, 92, 110, 2)
-    s.ellipse(160, 268, 58, 74, 0)
-    s.ellipse(160, 248, 78, 18, 3, -8)
-    s.ellipse(160, 292, 70, 14, 4, 6)
-    s.poly([(160, 150), (196, 214), (160, 236), (124, 214)], 6)
-    s.poly([(160, 150), (196, 214), (160, 198)], 7)
-    s.poly([(160, 150), (124, 214), (160, 198)], 8)
-    s.poly([(124, 214), (196, 214), (160, 236)], 5)
-    s.circle(160, 196, 8, 9)
-    for ang in (-0.8, -0.2, 0.35, 0.9):
-        s.circle(160 + math.cos(ang) * 86, 250 + math.sin(ang) * 28, 7, 10 if ang < 0 else 11)
-    s.circle(70, 120, 5, 3)
-    s.circle(250, 140, 4, 12)
-    star(s, 250, 360, 12, 3, 4, 0.35)
+    s.ellipse(160, 250, 200, 230, 1)
+    s.ellipse(70, 90, 48, 28, 2, -18)
+    s.ellipse(250, 400, 60, 30, 2, 16)
+    # Closed band: gold ring with a velvet hole.
+    s.ellipse(160, 286, 96, 112, 4)
+    s.ellipse(160, 292, 58, 72, 0)
+    s.ellipse(160, 210, 78, 16, 3)
+    s.ellipse(160, 360, 70, 12, 5)
+    # Prongs from the band up into the stone.
+    for dx in (-28, 28):
+        s.capsule(160 + dx, 214, 160 + dx * 0.72, 168, 4.5, 4)
+    s.capsule(160, 200, 160, 156, 4.5, 3)
+    # Faceted stone sitting in the setting.
+    s.poly([(160, 118), (214, 176), (160, 214), (106, 176)], 6)
+    s.poly([(160, 118), (214, 176), (160, 168)], 8)
+    s.poly([(160, 118), (106, 176), (160, 168)], 7)
+    s.poly([(106, 176), (214, 176), (160, 214)], 9)
+    s.circle(160, 168, 8, 11)
+    for ang in (-0.9, -0.35, 0.35, 0.9):
+        s.circle(160 + math.cos(ang) * 78, 250 + math.sin(ang) * 36, 8, 10 if ang < 0 else 12)
+    star(s, 48, 360, 14, 3, 4, 0.4)
+    star(s, 270, 80, 12, 11, 4, 0.4)
     return s
 
 
 def scene_pearls() -> Scene:
     c = [
-        "#f6e7ea",
-        "#e7c9c4",
+        "#5c3a48",
+        "#8d4d5e",
         "#fbf7f2",
-        "#f3e2c4",
+        "#f3e6d0",
         "#e7d2a8",
         "#c98468",
-        "#8d5344",
+        "#e7c56a",
         "#f7f1c8",
         "#d9c6aa",
         "#b7d8e6",
         "#7ea4c0",
-        "#e7b7c8",
+        "#f4c2d0",
     ]
     s = Scene(c, {0, 1}, 67)
     s.img[:] = 0
-    s.bands(0, 0, 320, 460, [0, 1, 0])
-    s.ellipse(80, 80, 50, 30, 11, -20)
-    s.ellipse(250, 400, 70, 36, 9, 16)
-    s.poly([(40, 40), (120, 20), (150, 140), (30, 160)], 8)
-    pts = arc_points(160, 240, 110, 150, -math.pi * 0.15, math.pi * 1.15, 18)
-    for i, (x, y) in enumerate(pts):
-        s.circle(x, y, 13, 2 if i % 2 == 0 else 3)
-        s.circle(x - 3, y - 3, 4, 7)
-    s.rect(pts[0][0] - 8, pts[0][1] - 6, 16, 12, 5)
-    s.circle(pts[-1][0], pts[-1][1], 8, 4)
-    s.circle(pts[-1][0], pts[-1][1], 3, 6)
+    s.ellipse(160, 240, 210, 250, 1)
+    s.ellipse(60, 70, 50, 28, 11, -16)
+    s.ellipse(260, 410, 70, 30, 8, 14)
+    s.poly([(18, 18), (110, 8), (86, 120), (8, 96)], 8)
+    strand = arc_points(160, 230, 108, 150, -math.pi * 0.92, math.pi * 0.92, 28)
+    beads(s, strand, 15, 2, 7)
+    left, right = strand[0], strand[-1]
+    # Clasp bridges the two ends and overlaps both pearls.
+    s.capsule(left[0], left[1], right[0], right[1], 6, 6)
+    s.rect((left[0] + right[0]) / 2 - 10, (left[1] + right[1]) / 2 - 8, 20, 16, 5)
+    s.circle((left[0] + right[0]) / 2, (left[1] + right[1]) / 2, 4, 4)
     return s
 
 
@@ -381,20 +453,23 @@ def scene_earrings() -> Scene:
     ]
     s = Scene(c, {0}, 71)
     s.img[:] = 0
-    s.rect(0, 0, 160, 460, 0)
-    s.rect(160, 0, 160, 460, 1)
-    for i, x in enumerate((80, 240)):
-        s.capsule(x, 50, x, 90, 2.4, 4)
-        s.circle(x, 96, 6, 3)
-        s.poly([(x, 108), (x + 22, 160), (x, 176), (x - 22, 160)], 6 if i == 0 else 8)
-        s.poly([(x, 112), (x + 16, 156), (x, 150)], 7 if i == 0 else 9)
-        s.circle(x, 196, 16, 2 if i == 0 else 10)
-        s.circle(x - 4, y := 190, 5, 5)
-        s.poly([(x, 214), (x + 14, 250), (x, 268), (x - 14, 250)], 12 if i == 0 else 4)
-        s.circle(x, 286, 8, 3)
-    _ = y
-    star(s, 40, 400, 12, 3, 4, 0.4)
-    star(s, 280, 40, 10, 9, 4, 0.4)
+    s.ellipse(160, 240, 200, 250, 1)
+    s.rect(36, 36, 248, 388, 0)
+    s.rect(48, 48, 224, 364, 1)
+    for i, x in enumerate((112, 208)):
+        hook = arc_points(x, 92, 18, 26, math.pi * 0.85, math.pi * 1.75, 10)
+        thick(s, hook, 6, 4)
+        s.circle(x, 118, 8, 3)
+        s.capsule(x, 124, x, 148, 3.2, 4)
+        s.poly([(x, 146), (x + 26, 196), (x, 214), (x - 26, 196)], 6 if i == 0 else 8)
+        s.poly([(x, 156), (x + 16, 194), (x, 188)], 7 if i == 0 else 9)
+        s.circle(x, 236, 18, 2 if i == 0 else 10)
+        s.circle(x - 5, 230, 6, 5)
+        s.capsule(x, 252, x, 274, 3.4, 3)
+        s.poly([(x, 270), (x + 16, 312), (x, 334), (x - 16, 312)], 12 if i == 0 else 4)
+        s.circle(x, 352, 10, 3)
+    star(s, 64, 400, 12, 3, 4, 0.4)
+    star(s, 256, 70, 12, 9, 4, 0.4)
     return s
 
 
@@ -447,18 +522,23 @@ def scene_necklace() -> Scene:
     ]
     s = Scene(c, {0, 1}, 79)
     s.img[:] = 0
-    s.ellipse(160, 520, 220, 180, 1)
-    s.ellipse(160, 80, 120, 40, 11)
-    chain = arc_points(160, 150, 120, 70, 0.15, math.pi - 0.15, 22)
-    for i, (x, y) in enumerate(chain):
-        s.circle(x, y, 5.5, 3 if i % 2 == 0 else 4)
-    s.poly([(160, 214), (188, 268), (160, 300), (132, 268)], 5)
-    s.poly([(160, 226), (176, 264), (160, 286), (144, 264)], 6)
-    s.poly([(160, 236), (170, 262), (160, 274)], 8)
-    s.circle(160, 262, 6, 9)
-    s.circle(160, 308, 8, 2)
-    s.ellipse(70, 360, 30, 14, 10, -20)
-    s.ellipse(250, 380, 26, 12, 7, 16)
+    s.ellipse(160, 250, 210, 250, 1)
+    # A display bust, not a person: neck form only.
+    s.ellipse(160, 150, 78, 96, 11)
+    s.ellipse(160, 210, 110, 36, 1)
+    chain = arc_points(160, 168, 108, 78, 0.25, math.pi - 0.25, 26)
+    beads(s, chain, 7.5, 3, 5)
+    # Drop the chain into the bail so the pendant is attached.
+    end = chain[len(chain) // 2]
+    s.capsule(end[0], end[1], 160, 248, 5, 4)
+    s.circle(160, 252, 10, 2)
+    s.poly([(160, 258), (198, 320), (160, 372), (122, 320)], 4)
+    s.poly([(160, 274), (184, 322), (160, 354), (136, 322)], 6)
+    s.poly([(160, 286), (172, 322), (160, 340)], 8)
+    s.circle(160, 322, 8, 9)
+    s.circle(160, 384, 9, 2)
+    s.ellipse(64, 360, 36, 16, 10, -18)
+    s.ellipse(256, 380, 32, 14, 7, 16)
     return s
 
 
@@ -481,23 +561,31 @@ def scene_jewel_box() -> Scene:
     ]
     s = Scene(c, {0}, 83)
     s.img[:] = 0
-    s.rect(40, 150, 240, 28, 2)
-    s.poly([(40, 150), (70, 70), (250, 70), (280, 150)], 1)
-    s.rect(78, 86, 164, 52, 13)
-    s.ellipse(160, 112, 40, 16, 8)
-    s.rect(48, 176, 224, 180, 4)
-    s.rect(64, 192, 192, 148, 3)
-    s.ellipse(120, 270, 28, 16, 6)
-    s.ellipse(120, 270, 16, 9, 0)
-    s.circle(168, 250, 10, 8)
-    s.circle(190, 258, 10, 8)
-    s.circle(180, 274, 10, 7)
-    s.poly([(210, 230), (232, 258), (210, 274), (188, 258)], 9)
-    s.circle(210, 256, 5, 10)
-    s.rect(150, 150, 20, 14, 6)
-    s.circle(160, 164, 5, 12)
-    s.rect(36, 360, 248, 16, 5)
-    s.ellipse(160, 420, 90, 16, 11)
+    s.ellipse(160, 250, 210, 250, 1)
+    s.rect(0, 360, 320, 100, 11)
+    s.ellipse(160, 368, 180, 16, 0)
+    # Open lid, hinged on the box and fully on the page.
+    s.poly([(46, 188), (78, 48), (242, 48), (274, 188)], 1)
+    s.poly([(70, 170), (94, 68), (226, 68), (250, 170)], 13)
+    s.ellipse(160, 118, 48, 22, 8)
+    s.capsule(160, 188, 160, 206, 8, 2)
+    # Box body.
+    s.rect(44, 198, 232, 168, 4)
+    s.rect(60, 214, 200, 92, 3)
+    # Drawer pulled forward, still attached under the box.
+    s.rect(58, 312, 204, 54, 5)
+    s.rect(70, 324, 180, 30, 4)
+    s.circle(160, 340, 7, 6)
+    # Contents sitting in the tray.
+    s.ellipse(112, 258, 30, 16, 6)
+    s.ellipse(112, 258, 16, 9, 0)
+    s.circle(168, 246, 11, 8)
+    s.circle(190, 258, 11, 7)
+    s.circle(176, 270, 11, 8)
+    s.poly([(214, 230), (240, 258), (214, 278), (188, 258)], 9)
+    s.circle(214, 256, 6, 10)
+    s.rect(148, 188, 24, 16, 6)
+    s.circle(160, 204, 6, 12)
     return s
 
 
@@ -744,18 +832,18 @@ def scene_quilt() -> Scene:
 
 
 PICTURES = [
-    ("cherry-blossoms", "pink", "Cherry Blossoms", "A branch of pink blossoms against a pale sky.", scene_cherry),
+    ("cherry-blossoms", "pink", "Cherry Blossoms", "A blossoming tree against the sky.", scene_cherry),
     ("flamingo", "pink", "Flamingo", "A flamingo standing in shallow water.", scene_flamingo),
     ("peony", "pink", "Peony", "A full peony with soft leaves.", scene_peony),
-    ("pink-cupcakes", "pink", "Pink Cupcakes", "Three cupcakes with cherries on top.", scene_cupcakes),
+    ("pink-cupcakes", "pink", "Pink Cupcakes", "Three cupcakes on a cake stand.", scene_cupcakes),
     ("vanity-table", "pink", "Vanity Table", "A mirror, a few bottles, and a pink stool.", scene_vanity),
     ("pink-bedroom", "pink", "Pink Bedroom", "A bed, curtains, and a small lamp.", scene_bedroom),
-    ("gem-ring", "jewelry", "Gem Ring", "A gold band with a faceted stone.", scene_ring),
-    ("pearl-strand", "jewelry", "Pearl Strand", "A strand of pearls on folded cloth.", scene_pearls),
-    ("drop-earrings", "jewelry", "Drop Earrings", "A pair of earrings with pearl drops.", scene_earrings),
+    ("gem-ring", "jewelry", "Gem Ring", "A closed gold band with a faceted stone.", scene_ring),
+    ("pearl-strand", "jewelry", "Pearl Strand", "A full strand of pearls with a clasp.", scene_pearls),
+    ("drop-earrings", "jewelry", "Drop Earrings", "A matching pair, from hook to drop.", scene_earrings),
     ("gem-brooch", "jewelry", "Gem Brooch", "A flower brooch set with round stones.", scene_brooch),
-    ("pendant-necklace", "jewelry", "Pendant Necklace", "A chain and a teardrop pendant.", scene_necklace),
-    ("jewelry-box", "jewelry", "Jewelry Box", "An open box with a ring and a few pearls.", scene_jewel_box),
+    ("pendant-necklace", "jewelry", "Pendant Necklace", "A chain joined to a teardrop pendant.", scene_necklace),
+    ("jewelry-box", "jewelry", "Jewelry Box", "An open box with a lid, a drawer, and a few pieces.", scene_jewel_box),
     ("kaleidoscope", "fun-designs", "Kaleidoscope", "A geometric kaleidoscope in candy colors.", scene_kaleidoscope),
     ("hearts-and-stars", "fun-designs", "Hearts and Stars", "A repeating pattern of hearts and stars.", scene_hearts_stars),
     ("retro-swirls", "fun-designs", "Retro Swirls", "Candy-colored swirls on a dark ground.", scene_swirls),
@@ -814,6 +902,9 @@ def append_audit(rows: list[dict]) -> None:
     existing = []
     for line in text.splitlines():
         if line.startswith("| ") and not line.startswith("| Picture") and not line.startswith("| ---"):
+            title = [part.strip() for part in line.strip("|").split("|")][0]
+            if title in {row["title"] for row in rows}:
+                continue
             existing.append(line)
     fresh = []
     for row in rows:
@@ -897,7 +988,30 @@ def previews() -> None:
 
 def main() -> None:
     if len(sys.argv) > 1 and sys.argv[1] == "preview":
-        previews()
+        ids = set(sys.argv[2:])
+        if not ids:
+            previews()
+            return
+        out = Path("/tmp/newsets")
+        out.mkdir(parents=True, exist_ok=True)
+        for spec in PICTURES:
+            if spec[0] not in ids:
+                continue
+            scene = spec[4]()
+            paint_rgb(scene.img, scene.colors).resize((220, 316), Image.Resampling.BOX).save(out / f"{spec[0]}.png")
+            print(spec[0])
+        return
+    if len(sys.argv) > 1 and sys.argv[1] == "rebuild":
+        wanted = set(sys.argv[2:])
+        summaries = []
+        for spec in PICTURES:
+            if spec[0] not in wanted:
+                continue
+            print(spec[0], flush=True)
+            picture, summary = build_one(spec)
+            (ART / f"{picture['id']}.json").write_text(json.dumps(picture, separators=(",", ":")), encoding="utf-8")
+            summaries.append(summary)
+        append_audit(summaries)
         return
     summaries = []
     pictures = []

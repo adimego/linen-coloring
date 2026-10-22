@@ -397,7 +397,11 @@ def main() -> None:
     CACHE.mkdir(parents=True, exist_ok=True)
     PREVIEW.mkdir(parents=True, exist_ok=True)
     ART.mkdir(parents=True, exist_ok=True)
+    hand = {"meguro-sunset", "kusatsu-village"}
     for spec in PAGES:
+        if spec["id"] in hand:
+            print(f"== {spec['id']} kept as a hand simplification", flush=True)
+            continue
         if only and spec["id"] != only:
             continue
         print(f"== {spec['id']}", flush=True)

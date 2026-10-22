@@ -1,18 +1,12 @@
 # Linen
 
-A quiet coloring book for your phone. Tap a region, fill it with a pastel, and pick it up again later. There are no ads and no timers. Progress stays in this browser.
+A quiet color-by-number book for your phone. Each region has a number and a color that belongs to it. Tap the matching swatch, then tap the region. There are no ads and no timers. Progress stays in this browser.
 
-The gallery is a soft pink room. Each picture opens on warm paper so the colors stay easy to see.
+The gallery is a soft pink room. Each card shows the finished picture. Open one and the page becomes a numbered line drawing on warm paper.
 
-## Theme packs
+## Pictures
 
-Two packs of public-domain and CC0 line art, traced into closed regions you can tap to fill. They are inspired by a mood, not by official artwork. There are no portraits, likenesses, logos, album covers, or lyrics, and the app is not affiliated with either artist. Every source, author, and license is listed in the gallery’s Image credits screen and in [CREDITS.md](CREDITS.md). Pinch in when a region is small.
-
-**Taylor Swift** — concert lights, a sparkly acoustic guitar, friendship bracelets, two cats, a snake in flowers, a cardigan, and a mirrorball.
-
-**Old Dominion** — a pickup on a country road, a hat and boots, a banjo and guitar, a water tower at sunset, a bonfire under string lights, and a sailboat.
-
-Switch packs with the buttons at the top of the gallery.
+Sixteen original illustrations, drawn for Linen — not copied from another coloring app. Two pages in each category: animals, flowers, mandalas, landscapes, food, butterflies, birds, and places. Every page has its own palette and about 185 regions. Sources are listed on the Image credits screen and in [CREDITS.md](CREDITS.md).
 
 ## Run it
 
@@ -25,16 +19,16 @@ Open [http://127.0.0.1:43123](http://127.0.0.1:43123). The layout is meant for a
 
 ## How to play
 
-- Choose a pack, then a picture.
-- Tap a pastel, then tap a region. The fill eases in. Phones that support `navigator.vibrate` give a short tap.
-- Pinch to zoom and drag to move around small spots. The minus, plus, and Fit buttons do the same thing.
-- Undo and redo sit in the top bar. Erase clears a region.
-- Numbers turns on color-by-number hints. The numbers match the swatches in the current palette.
-- Petal, Lake, Dusk, Meadow, and Moon are swappable pastel sets. Colors you already placed stay put.
-- The speaker button plays a soft generated tone (Web Audio only — no recordings).
-- When every region is filled, the picture is marked Finished in the gallery.
+- Pick a category, then a picture.
+- The palette is numbered. The selected color highlights every region that still needs it, and the bar under the tools shows how many of those regions are filled.
+- Tap a region with the right number and it fills. A wrong number shakes the page and leaves the region empty. There is no free-color mode and no eraser.
+- When a color is finished, the next unfinished color is selected for you.
+- Find zooms to an open region of the selected color. Pinch to zoom and drag to move. Minus, plus, and Fit do the same.
+- Undo and redo sit in the top bar.
+- When the last region is filled, the numbers and outlines fade and the finished picture stays in the gallery.
 - Save PNG downloads the picture, or opens the share sheet when the phone supports it.
-- Progress, the palette, hints, and the sound setting save themselves in `localStorage`.
+- The speaker button plays a soft generated tone (Web Audio only — no recordings).
+- Progress and the sound setting save themselves in `localStorage` under `linen.coloring.v2`.
 
 ## Install and play offline
 
@@ -63,11 +57,11 @@ Then open the native project with `npx cap open ios` or `npx cap open android`. 
 
 ## Project map
 
-- `src/pictures` — traced SVG regions for both packs, their credits, and the palettes
-- `scripts/trace_art.py` — downloads the source art and rebuilds the regions
-- `CREDITS.md` — source, author, and license for every page
+- `src/pictures` — original color-by-number pages and their palettes
+- `scripts/make_pages.py` — redraws the pages
+- `CREDITS.md` — authorship for every page
 - `src/app.ts` — gallery, coloring screen, and controls
-- `src/gestures.ts` — tap, pan, and pinch
+- `src/gestures.ts` — tap, pan, pinch, and find-next zoom
 - `src/audio.ts` — the generated ambient tone
 - `src/state.ts` — undo, redo, and `localStorage`
 - `vite.config.ts` — emits the service worker into the production build

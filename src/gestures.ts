@@ -74,6 +74,30 @@ export class GestureController {
     this.apply();
   }
 
+  /** Zoom so a viewBox point sits in the middle of the viewport. */
+  focus(vx: number, vy: number, nextScale = 2.75): void {
+    const reduce = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+    const svg = this.target;
+    if (!(svg instanceof SVGSVGElement)) return;
+    svg.style.transition = "none";
+    svg.style.transform = "none";
+    const rect = this.el.getBoundingClientRect();
+    const svgRect = svg.getBoundingClientRect();
+    const vb = svg.viewBox.baseVal;
+    const fit = Math.min(svgRect.width / vb.width, svgRect.height / vb.height) || 1;
+    const localX = (svgRect.width - vb.width * fit) / 2 + (vx - vb.x) * fit;
+    const localY = (svgRect.height - vb.height * fit) / 2 + (vy - vb.y) * fit;
+    this.scale = Math.min(6, Math.max(1.4, nextScale));
+    this.tx = rect.width / 2 - localX * this.scale;
+    this.ty = rect.height / 2 - localY * this.scale;
+    this.clamp();
+    if (!reduce) svg.style.transition = "transform 420ms cubic-bezier(0.22, 0.7, 0.3, 1)";
+    this.apply();
+    window.setTimeout(() => {
+      svg.style.transition = "";
+    }, reduce ? 0 : 460);
+  }
+
   private down(event: PointerEvent): void {
     const target = event.target;
     if (target instanceof Element && target.closest("button, a")) return;

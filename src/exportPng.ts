@@ -2,7 +2,8 @@ import { renderSvg } from "./render.ts";
 import type { Picture } from "./pictures/types.ts";
 
 export async function exportPng(picture: Picture, fills: Record<string, string>): Promise<void> {
-  const svg = renderSvg(picture, fills, { interactive: false, hints: false, layout: "thumb" });
+  const done = picture.regions.every((region) => Boolean(fills[region.id]));
+  const svg = renderSvg(picture, fills, { interactive: false, numbers: false, lines: !done, layout: "thumb" });
   const width = 960;
   const height = 1380;
   svg.setAttribute("width", String(width));

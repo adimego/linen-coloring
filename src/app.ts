@@ -2,23 +2,27 @@ import { Ambience } from "./audio.ts";
 import { exportPng } from "./exportPng.ts";
 import { GestureController } from "./gestures.ts";
 import { icon } from "./icons.ts";
-import { getPicture, packs, picturesIn } from "./pictures/index.ts";
-import { paletteById, palettes } from "./pictures/palettes.ts";
-import type { PackId, Picture } from "./pictures/types.ts";
-import { renderSvg, setRegionFill } from "./render.ts";
+import { getPicture, picturesIn } from "./pictures/index.ts";
+import { categories, type Picture, type Region } from "./pictures/types.ts";
+import { markHot, referenceFills, renderSvg, setRegionFill } from "./render.ts";
 import {
   applyFill,
   applyRedo,
   applyUndo,
+  colorProgress,
   filledCount,
+  firstOpenIndex,
   isComplete,
   loadSave,
   pictureSave,
-  selectedColor,
+  withColor,
   writeSave,
+  type CategoryFilter,
   type Filter,
   type SaveData,
 } from "./state.ts";
+
+const categoryIds = new Set<string>(categories.map((item) => item.id));
 
 function pictureIdFromHash(): string | null {
   const match = /^#p=([a-z0-9-]+)$/.exec(location.hash);
@@ -37,10 +41,19 @@ function esc(value: string): string {
 
 function haptic(): void {
   try {
-    navigator.vibrate?.(10);
+    navigator.vibrate?.(12);
   } catch {
     /* This browser does not vibrate. */
   }
+}
+
+function inkOn(hex: string): string {
+  const raw = hex.replace("#", "");
+  const r = Number.parseInt(raw.slice(0, 2), 16);
+  const g = Number.parseInt(raw.slice(2, 4), 16);
+  const b = Number.parseInt(raw.slice(4, 6), 16);
+  const y = (0.2126 * r + 0.7152 * g + 0.0722 * b) / 255;
+  return y > 0.64 ? "#4a3040" : "#fffaf8";
 }
 
 export class App {
@@ -49,12 +62,13 @@ export class App {
   private gestures: GestureController | null = null;
   private viewCleanups: Array<() => void> = [];
   private wasComplete = false;
+  private findCursor = -1;
   private readonly root: HTMLElement;
 
   constructor(root: HTMLElement) {
     this.root = root;
     this.save = loadSave();
-    if (this.save.pack !== "swift" && this.save.pack !== "dominion") this.save.pack = "swift";
+    if (this.save.category !== "all" && !categoryIds.has(this.save.category)) this.save.category = "all";
     this.installHistory();
     this.armSound();
     this.render();
@@ -109,10 +123,11 @@ export class App {
   }
 
   private renderGallery(): void {
-    const pack = packs.find((item) => item.id === this.save.pack) ?? packs[0];
-    const inPack = picturesIn(pack.id);
-    const finishedCount = inPack.filter((picture) => isComplete(picture, this.save)).length;
-    const visible = inPack.filter((picture) => this.save.filter === "all" || isComplete(picture, this.save));
+    const category = this.save.category;
+    const inView = picturesIn(category);
+    const finishedCount = inView.filter((picture) => isComplete(picture, this.save)).length;
+    const visible = inView.filter((picture) => this.save.filter === "all" || isComplete(picture, this.save));
+    const chips: { id: CategoryFilter; name: string }[] = [{ id: "all", name: "All" }, ...categories];
 
     this.root.className = "app is-gallery";
     this.root.innerHTML = `
@@ -120,25 +135,25 @@ export class App {
         <div class="brand">
           <span class="mark" aria-hidden="true"></span>
           <div>
-            <p class="eyebrow">Quiet coloring</p>
+            <p class="eyebrow">Color by number</p>
             <h1>Linen</h1>
           </div>
         </div>
         ${this.soundButton()}
       </header>
       <main class="gallery">
-        <div class="pack-switch" role="tablist" aria-label="Theme packs">
-          ${packs
+        <p class="blurb">Choose a shade, then tap every region that wears its number.</p>
+        <div class="categories" role="tablist" aria-label="Categories">
+          ${chips
             .map(
               (item) => `
-            <button type="button" role="tab" data-pack="${item.id}" aria-selected="${item.id === pack.id}">
+            <button type="button" role="tab" data-category="${item.id}" aria-selected="${item.id === category}">
               ${item.name}
             </button>`,
             )
             .join("")}
         </div>
-        <p class="blurb">${pack.blurb}</p>
-        <p class="note">Public-domain and CC0 line art, traced so each shape can be filled. No portraits, logos, or lyrics.</p>
+        <p class="note">Original pictures drawn for Linen. A wrong number never fills — only the matching color does.</p>
         <button type="button" class="text-link" id="credits">Image credits</button>
         <div class="filters" role="group" aria-label="Show">
           <button type="button" data-filter="all" aria-pressed="${this.save.filter === "all"}">All</button>
@@ -147,7 +162,7 @@ export class App {
         ${
           visible.length
             ? `<div class="grid">${visible.map((picture) => this.card(picture)).join("")}</div>`
-            : `<div class="empty"><p>Nothing finished yet.</p><p>Color every region of a picture and it will wait here.</p></div>`
+            : `<div class="empty"><p>Nothing finished in this view.</p><p>Color every region and the picture will wait here.</p></div>`
         }
         <p class="install-note">Add Linen to your home screen to keep coloring offline.</p>
       </main>
@@ -156,20 +171,13 @@ export class App {
 
     for (const picture of visible) {
       const host = this.root.querySelector(`#thumb-${picture.id}`);
-      host?.append(
-        renderSvg(picture, pictureSave(this.save, picture.id).fills, {
-          interactive: false,
-          hints: false,
-          layout: "thumb",
-        }),
-      );
+      host?.append(renderSvg(picture, referenceFills(picture), { interactive: false, numbers: false, lines: false, layout: "thumb" }));
     }
 
-    this.root.querySelectorAll<HTMLButtonElement>("[data-pack]").forEach((button) => {
+    this.root.querySelectorAll<HTMLButtonElement>("[data-category]").forEach((button) => {
       button.addEventListener("click", () => {
-        const packId = button.dataset.pack;
-        if (packId !== "swift" && packId !== "dominion") return;
-        this.setPack(packId);
+        const id = button.dataset.category;
+        if (id === "all" || (id && categoryIds.has(id))) this.setCategory(id as CategoryFilter);
       });
     });
     this.root.querySelectorAll<HTMLButtonElement>("[data-filter]").forEach((button) => {
@@ -190,6 +198,9 @@ export class App {
 
   private renderCredits(): void {
     this.root.className = "app is-gallery";
+    const groups = categories
+      .map((category) => ({ category, pictures: picturesIn(category.id) }))
+      .filter((group) => group.pictures.length);
     this.root.innerHTML = `
       <header class="top gallery-top">
         <button type="button" class="icon-btn" id="back" aria-label="Back to gallery">${icon("back")}</button>
@@ -199,29 +210,24 @@ export class App {
         </div>
       </header>
       <main class="gallery credits">
-        <p class="note">Each page is traced from art that can be reused in an app. The title links to the file, and the license link opens the deed.</p>
-        ${packs
+        <p class="note">Every page is an original illustration drawn for Linen. Nothing here is copied from another coloring app or traced from someone else's artwork.</p>
+        ${groups
           .map(
-            (pack) => `
+            (group) => `
           <section>
-            <h2>${esc(pack.name)}</h2>
-            ${picturesIn(pack.id)
+            <h2>${esc(group.category.name)}</h2>
+            ${group.pictures
               .map(
                 (picture) => `
               <article>
                 <h3>${esc(picture.title)}</h3>
                 <p>${esc(picture.caption)}</p>
                 <ul>
-                  ${picture.credits
-                    .map(
-                      (item) => `
-                    <li>
-                      <a href="${esc(item.sourceUrl)}" target="_blank" rel="noopener noreferrer">${esc(item.work)}</a>
-                      <span>${esc(item.author)}</span>
-                      <a href="${esc(item.licenseUrl)}" target="_blank" rel="noopener noreferrer">${esc(item.license)}</a>
-                    </li>`,
-                    )
-                    .join("")}
+                  <li>
+                    <span class="credit-work">Original illustration</span>
+                    <span>Linen</span>
+                    <span>Original work, created for Linen</span>
+                  </li>
                 </ul>
               </article>`,
               )
@@ -240,14 +246,14 @@ export class App {
     const done = filled === total;
     const pct = Math.round((filled / total) * 100);
     return `
-      <button type="button" class="card${done ? " is-done" : ""}" data-id="${picture.id}" aria-label="${picture.title}, ${filled} of ${total} regions${done ? ", finished" : ""}">
+      <button type="button" class="card${done ? " is-done" : ""}" data-id="${picture.id}" aria-label="${esc(picture.title)}, ${filled} of ${total} regions${done ? ", finished" : ""}">
         <span class="thumb" id="thumb-${picture.id}"></span>
         <span class="meta">
           <span class="meta-row">
-            <span class="card-title">${picture.title}</span>
+            <span class="card-title">${esc(picture.title)}</span>
             ${done ? '<span class="seal">Finished</span>' : ""}
           </span>
-          <span class="caption">${picture.caption}</span>
+          <span class="caption">${esc(picture.caption)}</span>
           <span class="bar" aria-hidden="true"><span style="width:${pct}%"></span></span>
           <span class="count">${filled} of ${total}</span>
         </span>
@@ -256,16 +262,22 @@ export class App {
   }
 
   private renderStudio(picture: Picture): void {
+    const stored = pictureSave(this.save, picture.id);
+    const colorIndex = firstOpenIndex(picture, this.save, stored.colorIndex);
+    if (colorIndex !== stored.colorIndex) {
+      this.save = withColor(this.save, picture.id, colorIndex);
+      writeSave(this.save);
+    }
     const data = pictureSave(this.save, picture.id);
-    const palette = paletteById(this.save.paletteId);
     const filled = filledCount(picture, this.save);
     this.wasComplete = filled === picture.regions.length;
-    this.root.className = `app is-studio${this.save.tool === "erase" ? " is-erasing" : ""}${this.save.hints ? " show-hints" : ""}`;
+    this.findCursor = -1;
+    this.root.className = "app is-studio";
     this.root.innerHTML = `
       <header class="top">
         <button type="button" class="icon-btn" id="back" aria-label="Back to gallery">${icon("back")}</button>
         <div class="title-block">
-          <h1>${picture.title}</h1>
+          <h1>${esc(picture.title)}</h1>
           <p id="progress">${filled} of ${picture.regions.length}</p>
         </div>
         <div class="top-actions">
@@ -278,43 +290,35 @@ export class App {
       <div class="studio">
         <div class="viewport" id="viewport">
           <div class="done" id="done"${this.wasComplete ? "" : " hidden"}>
-            <p>Finished. It's saved in your gallery.</p>
+            <p>That's the whole picture.</p>
             <button type="button" id="done-export">Save PNG</button>
           </div>
         </div>
         <div class="dock">
           <div class="tools">
-            <button type="button" class="tool" id="eraser" aria-pressed="${this.save.tool === "erase"}">${icon("eraser")}<span>Erase</span></button>
-            <button type="button" class="tool" id="hints" aria-pressed="${this.save.hints}">${icon("hint")}<span>Numbers</span></button>
+            <button type="button" class="tool find" id="find">${icon("find")}<span>Find</span></button>
             <button type="button" class="tool icon-only" id="zoom-out" aria-label="Zoom out">${icon("minus")}</button>
             <button type="button" class="tool icon-only" id="zoom-in" aria-label="Zoom in">${icon("plus")}</button>
             <button type="button" class="tool" id="zoom-fit" aria-label="Fit picture">${icon("fit")}<span>Fit</span></button>
           </div>
-          <div class="palette-wrap">
-            <div class="palette-pop" id="palette-pop" hidden>
-              ${palettes
-                .map(
-                  (item) => `
-                <button type="button" class="palette-option" data-palette="${item.id}" aria-pressed="${item.id === palette.id}">
-                  <span>${item.name}</span>
-                  <span class="dots">${item.colors.map((color) => `<i style="background:${color}"></i>`).join("")}</span>
-                </button>`,
-                )
-                .join("")}
-            </div>
-            <button type="button" class="palette-btn" id="palette-btn" aria-expanded="false" aria-controls="palette-pop">${palette.name} palette</button>
+          <div class="color-meter">
+            <p><span id="color-label">Color ${colorIndex + 1}</span><span id="color-count"></span></p>
+            <span class="bar" aria-hidden="true"><span id="color-bar"></span></span>
           </div>
-          <div class="swatches" id="swatches" role="listbox" aria-label="Colors"></div>
+          <div class="swatches" id="swatches" role="listbox" aria-label="Numbered colors"></div>
         </div>
       </div>
       <p class="live" id="live" aria-live="polite"></p>
     `;
 
     const viewport = this.must("#viewport");
-    const svg = renderSvg(picture, data.fills, { interactive: true, hints: this.save.hints, layout: "stage" });
+    const svg = renderSvg(picture, data.fills, { interactive: true, numbers: true, lines: true, layout: "stage" });
+    if (this.wasComplete) svg.classList.add("is-complete");
     viewport.prepend(svg);
     this.gestures = new GestureController(viewport, svg, (x, y) => this.tap(picture, x, y));
-    this.paintSwatches();
+    if (!this.wasComplete) markHot(svg, colorIndex + 1);
+    this.paintSwatches(picture);
+    this.paintMeter(picture);
     this.bindStudio(picture);
     this.bindSound();
   }
@@ -344,110 +348,122 @@ export class App {
     this.must("#redo").addEventListener("click", () => this.step(picture, "redo"));
     this.must("#export").addEventListener("click", () => void this.savePng(picture));
     this.must("#done-export").addEventListener("click", () => void this.savePng(picture));
-    this.must("#eraser").addEventListener("click", () => {
-      this.save.tool = this.save.tool === "erase" ? "fill" : "erase";
-      writeSave(this.save);
-      this.root.classList.toggle("is-erasing", this.save.tool === "erase");
-      this.syncTools();
-      this.say(this.save.tool === "erase" ? "Eraser." : "Brush.");
-    });
-    this.must("#hints").addEventListener("click", () => {
-      this.save.hints = !this.save.hints;
-      writeSave(this.save);
-      this.root.classList.toggle("show-hints", this.save.hints);
-      this.root.querySelector(".stage-svg")?.classList.toggle("hints-on", this.save.hints);
-      this.syncTools();
-      this.say(this.save.hints ? "Numbers on." : "Numbers off.");
-    });
+    this.must("#find").addEventListener("click", () => this.findNext(picture));
     this.must("#zoom-in").addEventListener("click", () => this.gestures?.zoomBy(1.25));
     this.must("#zoom-out").addEventListener("click", () => this.gestures?.zoomBy(0.8));
     this.must("#zoom-fit").addEventListener("click", () => this.gestures?.reset());
-
-    const pop = this.must<HTMLElement>("#palette-pop");
-    const paletteBtn = this.must<HTMLButtonElement>("#palette-btn");
-    paletteBtn.addEventListener("click", () => {
-      const open = pop.hidden;
-      pop.hidden = !open;
-      paletteBtn.setAttribute("aria-expanded", String(open));
-    });
-    pop.querySelectorAll<HTMLButtonElement>("[data-palette]").forEach((button) => {
-      button.addEventListener("click", () => {
-        const id = button.dataset.palette;
-        if (!id) return;
-        this.save.paletteId = id;
-        const colors = paletteById(id).colors;
-        if (this.save.colorIndex >= colors.length) this.save.colorIndex = 0;
-        writeSave(this.save);
-        paletteBtn.textContent = `${paletteById(id).name} palette`;
-        pop.hidden = true;
-        paletteBtn.setAttribute("aria-expanded", "false");
-        pop.querySelectorAll<HTMLButtonElement>("[data-palette]").forEach((option) => {
-          option.setAttribute("aria-pressed", String(option.dataset.palette === id));
-        });
-        this.paintSwatches();
-      });
-    });
-    const onDoc = (event: PointerEvent) => {
-      if (pop.hidden) return;
-      const target = event.target;
-      if (!(target instanceof Node)) return;
-      if (pop.contains(target) || paletteBtn.contains(target)) return;
-      pop.hidden = true;
-      paletteBtn.setAttribute("aria-expanded", "false");
-    };
-    document.addEventListener("pointerdown", onDoc);
-    this.viewCleanups.push(() => document.removeEventListener("pointerdown", onDoc));
   }
 
-  private paintSwatches(): void {
+  private colorIndexOf(picture: Picture): number {
+    return pictureSave(this.save, picture.id).colorIndex;
+  }
+
+  private paintSwatches(picture: Picture): void {
     const host = this.must("#swatches");
-    const palette = paletteById(this.save.paletteId);
+    const selected = this.colorIndexOf(picture);
     host.replaceChildren();
-    palette.colors.forEach((color, index) => {
+    picture.colors.forEach((color, index) => {
+      const n = index + 1;
+      const progress = colorProgress(picture, this.save, n);
       const button = document.createElement("button");
       button.type = "button";
       button.className = "swatch";
+      if (progress.total > 0 && progress.done === progress.total) button.classList.add("is-done");
       button.style.background = color;
+      button.style.color = inkOn(color);
+      button.dataset.n = String(n);
       button.setAttribute("role", "option");
-      button.setAttribute("aria-label", `Color ${index + 1}`);
-      button.setAttribute("aria-pressed", String(this.save.tool === "fill" && this.save.colorIndex === index));
+      button.setAttribute("aria-label", `Color ${n}, ${progress.done} of ${progress.total} filled`);
+      button.setAttribute("aria-selected", String(selected === index));
       const num = document.createElement("span");
       num.className = "num";
-      num.textContent = String(index + 1);
+      num.textContent = String(n);
       button.append(num);
       button.addEventListener("click", () => {
-        this.save.tool = "fill";
-        this.save.colorIndex = index;
+        this.findCursor = -1;
+        this.save = withColor(this.save, picture.id, index);
         writeSave(this.save);
-        this.root.classList.remove("is-erasing");
-        this.syncTools();
+        this.paintSwatches(picture);
+        this.paintMeter(picture);
+        this.refreshHot(picture);
+        const left = progress.total - progress.done;
+        this.say(left ? `Color ${n}. ${left} still open.` : `Color ${n} is already finished.`);
       });
       host.append(button);
     });
+    const selectedButton = host.querySelector<HTMLButtonElement>('[aria-selected="true"]');
+    if (selectedButton) {
+      host.scrollLeft = selectedButton.offsetLeft - host.clientWidth / 2 + selectedButton.clientWidth / 2;
+    }
   }
 
-  private syncTools(): void {
-    this.must<HTMLButtonElement>("#eraser").setAttribute("aria-pressed", String(this.save.tool === "erase"));
-    this.must<HTMLButtonElement>("#hints").setAttribute("aria-pressed", String(this.save.hints));
-    this.root.querySelectorAll<HTMLButtonElement>(".swatch").forEach((button, index) => {
-      button.setAttribute("aria-pressed", String(this.save.tool === "fill" && this.save.colorIndex === index));
-    });
+  private paintMeter(picture: Picture): void {
+    const index = this.colorIndexOf(picture);
+    const progress = colorProgress(picture, this.save, index + 1);
+    this.must("#color-label").textContent = `Color ${index + 1}`;
+    this.must("#color-count").textContent = `${progress.done} of ${progress.total}`;
+    const pct = progress.total ? Math.round((progress.done / progress.total) * 100) : 0;
+    this.must<HTMLElement>("#color-bar").style.width = `${pct}%`;
+    const find = this.must<HTMLButtonElement>("#find");
+    find.disabled = progress.done === progress.total;
+    find.setAttribute("aria-label", find.disabled ? "This color is finished" : "Find the next region of this color");
+  }
+
+  private refreshHot(picture: Picture): void {
+    const svg = this.root.querySelector(".stage-svg");
+    if (!(svg instanceof SVGSVGElement) || svg.classList.contains("is-complete")) return;
+    markHot(svg, this.colorIndexOf(picture) + 1);
   }
 
   private tap(picture: Picture, clientX: number, clientY: number): void {
     const hit = document.elementFromPoint(clientX, clientY);
     const group = hit?.closest("[data-region]");
     const regionId = group?.getAttribute("data-region");
-    if (!regionId || !picture.regions.some((region) => region.id === regionId)) return;
-    const color = this.save.tool === "erase" ? null : selectedColor(this.save);
-    const next = applyFill(this.save, picture, regionId, color);
+    const region = picture.regions.find((item) => item.id === regionId);
+    if (!region) return;
+    const fills = pictureSave(this.save, picture.id).fills;
+    if (fills[region.id]) return;
+    const selected = this.colorIndexOf(picture);
+    if (region.n !== selected + 1) {
+      this.nudge();
+      this.say(`That region needs color ${region.n}.`);
+      return;
+    }
+    const color = picture.colors[region.n - 1];
+    if (!color) return;
+    const next = applyFill(this.save, picture, region.id, color);
     if (next === this.save) return;
     this.save = next;
     writeSave(this.save);
     const svg = this.root.querySelector(".stage-svg");
-    if (svg instanceof SVGSVGElement) setRegionFill(svg, regionId, color);
+    if (svg instanceof SVGSVGElement) setRegionFill(svg, region.id, color);
     haptic();
-    this.syncProgress(picture);
+    this.afterPaint(picture, selected);
+  }
+
+  private afterPaint(picture: Picture, previousIndex: number): void {
+    const complete = isComplete(picture, this.save);
+    const svg = this.root.querySelector(".stage-svg");
+    if (complete && svg instanceof SVGSVGElement) {
+      svg.classList.add("is-complete");
+      markHot(svg, 0);
+    }
+    const progress = colorProgress(picture, this.save, previousIndex + 1);
+    if (!complete && progress.done === progress.total) {
+      const nextIndex = firstOpenIndex(picture, this.save, previousIndex + 1);
+      this.findCursor = -1;
+      this.save = withColor(this.save, picture.id, nextIndex);
+      writeSave(this.save);
+      this.say(`Color ${previousIndex + 1} is finished. Color ${nextIndex + 1} is next.`);
+    }
+    if (complete && !this.wasComplete) {
+      this.burst();
+      this.say("That's the whole picture.");
+    }
+    if (!complete) this.wasComplete = false;
+    else this.wasComplete = true;
+    this.paintChrome(picture);
+    if (!complete) this.refreshHot(picture);
   }
 
   private step(picture: Picture, direction: "undo" | "redo"): void {
@@ -458,23 +474,82 @@ export class App {
     writeSave(this.save);
     const svg = this.root.querySelector(".stage-svg");
     const color = direction === "undo" ? action.from : action.to;
-    if (svg instanceof SVGSVGElement) setRegionFill(svg, action.regionId, color);
-    this.syncProgress(picture);
+    if (svg instanceof SVGSVGElement) {
+      setRegionFill(svg, action.regionId, color);
+      const complete = isComplete(picture, this.save);
+      svg.classList.toggle("is-complete", complete);
+      if (!complete) this.root.querySelector(".burst")?.remove();
+    }
+    this.wasComplete = isComplete(picture, this.save);
+    this.paintChrome(picture);
+    this.refreshHot(picture);
   }
 
-  private syncProgress(picture: Picture): void {
+  private paintChrome(picture: Picture): void {
     const data = pictureSave(this.save, picture.id);
-    const undo = this.must<HTMLButtonElement>("#undo");
-    const redo = this.must<HTMLButtonElement>("#redo");
-    undo.disabled = data.undo.length === 0;
-    redo.disabled = data.redo.length === 0;
+    this.must<HTMLButtonElement>("#undo").disabled = data.undo.length === 0;
+    this.must<HTMLButtonElement>("#redo").disabled = data.redo.length === 0;
     const filled = filledCount(picture, this.save);
     this.must("#progress").textContent = `${filled} of ${picture.regions.length}`;
-    const complete = isComplete(picture, this.save);
-    this.must<HTMLElement>("#done").hidden = !complete;
-    if (complete && !this.wasComplete) this.say("Finished. It's saved in your gallery.");
-    if (!complete) this.wasComplete = false;
-    else this.wasComplete = true;
+    this.must<HTMLElement>("#done").hidden = !isComplete(picture, this.save);
+    this.paintSwatches(picture);
+    this.paintMeter(picture);
+  }
+
+  private findNext(picture: Picture): void {
+    const n = this.colorIndexOf(picture) + 1;
+    const fills = pictureSave(this.save, picture.id).fills;
+    const open = picture.regions.filter((region) => region.n === n && !fills[region.id]);
+    if (!open.length) return;
+    this.findCursor = (this.findCursor + 1) % open.length;
+    const region = open[this.findCursor];
+    if (!region) return;
+    const svg = this.root.querySelector(".stage-svg");
+    if (!(svg instanceof SVGSVGElement)) return;
+    const path = svg.querySelector(`[data-region="${CSS.escape(region.id)}"]`);
+    if (!(path instanceof SVGPathElement)) return;
+    const [x, y] = this.focusPoint(region, path);
+    this.gestures?.focus(x, y, 2.8);
+    path.classList.remove("found");
+    void path.getBoundingClientRect();
+    path.classList.add("found");
+    window.setTimeout(() => path.classList.remove("found"), 1400);
+    this.say(`Color ${n}, region ${this.findCursor + 1} of ${open.length}.`);
+  }
+
+  private focusPoint(region: Region, path: SVGPathElement): [number, number] {
+    if (region.label) return region.label;
+    const box = path.getBBox();
+    return [box.x + box.width / 2, box.y + box.height / 2];
+  }
+
+  private nudge(): void {
+    const viewport = this.root.querySelector("#viewport");
+    if (!(viewport instanceof HTMLElement)) return;
+    viewport.classList.remove("nudge");
+    void viewport.offsetWidth;
+    viewport.classList.add("nudge");
+  }
+
+  private burst(): void {
+    const viewport = this.root.querySelector("#viewport");
+    if (!(viewport instanceof HTMLElement) || viewport.querySelector(".burst")) return;
+    if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) return;
+    const burst = document.createElement("div");
+    burst.className = "burst";
+    burst.setAttribute("aria-hidden", "true");
+    const colors = ["#f2c1c8", "#f7e3c2", "#e6c8ee", "#c9dfc4", "#fffaf8", "#f3d5b5"];
+    for (let i = 0; i < 12; i += 1) {
+      const bit = document.createElement("i");
+      bit.style.left = `${6 + ((i * 37) % 88)}%`;
+      bit.style.background = colors[i % colors.length] ?? "#f2c1c8";
+      bit.style.animationDelay = `${i * 0.06}s`;
+      const size = 8 + (i % 4) * 3;
+      bit.style.width = `${size}px`;
+      bit.style.height = `${size}px`;
+      burst.append(bit);
+    }
+    viewport.append(burst);
   }
 
   private async savePng(picture: Picture): Promise<void> {
@@ -486,9 +561,9 @@ export class App {
     }
   }
 
-  private setPack(pack: PackId): void {
-    if (this.save.pack === pack) return;
-    this.save.pack = pack;
+  private setCategory(category: CategoryFilter): void {
+    if (this.save.category === category) return;
+    this.save.category = category;
     writeSave(this.save);
     this.render();
   }

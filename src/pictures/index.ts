@@ -1,109 +1,105 @@
-import bonfireFile from "./art/od-bonfire.json";
-import hatFile from "./art/od-hat.json";
-import instrumentsFile from "./art/od-instruments.json";
-import sailFile from "./art/od-sail.json";
-import towerFile from "./art/od-tower.json";
-import truckFile from "./art/od-truck.json";
-import braceletsFile from "./art/swift-bracelets.json";
-import cardiganFile from "./art/swift-cardigan.json";
-import catsFile from "./art/swift-cats.json";
-import guitarFile from "./art/swift-guitar.json";
-import mirrorballFile from "./art/swift-mirrorball.json";
-import snakeFile from "./art/swift-snake.json";
-import stageFile from "./art/swift-stage.json";
-import type { Credit, PackId, Picture, Region, Stroke } from "./types.ts";
-
-export const packs: { id: PackId; name: string; blurb: string }[] = [
-  {
-    id: "swift",
-    name: "Taylor Swift",
-    blurb: "Lights, keepsakes, and soft sparkle.",
-  },
-  {
-    id: "dominion",
-    name: "Old Dominion",
-    blurb: "Roads, porches, and late sun.",
-  },
-];
+import blueWingFile from "./art/blue-wing.json";
+import tartFile from "./art/berry-tart.json";
+import catFile from "./art/cat-nap.json";
+import coastFile from "./art/coast-path.json";
+import foxFile from "./art/garden-fox.json";
+import robinFile from "./art/garden-robin.json";
+import lakeFile from "./art/lake-evening.json";
+import teaFile from "./art/lemon-tea.json";
+import monarchFile from "./art/monarch.json";
+import cityFile from "./art/night-windows.json";
+import roseFile from "./art/open-rose.json";
+import petalFile from "./art/petal-mandala.json";
+import cottageFile from "./art/rose-cottage.json";
+import starFile from "./art/star-mandala.json";
+import swanFile from "./art/still-swan.json";
+import sunflowerFile from "./art/sunflower.json";
+import { categories, type CategoryId, type Picture, type Region } from "./types.ts";
 
 type ArtFile = {
   id: string;
-  pack: PackId;
+  category: CategoryId;
   title: string;
   caption: string;
   viewBox: string;
-  regionStroke: number;
-  credits: Credit[];
+  colors: string[];
   regions: Region[];
-  strokes: Stroke[];
-  clips: Picture["clips"];
+  outline: string;
+  ink: Picture["ink"];
 };
 
 function art(file: ArtFile): Picture {
   return {
     id: file.id,
-    pack: file.pack,
+    category: file.category,
     title: file.title,
     caption: file.caption,
     viewBox: file.viewBox,
-    regionStroke: file.regionStroke,
-    credits: file.credits,
+    colors: file.colors,
     regions: file.regions,
-    strokes: file.strokes,
-    clips: file.clips ?? [],
+    outline: file.outline,
+    ink: file.ink ?? [],
   };
 }
 
 export const pictures: Picture[] = [
-  art(stageFile as unknown as ArtFile),
-  art(guitarFile as unknown as ArtFile),
-  art(braceletsFile as unknown as ArtFile),
-  art(catsFile as unknown as ArtFile),
-  art(snakeFile as unknown as ArtFile),
-  art(cardiganFile as unknown as ArtFile),
-  art(mirrorballFile as unknown as ArtFile),
-  art(truckFile as unknown as ArtFile),
-  art(hatFile as unknown as ArtFile),
-  art(instrumentsFile as unknown as ArtFile),
-  art(towerFile as unknown as ArtFile),
-  art(bonfireFile as unknown as ArtFile),
-  art(sailFile as unknown as ArtFile),
+  art(catFile as unknown as ArtFile),
+  art(foxFile as unknown as ArtFile),
+  art(roseFile as unknown as ArtFile),
+  art(sunflowerFile as unknown as ArtFile),
+  art(starFile as unknown as ArtFile),
+  art(petalFile as unknown as ArtFile),
+  art(lakeFile as unknown as ArtFile),
+  art(coastFile as unknown as ArtFile),
+  art(tartFile as unknown as ArtFile),
+  art(teaFile as unknown as ArtFile),
+  art(monarchFile as unknown as ArtFile),
+  art(blueWingFile as unknown as ArtFile),
+  art(robinFile as unknown as ArtFile),
+  art(swanFile as unknown as ArtFile),
+  art(cottageFile as unknown as ArtFile),
+  art(cityFile as unknown as ArtFile),
 ];
 
 function assertPictures(list: Picture[]): void {
+  if (list.length < 16) throw new Error(`Need at least 16 pictures, found ${list.length}`);
   const ids = new Set<string>();
   for (const picture of list) {
     if (ids.has(picture.id)) throw new Error(`Duplicate picture ${picture.id}`);
     ids.add(picture.id);
-    if (!picture.credits.length) throw new Error(`${picture.id} is missing credits`);
-    for (const credit of picture.credits) {
-      if (!credit.sourceUrl.startsWith("https://")) throw new Error(`${picture.id} has a bad source`);
-      if (!credit.license || !credit.author || !credit.licenseUrl.startsWith("https://")) {
-        throw new Error(`${picture.id} has an incomplete credit`);
-      }
-    }
-    const regions = new Set<string>();
     const count = picture.regions.length;
-    if (count < 8 || count > 700) {
-      throw new Error(`${picture.id} has ${count} regions; want 8–700`);
+    if (count < 100 || count > 300) throw new Error(`${picture.id} has ${count} regions; want 100–300`);
+    if (picture.colors.length < 6 || picture.colors.length > 24) {
+      throw new Error(`${picture.id} has ${picture.colors.length} colors`);
     }
+    const seen = new Set<string>();
+    const used = new Set<number>();
     for (const region of picture.regions) {
-      if (regions.has(region.id)) throw new Error(`${picture.id} repeats region ${region.id}`);
-      regions.add(region.id);
-      if (region.n < 1 || region.n > 8) throw new Error(`${picture.id} ${region.id} has a bad number`);
+      if (seen.has(region.id)) throw new Error(`${picture.id} repeats ${region.id}`);
+      seen.add(region.id);
       if (!region.d.trim()) throw new Error(`${picture.id} ${region.id} is empty`);
+      if (region.n < 1 || region.n > picture.colors.length) throw new Error(`${picture.id} ${region.id} has a bad number`);
+      if (!/^#[0-9a-fA-F]{6}$/.test(picture.colors[region.n - 1] ?? "")) {
+        throw new Error(`${picture.id} color ${region.n} is not hex`);
+      }
+      used.add(region.n);
+      if (region.label && region.label.length !== 2) throw new Error(`${picture.id} ${region.id} has a bad label`);
+    }
+    for (let n = 1; n <= picture.colors.length; n += 1) {
+      if (!used.has(n)) throw new Error(`${picture.id} never uses color ${n}`);
     }
   }
-  for (const pack of packs) {
-    const count = list.filter((picture) => picture.pack === pack.id).length;
-    if (count < 6) throw new Error(`${pack.name} needs at least 6 pictures`);
+  for (const category of categories) {
+    const count = list.filter((picture) => picture.category === category.id).length;
+    if (count < 2) throw new Error(`${category.name} needs at least 2 pictures`);
   }
 }
 
 assertPictures(pictures);
 
-export function picturesIn(pack: PackId): Picture[] {
-  return pictures.filter((picture) => picture.pack === pack);
+export function picturesIn(category: CategoryId | "all"): Picture[] {
+  if (category === "all") return pictures;
+  return pictures.filter((picture) => picture.category === category);
 }
 
 export function getPicture(id: string): Picture | undefined {

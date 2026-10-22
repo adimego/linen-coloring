@@ -1,3 +1,11 @@
+import beslerFile from "./art/besler-tulips.json";
+import bouquetFile from "./art/tulip-bouquet.json";
+import canFile from "./art/watering-can.json";
+import closeupFile from "./art/tulip-closeup.json";
+import fieldFile from "./art/tulip-field.json";
+import mandalaTulipFile from "./art/tulip-mandala.json";
+import pathFile from "./art/tulip-path.json";
+import redouteFile from "./art/redoute-tulip.json";
 import bedroomFile from "./art/pink-bedroom.json";
 import blossomsFile from "./art/cherry-blossoms.json";
 import boxFile from "./art/jewelry-box.json";
@@ -93,6 +101,14 @@ function art(file: ArtFile): Picture {
 }
 
 export const pictures: Picture[] = [
+  art(fieldFile as unknown as ArtFile),
+  art(bouquetFile as unknown as ArtFile),
+  art(closeupFile as unknown as ArtFile),
+  art(mandalaTulipFile as unknown as ArtFile),
+  art(pathFile as unknown as ArtFile),
+  art(canFile as unknown as ArtFile),
+  art(redouteFile as unknown as ArtFile),
+  art(beslerFile as unknown as ArtFile),
   art(blossomsFile as unknown as ArtFile),
   art(flamingoFile as unknown as ArtFile),
   art(peonyFile as unknown as ArtFile),
@@ -188,6 +204,7 @@ function assertPictures(list: Picture[]): void {
     }
   }
   const minimums: Partial<Record<CategoryId, number>> = {
+    tulips: 8,
     pink: 6,
     jewelry: 6,
     "fun-designs": 6,

@@ -30,12 +30,12 @@ A region is too small when its area is under 0.15% of the page (221 square units
 | Quilt Blocks | fun-designs | 168 | 0.13% | 7.0px | 115 | 0.23% | 17.1px |
 | Retro Swirls | fun-designs | 170 | 0.06% | 8.6px | 82 | 0.24% | 17.8px |
 | Stained Glass | fun-designs | 170 | 0.05% | 3.1px | 150 | 0.19% | 15.2px |
-| Drop Earrings | jewelry | 170 | 0.01% | 3.9px | 83 | 0.23% | 15.5px |
+| Drop Earrings | jewelry | 170 | 0.04% | 7.8px | 144 | 0.17% | 15.4px |
 | Gem Brooch | jewelry | 170 | 0.06% | 9.6px | 144 | 0.17% | 16.3px |
-| Gem Ring | jewelry | 170 | 0.04% | 7.8px | 132 | 0.18% | 16.0px |
-| Jewelry Box | jewelry | 170 | 0.06% | 11.6px | 159 | 0.17% | 15.5px |
-| Pearl Strand | jewelry | 170 | 0.03% | 4.6px | 145 | 0.16% | 15.4px |
-| Pendant Necklace | jewelry | 170 | 0.04% | 7.8px | 127 | 0.18% | 15.5px |
+| Gem Ring | jewelry | 170 | 0.06% | 8.5px | 147 | 0.19% | 15.9px |
+| Jewelry Box | jewelry | 170 | 0.08% | 7.8px | 156 | 0.17% | 16.6px |
+| Pearl Strand | jewelry | 170 | 0.03% | 6.2px | 133 | 0.18% | 15.5px |
+| Pendant Necklace | jewelry | 170 | 0.01% | 1.6px | 136 | 0.17% | 15.6px |
 | Coast Path | landscapes | 185 | 0.05% | 6.9px | 176 | 0.17% | 17.1px |
 | Lake Evening | landscapes | 185 | 0.07% | 7.8px | 175 | 0.17% | 17.1px |
 | Petal Mandala | mandalas | 185 | 0.06% | 7.5px | 164 | 0.21% | 15.1px |
@@ -54,11 +54,11 @@ A region is too small when its area is under 0.15% of the page (221 square units
 | Reading Nook | peaceful | 185 | 0.04% | 4.9px | 171 | 0.18% | 15.6px |
 | Snow Cabin | peaceful | 185 | 0.04% | 4.7px | 163 | 0.17% | 15.5px |
 | Zen Garden | peaceful | 185 | 0.06% | 6.3px | 139 | 0.17% | 15.5px |
-| Cherry Blossoms | pink | 170 | 0.03% | 5.6px | 106 | 0.24% | 16.2px |
-| Flamingo | pink | 170 | 0.02% | 3.1px | 140 | 0.23% | 17.7px |
+| Cherry Blossoms | pink | 170 | 0.04% | 4.6px | 108 | 0.30% | 16.7px |
+| Flamingo | pink | 170 | 0.04% | 5.3px | 142 | 0.18% | 15.6px |
 | Peony | pink | 170 | 0.06% | 6.3px | 162 | 0.18% | 14.7px |
 | Pink Bedroom | pink | 170 | 0.15% | 7.8px | 156 | 0.19% | 14.7px |
-| Pink Cupcakes | pink | 169 | 0.03% | 3.8px | 129 | 0.17% | 14.7px |
+| Pink Cupcakes | pink | 170 | 0.10% | 6.2px | 141 | 0.18% | 17.1px |
 | Vanity Table | pink | 170 | 0.06% | 7.8px | 157 | 0.17% | 15.5px |
 | Night Windows | places | 185 | 0.03% | 7.8px | 85 | 0.38% | 15.5px |
 | Rose Cottage | places | 185 | 0.03% | 3.1px | 155 | 0.19% | 15.5px |
@@ -70,3 +70,11 @@ A region is too small when its area is under 0.15% of the page (221 square units
 | Sunset Hill | relaxing-landscapes | 195 | 0.03% | 2.3px | 90 | 0.19% | 15.5px |
 | Village at Kusatsu | relaxing-landscapes | 244 | 0.05% | 3.1px | 114 | 0.17% | 15.9px |
 | Wind over the Fields | relaxing-landscapes | 216 | 0.05% | 4.5px | 108 | 0.18% | 16.3px |
+| Besler Tulips | tulips | 246 | 0.04% | 1.6px | 85 | 0.30% | 15.5px |
+| Garden Path | tulips | 170 | 0.03% | 7.1px | 113 | 0.19% | 14.7px |
+| Single Tulip | tulips | 170 | 0.02% | 3.1px | 135 | 0.17% | 14.7px |
+| Sweet Tulip | tulips | 170 | 0.02% | 3.8px | 93 | 0.20% | 17.1px |
+| Tulip Bouquet | tulips | 170 | 0.05% | 4.7px | 141 | 0.18% | 16.3px |
+| Tulip Field | tulips | 170 | 0.02% | 5.2px | 115 | 0.22% | 16.1px |
+| Tulip Mandala | tulips | 170 | 0.03% | 5.8px | 132 | 0.18% | 15.5px |
+| Watering Can | tulips | 170 | 0.05% | 3.1px | 142 | 0.18% | 14.7px |

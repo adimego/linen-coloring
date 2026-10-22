@@ -8,6 +8,7 @@
     "build": "tsc && vite build",
     "preview": "vite preview --host 127.0.0.1 --port 43123",
     "test:match": "node --experimental-strip-types --disable-warning=ExperimentalWarning scripts/test_match.ts",
+    "test:sort": "node --experimental-strip-types --disable-warning=ExperimentalWarning scripts/test_sort.ts",
     "test:daily": "node --experimental-strip-types --disable-warning=ExperimentalWarning scripts/test_daily.ts"
   },
   "dependencies": {

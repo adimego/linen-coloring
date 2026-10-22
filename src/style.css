@@ -711,7 +711,7 @@ h1 {
 .modes {
   flex: 0 0 auto;
   display: grid;
-  grid-template-columns: 1fr 1fr;
+  grid-template-columns: 1fr 1fr 1fr;
   gap: 4px;
   margin: 2px 16px 8px;
   padding: 4px;
@@ -727,6 +727,8 @@ h1 {
   background: transparent;
   color: var(--rose);
   font-weight: 700;
+  font-size: 0.95rem;
+  white-space: nowrap;
 }
 
 .modes button[aria-selected="true"] {
@@ -1242,3 +1244,335 @@ html[data-theme="night"] .board-frame { background: #3a332e; box-shadow: none; }
 html[data-theme="night"] .tile.is-hole { background: #3a332e; }
 html[data-theme="night"] .thumb { background: #fbf6f0; }
 html[data-theme="night"] .credits .credit-work { color: #f3e6d4; }
+
+/* Sort — vases of pastel pieces */
+.sort-grid {
+  display: grid;
+  grid-template-columns: repeat(5, 1fr);
+  gap: 8px;
+  padding: 4px 16px 8px;
+}
+
+.sort-level {
+  min-height: 52px;
+  border-radius: 14px;
+  border: 1px solid #f3c9d4;
+  background: #fff6f8;
+  color: var(--rose);
+  font-weight: 800;
+  font-size: 1rem;
+}
+
+.sort-level.is-next { box-shadow: 0 0 0 2px #e7b3c3; }
+.sort-level.is-open::after {
+  content: "";
+  display: block;
+  width: 6px;
+  height: 6px;
+  margin: 2px auto 0;
+  border-radius: 50%;
+  border: 2px solid var(--rose);
+}
+.sort-level.is-done { background: #fff; color: #6d3048; }
+.sort-level.is-done::after {
+  content: "";
+  display: block;
+  width: 6px;
+  height: 6px;
+  margin: 2px auto 0;
+  border-radius: 50%;
+  background: var(--rose);
+}
+
+.sort-note {
+  margin: 0 16px 2px;
+  color: #6d3048;
+  font-size: 0.86rem;
+  font-weight: 700;
+  line-height: 1.35;
+}
+
+.sort-stage {
+  flex: 1;
+  min-height: 0;
+  overflow: auto;
+  display: flex;
+}
+
+.vase-board {
+  flex: 1;
+  min-height: 0;
+  display: grid;
+  grid-template-columns: repeat(var(--cols, 4), minmax(0, 1fr));
+  align-content: center;
+  align-items: end;
+  justify-items: center;
+  gap: 18px 2px;
+  padding: 6px 8px 8px;
+}
+
+.vase-board.is-busy { pointer-events: none; }
+
+.vase {
+  --jar: var(--jar-size, 46px);
+  --bit: var(--bit-size, 32px);
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: flex-end;
+  width: 100%;
+  min-height: 44px;
+  padding: 18px 0 0;
+  border: 0;
+  background: transparent;
+  touch-action: manipulation;
+}
+
+.vase.is-narrow {
+  --jar: calc(var(--jar-size, 46px) * 0.74);
+  --bit: calc(var(--bit-size, 32px) * 0.82);
+}
+
+.vase .glints { position: absolute; inset: 0; pointer-events: none; }
+
+.glint {
+  position: absolute;
+  left: 50%;
+  top: 8px;
+  width: 14px;
+  height: 14px;
+  margin: 0;
+  background: #fff;
+  clip-path: polygon(50% 0%, 61% 36%, 100% 50%, 61% 64%, 50% 100%, 39% 64%, 0% 50%, 39% 36%);
+  filter: drop-shadow(0 0 2px rgba(255, 196, 214, 0.95));
+  opacity: 0;
+}
+
+.lid {
+  position: relative;
+  width: calc(var(--jar) + 8px);
+  height: 12px;
+  margin-bottom: 2px;
+  border-radius: 8px 8px 4px 4px;
+  border: 1.5px solid #d9899e;
+  background: linear-gradient(#fff, #f4b7c8);
+  box-shadow: inset 0 2px 0 rgba(255, 255, 255, 0.8);
+  opacity: 0;
+  transform: translateY(-8px);
+}
+
+.lid::before {
+  content: "";
+  position: absolute;
+  left: 50%;
+  top: -5px;
+  width: 12px;
+  height: 7px;
+  transform: translateX(-50%);
+  border-radius: 6px 6px 2px 2px;
+  background: #fff;
+  border: 1.5px solid #e3a8ba;
+}
+
+.vase.is-sealed .lid {
+  opacity: 1;
+  transform: none;
+  transition: opacity 180ms ease, transform 220ms ease;
+}
+
+.mouth,
+.foot {
+  border: 1.5px solid rgba(196, 130, 150, 0.6);
+}
+
+.mouth {
+  width: calc(var(--jar) + 12px);
+  height: 9px;
+  margin-bottom: -5px;
+  border-radius: 8px;
+  background: linear-gradient(#fff, #f8d5df);
+  z-index: 2;
+}
+
+.glass {
+  width: var(--jar);
+  height: calc(var(--cap) * var(--bit) + 8px);
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-end;
+  align-items: center;
+  padding-bottom: 3px;
+  border-radius: 7px 7px 16px 16px;
+  border: 1.5px solid rgba(196, 140, 156, 0.55);
+  background: linear-gradient(180deg, rgba(255, 255, 255, 0.45), rgba(255, 248, 250, 0.92));
+  box-shadow: inset 7px 0 12px rgba(255, 255, 255, 0.75), inset -5px 0 8px rgba(210, 160, 176, 0.16);
+}
+
+.vase.is-source .glass {
+  box-shadow:
+    0 0 0 3px #e7a0b4,
+    inset 7px 0 12px rgba(255, 255, 255, 0.75);
+}
+
+.foot {
+  width: calc(var(--jar) + 4px);
+  height: 8px;
+  margin-top: -2px;
+  border-top: 0;
+  border-radius: 0 0 10px 10px;
+  background: linear-gradient(#fdeef2, #f3c3d0);
+}
+
+.stack {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.bit {
+  width: var(--bit);
+  height: var(--bit);
+  display: grid;
+  place-items: center;
+  flex: 0 0 auto;
+  transition: transform 180ms ease;
+}
+
+.bit svg { width: 92%; height: 92%; display: block; overflow: visible; }
+.bit.is-up { position: relative; z-index: 3; transform: translateY(-18px); }
+
+.pour-layer {
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  z-index: 40;
+}
+
+.bit.is-flight {
+  position: fixed;
+  margin: 0;
+  z-index: 41;
+  transition: none;
+}
+
+.sort-done {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  margin: 0 12px 8px;
+  padding: 10px 12px;
+  border-radius: 16px;
+  background: rgba(255, 246, 248, 0.94);
+  box-shadow: 0 8px 24px rgba(80, 40, 60, 0.12);
+}
+
+.sort-done[hidden] { display: none; }
+
+.sort-done p {
+  margin: 0;
+  font-size: 0.92rem;
+  font-weight: 800;
+  color: #5c3044;
+}
+
+.sort-done-actions { display: flex; gap: 6px; flex: 0 0 auto; }
+
+.sort-done-actions button {
+  min-height: 44px;
+  padding: 0 12px;
+  border-radius: 12px;
+  border: 1px solid #efc0cc;
+  background: #fff;
+  color: var(--rose);
+  font-weight: 800;
+}
+
+.sort-done-actions button.primary {
+  background: var(--rose);
+  color: #fffafb;
+  border: 0;
+}
+
+@keyframes sort-settle {
+  0% { transform: translateY(-10px); }
+  65% { transform: translateY(2px); }
+  100% { transform: none; }
+}
+
+@keyframes sort-glint {
+  0% { opacity: 1; transform: translate(-50%, 0) scale(0.45); }
+  100% { opacity: 0; transform: translate(calc(-50% + var(--dx)), var(--dy)) scale(1); }
+}
+
+@keyframes sort-shown {
+  from { transform: scale(0.86); }
+  to { transform: none; }
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  .bit.is-settle { animation: sort-settle 200ms ease-out; }
+  .bit.is-shown { animation: sort-shown 240ms ease-out; }
+  .vase.is-fresh .glint { animation: sort-glint 720ms ease-out forwards; animation-delay: var(--delay, 0ms); }
+  .vase.is-hint .glass { animation: sort-hint 720ms ease-in-out; }
+}
+
+@keyframes sort-hint {
+  50% { box-shadow: 0 0 0 3px #d56d8d, inset 7px 0 12px rgba(255, 255, 255, 0.75); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .bit, .lid, .vase.is-sealed .lid { transition: none; }
+  .bit.is-up { transform: none; }
+  .glint { display: none; }
+}
+
+html[data-theme="night"] .sort-note,
+html[data-theme="night"] .sort-done p { color: #f3e6d4; }
+
+html[data-theme="night"] .sort-level {
+  background: #3a332e;
+  border-color: rgba(243, 230, 212, 0.16);
+  color: #f3e6d4;
+}
+
+html[data-theme="night"] .sort-level.is-done { background: #322c29; color: #f3e6d4; }
+
+html[data-theme="night"] .sort-done {
+  background: #322c29;
+  box-shadow: none;
+}
+
+html[data-theme="night"] .sort-done-actions button {
+  background: #3a332e;
+  border-color: rgba(243, 230, 212, 0.16);
+  color: #f3e6d4;
+}
+
+html[data-theme="night"] .sort-done-actions button.primary {
+  background: #a85b72;
+  color: #fffaf8;
+}
+
+html[data-theme="night"] .glass {
+  background: linear-gradient(180deg, rgba(255, 255, 255, 0.06), rgba(255, 255, 255, 0.14));
+  border-color: rgba(243, 230, 212, 0.28);
+  box-shadow: inset 6px 0 10px rgba(255, 255, 255, 0.06);
+}
+
+html[data-theme="night"] .mouth,
+html[data-theme="night"] .foot,
+html[data-theme="night"] .lid {
+  background: linear-gradient(#5c4748, #3a2e32);
+  border-color: rgba(243, 230, 212, 0.32);
+}
+
+html[data-theme="night"] .lid::before {
+  background: #6a5456;
+  border-color: rgba(243, 230, 212, 0.32);
+}
+
+html[data-theme="night"] .vase.is-source .glass {
+  box-shadow: 0 0 0 3px #e7a0b4, inset 6px 0 10px rgba(255, 255, 255, 0.06);
+}

@@ -85,6 +85,7 @@ export function renderMatchHome(root: HTMLElement, ctx: MatchCtx): () => void {
     <div class="modes" role="tablist" aria-label="Game">
       <button type="button" role="tab" data-mode="color" aria-selected="false">Color</button>
       <button type="button" role="tab" data-mode="match" aria-selected="true">Match</button>
+      <button type="button" role="tab" data-mode="sort" aria-selected="false">Sort</button>
     </div>
     <main class="gallery">
       <p class="blurb">Swap pieces that touch. Three alike lift the leaves and uncover a picture.</p>

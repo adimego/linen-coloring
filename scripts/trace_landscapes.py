@@ -342,22 +342,33 @@ def background_colors(indexed: np.ndarray) -> set[int]:
     return chosen
 
 
-def build(spec: dict, meta: dict, indexed: np.ndarray, colors: list[str]) -> dict:
+def build(
+    spec: dict,
+    meta: dict,
+    indexed: np.ndarray,
+    colors: list[str],
+    category: str = "relaxing-landscapes",
+    target: int = 175,
+    low: int = 100,
+    high: int = 300,
+) -> dict:
     scene = pages.Scene(colors, background_colors(indexed), spec["seed"])
     scene.img = indexed
-    target = 175
-    regions, palette, outline = pages.vectorize(scene, target)
-    if len(regions) > 300:
-        regions, palette, outline = pages.vectorize(scene, 140)
-    if len(regions) < 100:
-        regions, palette, outline = pages.vectorize(scene, 230)
-    if not 100 <= len(regions) <= 300:
+    attempt = target
+    regions, palette, outline = pages.vectorize(scene, attempt)
+    for _ in range(4):
+        count = len(regions)
+        if low <= count <= high:
+            break
+        attempt = int(attempt * (0.8 if count > high else 1.28))
+        regions, palette, outline = pages.vectorize(scene, max(40, attempt))
+    if not low <= len(regions) <= high:
         raise RuntimeError(f"{spec['id']} has {len(regions)} regions")
     if not 6 <= len(palette) <= 24:
         raise RuntimeError(f"{spec['id']} has {len(palette)} colors")
     return {
         "id": spec["id"],
-        "category": "relaxing-landscapes",
+        "category": category,
         "title": spec["title"],
         "caption": spec["caption"],
         "viewBox": f"0 0 {pages.VW} {pages.VH}",

@@ -153,7 +153,7 @@ export class App {
             )
             .join("")}
         </div>
-        <p class="note">A wrong number never fills — only the matching color does. Relaxing Landscapes are adapted from public-domain prints. The other pages are drawn for Linen.</p>
+        <p class="note">A wrong number never fills — only the matching color does. Music and Relaxing Landscapes come from public-domain art. The other pages are drawn for Linen.</p>
         <button type="button" class="text-link" id="credits">Image credits</button>
         <div class="filters" role="group" aria-label="Show">
           <button type="button" data-filter="all" aria-pressed="${this.save.filter === "all"}">All</button>
@@ -213,7 +213,7 @@ export class App {
         </div>
       </header>
       <main class="gallery credits">
-        <p class="note">Relaxing Landscapes are adapted from public-domain prints. Every other page is an original illustration drawn for Linen, not copied from another coloring app.</p>
+        <p class="note">Music and Relaxing Landscapes are adapted from public-domain art. Every other page is an original illustration drawn for Linen, not copied from another coloring app.</p>
         ${groups
           .map(
             (group) => `

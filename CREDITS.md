@@ -1,8 +1,85 @@
 # Image credits
 
-Relaxing Landscapes are adapted from public-domain prints on Wikimedia Commons.
+Music and Relaxing Landscapes are adapted from public-domain art on Wikimedia Commons.
 Every other coloring page is an original illustration drawn for this app.
 Those original pages are not copied from Happy Color, Color by Number, or any other coloring product.
+
+## Music
+
+Each of these pages is a color-by-number adaptation of a public-domain artwork.
+None of them use a modern musician's likeness, a band mark, or song lyrics.
+
+### The Arts: Music
+
+An Art Nouveau figure with a lyre.
+
+- **The Arts: Music, 1898**
+  - Author: Alphonse Mucha
+  - Source: https://commons.wikimedia.org/wiki/File:Alfons_Mucha_-_The_Arts_Music%2C_1898.jpg
+  - License: Public domain — https://creativecommons.org/publicdomain/mark/1.0/
+
+### Violin and Score
+
+A violin resting on open sheet music.
+
+- **Still Life — Violin and Music**
+  - Author: William Michael Harnett
+  - Source: https://commons.wikimedia.org/wiki/File:William_Michael_Harnett_Still_life_Violin_and_Music.jpg
+  - License: Public domain — https://creativecommons.org/publicdomain/mark/1.0/
+
+### Still Guitar
+
+A guitar among flowers and a glass.
+
+- **Still Life with a Guitar, about 1650**
+  - Author: Tomás Yepes
+  - Source: https://commons.wikimedia.org/wiki/File:Tom%C3%A1s_Yepes_-_Still_Life_With_A_Guitar%2C_c._1650.jpg
+  - License: Public domain — https://creativecommons.org/publicdomain/mark/1.0/
+
+### At the Harp
+
+A player beside a tall harp.
+
+- **Woman Playing a Harp**
+  - Author: Caroline Delestres
+  - Source: https://commons.wikimedia.org/wiki/File:Caroline_Delestres_-_Woman_Playing_a_Harp_2.jpg
+  - License: Public domain — https://creativecommons.org/publicdomain/mark/1.0/
+
+### At the Piano
+
+A quiet hour at the piano.
+
+- **Girl at the Piano, 1892**
+  - Author: Jenny Nyström
+  - Source: https://commons.wikimedia.org/wiki/File:Jenny_Nystr%C3%B6m_Girl_at_the_Piano_1892.jpg
+  - License: Public domain — https://creativecommons.org/publicdomain/mark/1.0/
+
+### Maple and Shamisen
+
+A shamisen under red maple leaves.
+
+- **Maple Leaves (Koyo) and Shamisen, about 1803**
+  - Author: Kitagawa Utamaro
+  - Source: https://commons.wikimedia.org/wiki/File:Maple_Leaves_Koyo_and_Shamisen_by_Kitagawa_Utamaro_c1803.png
+  - License: Public domain — https://creativecommons.org/publicdomain/mark/1.0/
+
+### With a Koto
+
+A koto held close, from a Hokusai print.
+
+- **Koto o idaku musume (Girl Holding a Koto)**
+  - Author: Katsushika Hokusai
+  - Source: https://commons.wikimedia.org/wiki/File:Koto_o_idaku_musume_LCCN2008660877.jpg
+  - License: Public domain — https://creativecommons.org/publicdomain/mark/1.0/
+
+### Flute Player
+
+A flute raised in a woodblock print.
+
+- **Flute Player**
+  - Author: Utagawa Kuniteru II
+  - Source: https://commons.wikimedia.org/wiki/File:Utagawa_Kuniteru_II_-_Flute_Player.jpg
+  - License: Public domain — https://creativecommons.org/publicdomain/mark/1.0/
 
 ## Relaxing Landscapes
 

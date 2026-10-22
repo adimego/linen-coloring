@@ -536,6 +536,71 @@ h1 {
 
 .is-erasing .swatch { opacity: 0.45; }
 
+.text-link {
+  display: block;
+  margin: 8px 20px 0;
+  padding: 0;
+  border: 0;
+  background: none;
+  color: var(--rose);
+  font-weight: 700;
+  text-decoration: underline;
+  text-underline-offset: 3px;
+  min-height: 44px;
+  text-align: left;
+}
+
+.credits h2 {
+  margin: 22px 20px 8px;
+  font-family: var(--serif);
+  font-size: 1.35rem;
+  color: #6d3048;
+}
+
+.credits article {
+  margin: 0 16px 12px;
+  padding: 12px 14px;
+  border-radius: 18px;
+  background: #fff6f8;
+  border: 1px solid #f3c9d4;
+}
+
+.credits h3 {
+  margin: 0;
+  font-size: 1.05rem;
+}
+
+.credits p {
+  margin: 4px 0 8px;
+  color: var(--muted);
+}
+
+.credits ul {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.credits li {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 0;
+}
+
+.credits a {
+  color: var(--rose);
+  font-weight: 700;
+  overflow-wrap: anywhere;
+}
+
+.credits li span {
+  color: var(--ink);
+}
+
 @media (hover: hover) {
   .card:hover { transform: translateY(-1px); }
   .pack-switch button:hover,

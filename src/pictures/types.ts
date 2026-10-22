@@ -28,12 +28,23 @@ export type Clip = {
   d: string;
 };
 
+export type Credit = {
+  work: string;
+  author: string;
+  sourceUrl: string;
+  license: string;
+  licenseUrl: string;
+};
+
 export type Picture = {
   id: string;
   pack: PackId;
   title: string;
   caption: string;
   viewBox: string;
+  /** Outline thickness in viewBox units. Zero keeps the traced ink overlay as the only line. */
+  regionStroke: number;
+  credits: Credit[];
   regions: Region[];
   strokes: Stroke[];
   clips: Clip[];

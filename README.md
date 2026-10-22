@@ -6,7 +6,7 @@ The gallery is a soft pink room. Each picture opens on warm paper so the colors 
 
 ## Theme packs
 
-Two packs of original line art, drawn as dense adult coloring pages: fine interior patterns, floral and geometric fills, and a repeating border. They are inspired by a mood, not by official artwork. There are no portraits, likenesses, logos, album covers, or lyrics, and the app is not affiliated with either artist. Pinch in when a region is small.
+Two packs of public-domain and CC0 line art, traced into closed regions you can tap to fill. They are inspired by a mood, not by official artwork. There are no portraits, likenesses, logos, album covers, or lyrics, and the app is not affiliated with either artist. Every source, author, and license is listed in the gallery’s Image credits screen and in [CREDITS.md](CREDITS.md). Pinch in when a region is small.
 
 **Taylor Swift** — concert lights, a sparkly acoustic guitar, friendship bracelets, two cats, a snake in flowers, a cardigan, and a mirrorball.
 
@@ -61,7 +61,9 @@ Then open the native project with `npx cap open ios` or `npx cap open android`. 
 
 ## Project map
 
-- `src/pictures` — the SVG regions for both packs, plus the palettes
+- `src/pictures` — traced SVG regions for both packs, their credits, and the palettes
+- `scripts/trace_art.py` — downloads the source art and rebuilds the regions
+- `CREDITS.md` — source, author, and license for every page
 - `src/app.ts` — gallery, coloring screen, and controls
 - `src/gestures.ts` — tap, pan, and pinch
 - `src/audio.ts` — the generated ambient tone

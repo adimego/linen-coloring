@@ -31,7 +31,8 @@ export function renderSvg(picture: Picture, fills: Record<string, string>, opts:
   svg.classList.add(opts.layout === "stage" ? "stage-svg" : "thumb-svg");
   if (opts.hints) svg.classList.add("hints-on");
 
-  svg.append(el("rect", { width: "320", height: "460", fill: PAPER }));
+  const box = picture.viewBox.split(/[\s,]+/);
+  svg.append(el("rect", { width: box[2] ?? "320", height: box[3] ?? "460", fill: PAPER }));
 
   if (picture.clips.length) {
     const defs = el("defs", {});
@@ -64,11 +65,12 @@ export function renderSvg(picture: Picture, fills: Record<string, string>, opts:
 
   for (const region of picture.regions) {
     const color = fills[region.id] ?? PAPER;
+    const stroke = picture.regionStroke;
     const path = el("path", {
       d: region.d,
       fill: color,
-      stroke: INK,
-      "stroke-width": "1.5",
+      stroke: stroke > 0 ? INK : "none",
+      "stroke-width": stroke > 0 ? String(stroke) : undefined,
       "stroke-linejoin": "round",
       "stroke-linecap": "round",
       "fill-rule": region.evenodd ? "evenodd" : undefined,

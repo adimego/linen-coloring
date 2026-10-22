@@ -1,6 +1,17 @@
-import { dominionPictures } from "./dominion.ts";
-import { swiftPictures } from "./swift.ts";
-import type { PackId, Picture } from "./types.ts";
+import bonfireFile from "./art/od-bonfire.json";
+import hatFile from "./art/od-hat.json";
+import instrumentsFile from "./art/od-instruments.json";
+import sailFile from "./art/od-sail.json";
+import towerFile from "./art/od-tower.json";
+import truckFile from "./art/od-truck.json";
+import braceletsFile from "./art/swift-bracelets.json";
+import cardiganFile from "./art/swift-cardigan.json";
+import catsFile from "./art/swift-cats.json";
+import guitarFile from "./art/swift-guitar.json";
+import mirrorballFile from "./art/swift-mirrorball.json";
+import snakeFile from "./art/swift-snake.json";
+import stageFile from "./art/swift-stage.json";
+import type { Credit, PackId, Picture, Region, Stroke } from "./types.ts";
 
 export const packs: { id: PackId; name: string; blurb: string }[] = [
   {
@@ -15,17 +26,66 @@ export const packs: { id: PackId; name: string; blurb: string }[] = [
   },
 ];
 
-export const pictures: Picture[] = [...swiftPictures(), ...dominionPictures()];
+type ArtFile = {
+  id: string;
+  pack: PackId;
+  title: string;
+  caption: string;
+  viewBox: string;
+  regionStroke: number;
+  credits: Credit[];
+  regions: Region[];
+  strokes: Stroke[];
+  clips: Picture["clips"];
+};
+
+function art(file: ArtFile): Picture {
+  return {
+    id: file.id,
+    pack: file.pack,
+    title: file.title,
+    caption: file.caption,
+    viewBox: file.viewBox,
+    regionStroke: file.regionStroke,
+    credits: file.credits,
+    regions: file.regions,
+    strokes: file.strokes,
+    clips: file.clips ?? [],
+  };
+}
+
+export const pictures: Picture[] = [
+  art(stageFile as ArtFile),
+  art(guitarFile as ArtFile),
+  art(braceletsFile as ArtFile),
+  art(catsFile as ArtFile),
+  art(snakeFile as ArtFile),
+  art(cardiganFile as ArtFile),
+  art(mirrorballFile as ArtFile),
+  art(truckFile as ArtFile),
+  art(hatFile as ArtFile),
+  art(instrumentsFile as ArtFile),
+  art(towerFile as ArtFile),
+  art(bonfireFile as ArtFile),
+  art(sailFile as ArtFile),
+];
 
 function assertPictures(list: Picture[]): void {
   const ids = new Set<string>();
   for (const picture of list) {
     if (ids.has(picture.id)) throw new Error(`Duplicate picture ${picture.id}`);
     ids.add(picture.id);
+    if (!picture.credits.length) throw new Error(`${picture.id} is missing credits`);
+    for (const credit of picture.credits) {
+      if (!credit.sourceUrl.startsWith("https://")) throw new Error(`${picture.id} has a bad source`);
+      if (!credit.license || !credit.author || !credit.licenseUrl.startsWith("https://")) {
+        throw new Error(`${picture.id} has an incomplete credit`);
+      }
+    }
     const regions = new Set<string>();
     const count = picture.regions.length;
-    if (count < 150 || count > 400) {
-      throw new Error(`${picture.id} has ${count} regions; want 150–400`);
+    if (count < 8 || count > 700) {
+      throw new Error(`${picture.id} has ${count} regions; want 8–700`);
     }
     for (const region of picture.regions) {
       if (regions.has(region.id)) throw new Error(`${picture.id} repeats region ${region.id}`);

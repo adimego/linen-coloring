@@ -25,6 +25,16 @@ function pictureIdFromHash(): string | null {
   return match?.[1] ?? null;
 }
 
+function esc(value: string): string {
+  return value.replace(/[&<>"']/g, (char) => {
+    if (char === "&") return "&amp;";
+    if (char === "<") return "&lt;";
+    if (char === ">") return "&gt;";
+    if (char === '"') return "&quot;";
+    return "&#39;";
+  });
+}
+
 function haptic(): void {
   try {
     navigator.vibrate?.(10);
@@ -53,9 +63,9 @@ export class App {
   private installHistory(): void {
     const hash = location.hash;
     const base = location.pathname + location.search;
-    if (hash.startsWith("#p=")) {
+    if (hash.startsWith("#p=") || hash === "#credits") {
       history.replaceState({ view: "gallery" }, "", base);
-      history.pushState({ view: "color" }, "", hash);
+      history.pushState({ view: hash === "#credits" ? "credits" : "color" }, "", hash);
     } else {
       history.replaceState({ view: "gallery" }, "", base || "./");
     }
@@ -79,8 +89,10 @@ export class App {
 
   private render(): void {
     this.cleanupView();
-    const picture = this.currentPicture();
-    if (picture) this.renderStudio(picture);
+    const credits = location.hash === "#credits";
+    const picture = credits ? undefined : this.currentPicture();
+    if (credits) this.renderCredits();
+    else if (picture) this.renderStudio(picture);
     else this.renderGallery();
     document.querySelector('meta[name="theme-color"]')?.setAttribute("content", picture ? "#f6efe8" : "#f6d0dc");
   }
@@ -126,7 +138,8 @@ export class App {
             .join("")}
         </div>
         <p class="blurb">${pack.blurb}</p>
-        <p class="note">Original line art inspired by the mood of each — no portraits, logos, or lyrics.</p>
+        <p class="note">Public-domain and CC0 line art, traced so each shape can be filled. No portraits, logos, or lyrics.</p>
+        <button type="button" class="text-link" id="credits">Image credits</button>
         <div class="filters" role="group" aria-label="Show">
           <button type="button" data-filter="all" aria-pressed="${this.save.filter === "all"}">All</button>
           <button type="button" data-filter="finished" aria-pressed="${this.save.filter === "finished"}">Finished${finishedCount ? ` · ${finishedCount}` : ""}</button>
@@ -171,7 +184,54 @@ export class App {
         if (id) this.open(id);
       });
     });
+    this.must("#credits").addEventListener("click", () => this.openCredits());
     this.bindSound();
+  }
+
+  private renderCredits(): void {
+    this.root.className = "app is-gallery";
+    this.root.innerHTML = `
+      <header class="top gallery-top">
+        <button type="button" class="icon-btn" id="back" aria-label="Back to gallery">${icon("back")}</button>
+        <div class="title-block">
+          <p class="eyebrow">Sources</p>
+          <h1>Image credits</h1>
+        </div>
+      </header>
+      <main class="gallery credits">
+        <p class="note">Each page is traced from art that can be reused in an app. The title links to the file, and the license link opens the deed.</p>
+        ${packs
+          .map(
+            (pack) => `
+          <section>
+            <h2>${esc(pack.name)}</h2>
+            ${picturesIn(pack.id)
+              .map(
+                (picture) => `
+              <article>
+                <h3>${esc(picture.title)}</h3>
+                <p>${esc(picture.caption)}</p>
+                <ul>
+                  ${picture.credits
+                    .map(
+                      (item) => `
+                    <li>
+                      <a href="${esc(item.sourceUrl)}" target="_blank" rel="noopener noreferrer">${esc(item.work)}</a>
+                      <span>${esc(item.author)}</span>
+                      <a href="${esc(item.licenseUrl)}" target="_blank" rel="noopener noreferrer">${esc(item.license)}</a>
+                    </li>`,
+                    )
+                    .join("")}
+                </ul>
+              </article>`,
+              )
+              .join("")}
+          </section>`,
+          )
+          .join("")}
+      </main>
+    `;
+    this.must("#back").addEventListener("click", () => history.back());
   }
 
   private card(picture: Picture): string {
@@ -442,6 +502,11 @@ export class App {
 
   private open(id: string): void {
     history.pushState({ view: "color" }, "", `#p=${id}`);
+    this.render();
+  }
+
+  private openCredits(): void {
+    history.pushState({ view: "credits" }, "", "#credits");
     this.render();
   }
 

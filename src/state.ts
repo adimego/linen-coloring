@@ -69,6 +69,13 @@ export function writeSave(save: SaveData): void {
   }
 }
 
+export function forgetPicture(save: SaveData, id: string): SaveData {
+  if (!save.pictures[id]) return save;
+  const pictures = { ...save.pictures };
+  delete pictures[id];
+  return { ...save, pictures };
+}
+
 export function pictureSave(save: SaveData, id: string): PictureSave {
   const found = save.pictures[id];
   if (!found) return blankPicture();

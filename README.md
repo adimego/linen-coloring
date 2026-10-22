@@ -27,12 +27,23 @@ Open [http://127.0.0.1:43123](http://127.0.0.1:43123). The layout is meant for a
 - Undo and redo sit in the top bar.
 - When the last region is filled, the numbers and outlines fade and the finished picture stays in the gallery.
 - Save PNG downloads the picture, or opens the share sheet when the phone supports it.
-- The speaker button plays a soft generated tone (Web Audio only — no recordings). The same mute setting covers Color and Match.
-- Coloring progress and the sound setting save themselves in `localStorage` under `linen.coloring.v2`.
+- The speaker button plays a soft generated tone (Web Audio only — no recordings). The same mute setting covers Color, Match, and Zen. The waves button opens soundscapes: rain, ocean, birdsong, piano, forest, or the original Linen drone, plus a volume slider. The choice is saved in `localStorage` under `linen.settings.v1`.
+- The sun, moon, or monitor button cycles Light, Night, and System. Night is a warm dim room. The picture paper stays the same color so the art does not invert. That choice is in `linen.settings.v1` too.
+- Coloring progress and the mute setting save themselves in `localStorage` under `linen.coloring.v2`.
 
 ## Match
 
 The home page has Color and Match tabs. Match is a quiet match-3: drag or tap two pieces that touch. A line of three or more shells, flowers, tulips, gems, leaves, or hearts clears, and new pieces fall in. Each level sits over one of Linen’s original pictures. Tiles start under leaves or dust; a match lifts the cover on those tiles, and a few later levels have a second layer. The level is won when the whole board is uncovered. There is no clock, no lives, and no fail state. If no swap is left, the pieces reshuffle themselves. After a few quiet seconds a possible swap glows. Twenty levels open one by one, from a small square to shaped boards. Progress saves in `localStorage` under `linen.match.v1`, separate from coloring, and the same pages work offline once the app is installed.
+
+Zen, on the Match home page, is the same pieces with no levels and no goal. Matches refill the board. Pause stops the board and the hint. Today’s picture can fade in slowly behind the pieces.
+
+## Daily pictures
+
+From 22 October 2026, each calendar day has one original picture. It is drawn on the phone from that date, so the same day is the same picture everywhere, and older days can be opened again from Daily. Today sits at the top of the color home. Coloring progress uses the same save as the rest of the book. A date that would fail the size and composition checks is replaced by the next prepared variation of that day.
+
+## Your photo
+
+Your photo picks or takes a picture and turns it into a numbered page on the device: it is scaled, posterized, and merged so regions stay large enough to tap. A slider asks for fewer or more regions. The page is kept in My photos on this phone (IndexedDB). Delete removes the page and its coloring progress. The file is never uploaded.
 
 ## Install and play offline
 
@@ -69,6 +80,9 @@ Then open the native project with `npx cap open ios` or `npx cap open android`. 
 - `src/app.ts` — gallery, coloring screen, match screens, and controls
 - `src/match` — match-3 rules, twenty levels, and saved progress
 - `src/gestures.ts` — tap, pan, pinch, and find-next zoom
-- `src/audio.ts` — the generated ambient tone
+- `src/audio.ts` — generated beds: the Linen drone, rain, ocean, birds, piano, and forest
+- `src/daily` — date-seeded pictures and the quality gate (`npm run test:daily`)
+- `src/photo` — on-device posterize and the My photos store
+- `src/settings.ts` — theme, soundscape, and volume
 - `src/state.ts` — undo, redo, and `localStorage`
 - `vite.config.ts` — emits the service worker into the production build

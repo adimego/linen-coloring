@@ -11,6 +11,12 @@ const paths: Record<string, string> = {
   plus: `<path d="M12 6v12M6 12h12" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/>`,
   fit: `<path d="M8 4.5H4.5V8M16 4.5h3.5V8M8 19.5H4.5V16M16 19.5h3.5V16" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"/>`,
   find: `<circle cx="10.5" cy="10.5" r="4.2" fill="none" stroke="currentColor" stroke-width="1.7"/><path d="m13.8 13.8 4.2 4.2" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"/>`,
+  sun: `<circle cx="12" cy="12" r="3.2" fill="none" stroke="currentColor" stroke-width="1.7"/><path d="M12 4.5v1.8M12 17.7v1.8M4.5 12h1.8M17.7 12h1.8M6.7 6.7l1.3 1.3M16 16l1.3 1.3M17.3 6.7 16 8M8 16l-1.3 1.3" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"/>`,
+  moon: `<path d="M16 15.2A6.2 6.2 0 0 1 8.6 6.2 6.4 6.4 0 1 0 16 15.2Z" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linejoin="round"/>`,
+  monitor: `<rect x="4.5" y="6" width="15" height="10" rx="1.6" fill="none" stroke="currentColor" stroke-width="1.7"/><path d="M9 19.5h6M12 16v3.5" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"/>`,
+  pause: `<path d="M8 6.5v11M16 6.5v11" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/>`,
+  image: `<rect x="4.5" y="6" width="15" height="12" rx="1.8" fill="none" stroke="currentColor" stroke-width="1.7"/><circle cx="9" cy="10.2" r="1.2" fill="currentColor"/><path d="m6.5 16 3.2-3.2 2.2 2.1L15 11l2.5 5" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round"/>`,
+  waves: `<path d="M4 15.5c2-2 3.2-2 5.2 0s3.2 2 5.2 0 3.2-2 5.2 0" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"/><path d="M4 10c2-2 3.2-2 5.2 0s3.2 2 5.2 0 3.2-2 5.2 0" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"/>`,
 };
 
 export function icon(name: keyof typeof paths): string {

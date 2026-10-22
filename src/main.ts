@@ -2,7 +2,10 @@ import "@fontsource/fraunces/latin-600.css";
 import "@fontsource/nunito/latin-500.css";
 import "@fontsource/nunito/latin-700.css";
 import "./style.css";
+import { applyStoredTheme } from "./settings.ts";
 import { App } from "./app.ts";
+
+applyStoredTheme();
 
 if (import.meta.env.PROD && "serviceWorker" in navigator) {
   window.addEventListener("load", () => {

@@ -39,6 +39,7 @@ export type MatchCtx = {
   openMatch: () => void;
   openLevel: (id: number) => void;
   back: () => void;
+  openZen: () => void;
   say: (message: string) => void;
   cue: (kind: Cue) => void;
   haptic: () => void;
@@ -86,6 +87,10 @@ export function renderMatchHome(root: HTMLElement, ctx: MatchCtx): () => void {
     </div>
     <main class="gallery">
       <p class="blurb">Swap pieces that touch. Three alike lift the leaves and uncover a picture.</p>
+      <button type="button" class="zen-entry" id="zen-open">
+        <span class="card-title">Zen</span>
+        <span class="caption">Match with no levels, for as long as you like.</span>
+      </button>
       <p class="note">No clock, no lives, and no way to lose. ${cleared} of ${levels.length} pictures clear.</p>
       <div class="level-grid">
         ${levels.map((level) => levelCard(level, save, next?.id === level.id)).join("")}
@@ -107,6 +112,7 @@ export function renderMatchHome(root: HTMLElement, ctx: MatchCtx): () => void {
       if (id) ctx.openLevel(id);
     });
   });
+  root.querySelector("#zen-open")?.addEventListener("click", () => ctx.openZen());
   return () => {};
 }
 

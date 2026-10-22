@@ -1,18 +1,28 @@
 import { defineConfig, type Plugin } from "vite";
 
+const pagesBase = "/linen-coloring/";
+
 function linenServiceWorker(): Plugin {
+  let base = pagesBase;
   return {
     name: "linen-service-worker",
     apply: "build",
+    configResolved(config) {
+      base = config.base.endsWith("/") ? config.base : `${config.base}/`;
+    },
     generateBundle(_options, bundle) {
       const files = new Set([
-        "./index.html",
-        "./favicon.svg",
-        "./manifest.webmanifest",
-        "./icons/icon-192.png",
-        "./icons/icon-512.png",
+        base,
+        `${base}index.html`,
+        `${base}favicon.svg`,
+        `${base}manifest.webmanifest`,
+        `${base}icons/icon-192.png`,
+        `${base}icons/icon-512.png`,
       ]);
-      for (const name of Object.keys(bundle)) files.add(`./${name}`);
+      for (const name of Object.keys(bundle)) {
+        if (name === "sw.js") continue;
+        files.add(`${base}${name}`);
+      }
       let hash = 0;
       const list = [...files].sort();
       for (const char of list.join("|")) hash = (Math.imul(hash, 33) + char.charCodeAt(0)) >>> 0;
@@ -45,7 +55,7 @@ self.addEventListener("fetch",(event)=>{
       const cached=await cache.match(request);
       if(cached) return cached;
       if(request.mode==="navigate"){
-        return (await cache.match("./index.html")) || Response.error();
+        return (await cache.match(${JSON.stringify(`${base}index.html`)})) || Response.error();
       }
       return Response.error();
     }
@@ -57,8 +67,10 @@ self.addEventListener("fetch",(event)=>{
   };
 }
 
-export default defineConfig({
-  base: "./",
+export default defineConfig(({ command, mode }) => ({
+  // `vite preview` resolves config as command "serve" and mode "production".
+  // Dev stays at "/" so the local server does not need the Pages subpath.
+  base: command === "build" || mode === "production" ? pagesBase : "/",
   server: {
     host: "127.0.0.1",
     port: 43123,
@@ -70,4 +82,4 @@ export default defineConfig({
     strictPort: true,
   },
   plugins: [linenServiceWorker()],
-});
+}));

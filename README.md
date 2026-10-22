@@ -43,11 +43,13 @@ npm run build
 npm run preview
 ```
 
+Production builds use the base path `/linen-coloring/`, so preview serves the app at [http://127.0.0.1:43123/linen-coloring/](http://127.0.0.1:43123/linen-coloring/). That is the same path as the GitHub Pages site, [https://adimego.github.io/linen-coloring/](https://adimego.github.io/linen-coloring/). The manifest `start_url` and `scope` are `/linen-coloring/`, and the service worker is registered there. Pushes to `main` deploy `dist` with GitHub Actions.
+
 The production build is an installable PWA. Add it to your home screen from the browser. The service worker caches the app after the first visit, so it opens again without a network.
 
 ## Wrap it with Capacitor later
 
-Asset paths are relative, and `capacitor.config.json` already points `webDir` at `dist`. From this folder:
+`capacitor.config.json` points `webDir` at `dist`. The Pages build uses an absolute `/linen-coloring/` base, so a native wrap needs a separate build with `base` set to `./`. From this folder:
 
 ```bash
 npm install @capacitor/core @capacitor/cli @capacitor/ios @capacitor/android

@@ -55,19 +55,19 @@ function art(file: ArtFile): Picture {
 }
 
 export const pictures: Picture[] = [
-  art(stageFile as ArtFile),
-  art(guitarFile as ArtFile),
-  art(braceletsFile as ArtFile),
-  art(catsFile as ArtFile),
-  art(snakeFile as ArtFile),
-  art(cardiganFile as ArtFile),
-  art(mirrorballFile as ArtFile),
-  art(truckFile as ArtFile),
-  art(hatFile as ArtFile),
-  art(instrumentsFile as ArtFile),
-  art(towerFile as ArtFile),
-  art(bonfireFile as ArtFile),
-  art(sailFile as ArtFile),
+  art(stageFile as unknown as ArtFile),
+  art(guitarFile as unknown as ArtFile),
+  art(braceletsFile as unknown as ArtFile),
+  art(catsFile as unknown as ArtFile),
+  art(snakeFile as unknown as ArtFile),
+  art(cardiganFile as unknown as ArtFile),
+  art(mirrorballFile as unknown as ArtFile),
+  art(truckFile as unknown as ArtFile),
+  art(hatFile as unknown as ArtFile),
+  art(instrumentsFile as unknown as ArtFile),
+  art(towerFile as unknown as ArtFile),
+  art(bonfireFile as unknown as ArtFile),
+  art(sailFile as unknown as ArtFile),
 ];
 
 function assertPictures(list: Picture[]): void {

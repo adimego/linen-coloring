@@ -4,10 +4,14 @@ import tartFile from "./art/berry-tart.json";
 import blueWingFile from "./art/blue-wing.json";
 import canalFile from "./art/canal-bridge.json";
 import catFile from "./art/cat-nap.json";
+import harpFile from "./art/at-the-harp.json";
+import pianoFile from "./art/at-the-piano.json";
+import musicFile from "./art/arts-music.json";
 import morningFile from "./art/clear-morning.json";
 import coastFile from "./art/coast-path.json";
 import fieldsFile from "./art/ejiri-fields.json";
 import skylineFile from "./art/dusk-skyline.json";
+import fluteFile from "./art/flute-player.json";
 import fallsFile from "./art/forest-falls.json";
 import foxFile from "./art/garden-fox.json";
 import hakoneFile from "./art/hakone-lake.json";
@@ -20,6 +24,7 @@ import teaFile from "./art/lemon-tea.json";
 import lightFile from "./art/lighthouse-cove.json";
 import sunsetFile from "./art/meguro-sunset.json";
 import pinesFile from "./art/mishima-pines.json";
+import shamisenFile from "./art/maple-shamisen.json";
 import monarchFile from "./art/monarch.json";
 import cityFile from "./art/night-windows.json";
 import roseFile from "./art/open-rose.json";
@@ -29,12 +34,15 @@ import rainFile from "./art/rainy-lights.json";
 import nookFile from "./art/reading-nook.json";
 import cottageFile from "./art/rose-cottage.json";
 import cliffsFile from "./art/satta-cliffs.json";
+import guitarFile from "./art/still-guitar.json";
 import cabinFile from "./art/snow-cabin.json";
 import starFile from "./art/star-mandala.json";
 import swanFile from "./art/still-swan.json";
 import cafeFile from "./art/street-cafe.json";
 import sunflowerFile from "./art/sunflower.json";
+import scoreFile from "./art/violin-score.json";
 import tideFile from "./art/tide-pool.json";
+import kotoFile from "./art/with-a-koto.json";
 import zenFile from "./art/zen-garden.json";
 import { categories, type CategoryId, type Credit, type Picture, type Region } from "./types.ts";
 
@@ -67,6 +75,14 @@ function art(file: ArtFile): Picture {
 }
 
 export const pictures: Picture[] = [
+  art(musicFile as unknown as ArtFile),
+  art(scoreFile as unknown as ArtFile),
+  art(guitarFile as unknown as ArtFile),
+  art(harpFile as unknown as ArtFile),
+  art(pianoFile as unknown as ArtFile),
+  art(shamisenFile as unknown as ArtFile),
+  art(kotoFile as unknown as ArtFile),
+  art(fluteFile as unknown as ArtFile),
   art(hakoneFile as unknown as ArtFile),
   art(cliffsFile as unknown as ArtFile),
   art(morningFile as unknown as ArtFile),
@@ -136,6 +152,7 @@ function assertPictures(list: Picture[]): void {
     }
   }
   const minimums: Partial<Record<CategoryId, number>> = {
+    music: 8,
     "relaxing-landscapes": 8,
     beach: 4,
     city: 4,

@@ -1773,7 +1773,10 @@ def main() -> None:
     ART.mkdir(parents=True, exist_ok=True)
     for old in ART.glob("*.json"):
         try:
-            kept = json.loads(old.read_text(encoding="utf-8")).get("category") == "relaxing-landscapes"
+            kept = json.loads(old.read_text(encoding="utf-8")).get("category") in {
+                "relaxing-landscapes",
+                "music",
+            }
         except json.JSONDecodeError:
             kept = False
         if not kept:

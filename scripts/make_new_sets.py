@@ -143,54 +143,123 @@ def scene_cherry() -> Scene:
     return s
 
 
+def ribbon(scene: Scene, spine: list[tuple[float, float]], width0: float, width1: float, idx: int) -> None:
+    """A filled band that follows a curve and tapers from width0 to width1."""
+    left: list[tuple[float, float]] = []
+    right: list[tuple[float, float]] = []
+    count = len(spine)
+    for i, (x, y) in enumerate(spine):
+        t = i / max(1, count - 1)
+        width = width0 + (width1 - width0) * t
+        if i == 0:
+            dx, dy = spine[1][0] - x, spine[1][1] - y
+        elif i == count - 1:
+            dx, dy = x - spine[i - 1][0], y - spine[i - 1][1]
+        else:
+            dx, dy = spine[i + 1][0] - spine[i - 1][0], spine[i + 1][1] - spine[i - 1][1]
+        mag = math.hypot(dx, dy) or 1.0
+        nx, ny = -dy / mag, dx / mag
+        left.append((x + nx * width / 2, y + ny * width / 2))
+        right.append((x - nx * width / 2, y - ny * width / 2))
+    scene.poly(left + right[::-1], idx)
+
+
+def teardrop(scene: Scene, cx: float, cy: float, rx: float, ry: float, idx: int) -> None:
+    pts = []
+    for i in range(48):
+        angle = i / 48 * math.tau
+        x = math.cos(angle)
+        stretch = 1 + 0.42 * max(x, 0)
+        pts.append((cx + x * rx * stretch, cy + math.sin(angle) * ry))
+    scene.poly(pts, idx)
+
+
 def scene_flamingo() -> Scene:
     c = [
-        "#f8d5e4",
-        "#f3b7cf",
-        "#f7e7c4",
-        "#f4f7fb",
-        "#9fd0ea",
-        "#3d8eb8",
-        "#f7f3ee",
-        "#f4a8c4",
-        "#e36d97",
-        "#c4476e",
-        "#f6c56b",
-        "#e0893a",
-        "#5c3a48",
-        "#f7d0dc",
+        "#f6b89a",
+        "#f08aaa",
+        "#f8e0b0",
+        "#fff6ea",
+        "#8ec9d4",
+        "#3e86a0",
+        "#f7c6d4",
+        "#f0a3bb",
+        "#e57b9e",
+        "#d45d86",
+        "#b7d7a8",
+        "#4e8a5c",
+        "#2e3d4a",
+        "#f3d2c4",
+        "#e8b3c4",
     ]
-    s = Scene(c, {0, 1, 3, 4}, 37)
+    s = Scene(c, {0, 1, 4, 5}, 37)
     s.img[:] = 0
-    s.bands(0, 0, 320, 250, [0, 1])
-    s.circle(250, 70, 22, 2)
-    s.rect(0, 250, 320, 210, 4)
-    s.ellipse(160, 268, 200, 18, 3)
-    s.rect(0, 330, 320, 130, 5)
-    s.ellipse(196, 300, 64, 34, 7)
-    s.ellipse(220, 292, 36, 18, 8)
-    for i, ang in enumerate((-48, -18, 10, 38)):
-        s.ellipse(206, 292, 30, 10, 13 if i % 2 == 0 else 7, ang)
-    # An S from inside the body up to the head, sampled densely so it cannot gap.
-    neck = []
-    for i in range(42):
-        t = i / 41
-        x = 178 - 78 * math.sin(t * math.pi) + 18 * math.sin(t * math.pi * 2)
-        y = 292 - 158 * t
-        neck.append((x, y))
-    thick(s, neck, 24, 8)
-    thick(s, neck, 10, 9)
-    hx, hy = neck[-1]
-    s.circle(hx, hy - 6, 18, 9)
-    s.poly([(hx + 8, hy - 10), (hx + 46, hy - 2), (hx + 8, hy + 6)], 10)
-    s.poly([(hx + 8, hy - 6), (hx + 34, hy - 1), (hx + 8, hy + 4)], 11)
-    s.circle(hx - 6, hy - 10, 4.5, 12)
-    s.capsule(176, 318, 156, 412, 4.4, 10)
-    s.capsule(210, 318, 226, 412, 4.4, 10)
-    s.ellipse(146, 416, 14, 4.5, 11)
-    s.ellipse(236, 416, 14, 4.5, 11)
-    s.ellipse(70, 360, 18, 8, 6)
-    s.ellipse(270, 380, 22, 8, 3)
+    s.bands(0, 0, 320, 250, [0, 1, 0])
+    s.circle(246, 78, 28, 2)
+    s.circle(246, 78, 16, 3)
+    for cx, cy, rx, ry, ang in (
+        (70, 58, 36, 14, -12),
+        (120, 48, 28, 12, 8),
+        (40, 96, 24, 10, 6),
+        (180, 42, 30, 11, -6),
+        (300, 110, 26, 10, 14),
+    ):
+        s.ellipse(cx, cy, rx, ry, 3, ang)
+        s.ellipse(cx + 8, cy + 4, rx * 0.55, ry * 0.7, 2, ang)
+    s.rect(0, 228, 320, 232, 5)
+    s.ellipse(160, 236, 220, 18, 4)
+    for y, rx in ((268, 90), (310, 120), (360, 140), (410, 110)):
+        s.ellipse(150, y, rx, 7, 4)
+    # Distant palms and a small flamingo, kept large enough to survive cleanup.
+    s.capsule(46, 250, 40, 188, 7, 12)
+    for ang in (-60, -25, 10, 42, 74):
+        s.ellipse(42, 176, 28, 7, 11, ang)
+    s.capsule(286, 246, 292, 196, 6, 12)
+    for ang in (110, 150, 190, 230):
+        s.ellipse(292, 188, 22, 6, 11, ang)
+    s.ellipse(118, 214, 16, 8, 14)
+    s.capsule(108, 214, 96, 186, 6, 14)
+    s.circle(92, 180, 7, 6)
+    # Reeds in two clumps.
+    for x, lean in ((24, -18), (58, 8), (78, -6), (248, 12), (274, -10), (302, 16)):
+        s.ellipse(x, 300, 8, 42, 11 if x < 160 else 10, lean)
+        s.ellipse(x + 6, 318, 7, 28, 10, lean + 16)
+    # Teardrop body, then a neck that starts inside it and narrows toward the head.
+    teardrop(s, 206, 312, 52, 30, 7)
+    spine = resample(
+        [(176, 304), (150, 322), (122, 300), (108, 250), (118, 198), (142, 156), (164, 128)],
+        5,
+    )
+    ribbon(s, spine, 20, 14, 6)
+    hx, hy = spine[-1]
+    s.ellipse(hx + 8, hy - 6, 22, 15, 6, -16)
+    s.ellipse(hx - 2, hy - 10, 11, 8, 12)
+    beak = resample([(hx + 16, hy + 2), (hx + 34, hy + 16), (hx + 42, hy + 32)], 4)
+    ribbon(s, beak, 12, 10, 13)
+    tip = resample([(hx + 38, hy + 26), (hx + 52, hy + 46)], 3)
+    ribbon(s, tip, 12, 10, 12)
+    # Layered wing and tail feathers in close pinks.
+    for i, ang in enumerate((-62, -40, -18, 4, 24)):
+        s.ellipse(214, 304, 36, 9, 8 if i % 2 == 0 else 9, ang)
+    for i, ang in enumerate((-28, -6, 16)):
+        s.ellipse(228, 318, 28, 7, 9 if i % 2 else 8, ang)
+    for i, ang in enumerate((18, 36, 52)):
+        s.ellipse(246, 322, 26, 7, 9 if i == 1 else 7, ang)
+    # Standing leg, knee bent back, webbed foot. Tucked leg against the belly.
+    standing = resample([(198, 334), (186, 372), (208, 396), (190, 436)], 4)
+    ribbon(s, standing, 13, 11, 14)
+    s.ellipse(176, 444, 12, 5, 14, -16)
+    s.ellipse(192, 448, 11, 4.5, 14, 0)
+    s.ellipse(208, 444, 12, 5, 14, 18)
+    tucked = resample([(220, 328), (242, 308), (232, 284)], 4)
+    ribbon(s, tucked, 12, 11, 14)
+    s.ellipse(226, 276, 10, 4.5, 14, 24)
+    # Broken reflection under the bird.
+    s.ellipse(196, 390, 48, 12, 13)
+    s.ellipse(168, 408, 22, 6, 6)
+    s.ellipse(150, 424, 14, 5, 6)
+    for y in (378, 400, 422):
+        s.ellipse(190, y, 70, 5, 4)
     return s
 
 
@@ -833,7 +902,7 @@ def scene_quilt() -> Scene:
 
 PICTURES = [
     ("cherry-blossoms", "pink", "Cherry Blossoms", "A blossoming tree against the sky.", scene_cherry),
-    ("flamingo", "pink", "Flamingo", "A flamingo standing in shallow water.", scene_flamingo),
+    ("flamingo", "pink", "Flamingo", "An elegant flamingo in a sunset lagoon.", scene_flamingo),
     ("peony", "pink", "Peony", "A full peony with soft leaves.", scene_peony),
     ("pink-cupcakes", "pink", "Pink Cupcakes", "Three cupcakes on a cake stand.", scene_cupcakes),
     ("vanity-table", "pink", "Vanity Table", "A mirror, a few bottles, and a pink stool.", scene_vanity),

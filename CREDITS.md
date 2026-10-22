@@ -479,7 +479,7 @@ A blossoming tree against the sky.
 
 ### Flamingo
 
-A flamingo standing in shallow water.
+An elegant flamingo in a sunset lagoon.
 
 - **Flamingo**
   - Author: Linen

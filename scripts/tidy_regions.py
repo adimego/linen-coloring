@@ -29,24 +29,57 @@ MIN_AREA = 0.0015 * PAGE_AREA
 MIN_RADIUS = 6.0
 MAX_AREA = 3200.0
 TARGET_AREA = 1500.0
-TOKEN = re.compile(r"[MLZ]|-?\d*\.?\d+(?:e[-+]?\d+)?", re.I)
+TOKEN = re.compile(r"[MLCZQ]|-?\d*\.?\d+(?:e[-+]?\d+)?", re.I)
+
+
+def flatten_cubic(
+    p0: tuple[float, float],
+    p1: tuple[float, float],
+    p2: tuple[float, float],
+    p3: tuple[float, float],
+    steps: int = 6,
+) -> list[tuple[float, float]]:
+    points = []
+    for step in range(1, steps + 1):
+        t = step / steps
+        u = 1 - t
+        points.append(
+            (
+                u**3 * p0[0] + 3 * u**2 * t * p1[0] + 3 * u * t**2 * p2[0] + t**3 * p3[0],
+                u**3 * p0[1] + 3 * u**2 * t * p1[1] + 3 * u * t**2 * p2[1] + t**3 * p3[1],
+            )
+        )
+    return points
 
 
 def parse_path(d: str) -> list[list[tuple[float, float]]]:
     parts: list[list[tuple[float, float]]] = []
     current: list[tuple[float, float]] = []
     command = ""
+    cursor = (0.0, 0.0)
     tokens = TOKEN.findall(d)
     i = 0
     while i < len(tokens):
         token = tokens[i]
-        if token in "MLZmlz":
+        if token in "MLCZQmlczq":
             command = token.upper()
             i += 1
             if command == "Z":
                 if len(current) >= 3:
                     parts.append(current)
                 current = []
+            continue
+        if command == "C":
+            x1, y1, x2, y2, x, y = (float(tokens[i + k]) for k in range(6))
+            i += 6
+            current.extend(flatten_cubic(cursor, (x1, y1), (x2, y2), (x, y)))
+            cursor = (x, y)
+            continue
+        if command == "Q":
+            x1, y1, x, y = (float(tokens[i + k]) for k in range(4))
+            i += 4
+            current.extend(flatten_cubic(cursor, (x1, y1), (x1, y1), (x, y)))
+            cursor = (x, y)
             continue
         x = float(token)
         y = float(tokens[i + 1])
@@ -56,6 +89,7 @@ def parse_path(d: str) -> list[list[tuple[float, float]]]:
             current = [(x, y)]
         else:
             current.append((x, y))
+        cursor = (x, y)
     if len(current) >= 3:
         parts.append(current)
     return parts

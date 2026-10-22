@@ -1,6 +1,7 @@
 export const PAGE = { w: 320, h: 460, viewBox: "0 0 320 460" } as const;
 
 export const categories = [
+  { id: "relaxing-landscapes", name: "Relaxing Landscapes" },
   { id: "beach", name: "Beach" },
   { id: "city", name: "City" },
   { id: "peaceful", name: "Peaceful Places" },
@@ -31,6 +32,14 @@ export type Ink = {
   w: number;
 };
 
+export type Credit = {
+  work: string;
+  author: string;
+  sourceUrl: string;
+  license: string;
+  licenseUrl: string;
+};
+
 export type Picture = {
   id: string;
   category: CategoryId;
@@ -41,4 +50,5 @@ export type Picture = {
   regions: Region[];
   outline: string;
   ink: Ink[];
+  credits?: Credit[];
 };

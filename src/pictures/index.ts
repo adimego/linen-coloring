@@ -4,15 +4,22 @@ import tartFile from "./art/berry-tart.json";
 import blueWingFile from "./art/blue-wing.json";
 import canalFile from "./art/canal-bridge.json";
 import catFile from "./art/cat-nap.json";
+import morningFile from "./art/clear-morning.json";
 import coastFile from "./art/coast-path.json";
+import fieldsFile from "./art/ejiri-fields.json";
 import skylineFile from "./art/dusk-skyline.json";
 import fallsFile from "./art/forest-falls.json";
 import foxFile from "./art/garden-fox.json";
+import hakoneFile from "./art/hakone-lake.json";
+import passFile from "./art/inume-pass.json";
+import kusatsuFile from "./art/kusatsu-village.json";
 import robinFile from "./art/garden-robin.json";
 import lakeFile from "./art/lake-evening.json";
 import lavenderFile from "./art/lavender-rows.json";
 import teaFile from "./art/lemon-tea.json";
 import lightFile from "./art/lighthouse-cove.json";
+import sunsetFile from "./art/meguro-sunset.json";
+import pinesFile from "./art/mishima-pines.json";
 import monarchFile from "./art/monarch.json";
 import cityFile from "./art/night-windows.json";
 import roseFile from "./art/open-rose.json";
@@ -21,6 +28,7 @@ import petalFile from "./art/petal-mandala.json";
 import rainFile from "./art/rainy-lights.json";
 import nookFile from "./art/reading-nook.json";
 import cottageFile from "./art/rose-cottage.json";
+import cliffsFile from "./art/satta-cliffs.json";
 import cabinFile from "./art/snow-cabin.json";
 import starFile from "./art/star-mandala.json";
 import swanFile from "./art/still-swan.json";
@@ -28,7 +36,7 @@ import cafeFile from "./art/street-cafe.json";
 import sunflowerFile from "./art/sunflower.json";
 import tideFile from "./art/tide-pool.json";
 import zenFile from "./art/zen-garden.json";
-import { categories, type CategoryId, type Picture, type Region } from "./types.ts";
+import { categories, type CategoryId, type Credit, type Picture, type Region } from "./types.ts";
 
 type ArtFile = {
   id: string;
@@ -40,6 +48,7 @@ type ArtFile = {
   regions: Region[];
   outline: string;
   ink: Picture["ink"];
+  credits?: Credit[];
 };
 
 function art(file: ArtFile): Picture {
@@ -53,10 +62,19 @@ function art(file: ArtFile): Picture {
     regions: file.regions,
     outline: file.outline,
     ink: file.ink ?? [],
+    credits: file.credits,
   };
 }
 
 export const pictures: Picture[] = [
+  art(hakoneFile as unknown as ArtFile),
+  art(cliffsFile as unknown as ArtFile),
+  art(morningFile as unknown as ArtFile),
+  art(fieldsFile as unknown as ArtFile),
+  art(passFile as unknown as ArtFile),
+  art(pinesFile as unknown as ArtFile),
+  art(sunsetFile as unknown as ArtFile),
+  art(kusatsuFile as unknown as ArtFile),
   art(catFile as unknown as ArtFile),
   art(foxFile as unknown as ArtFile),
   art(roseFile as unknown as ArtFile),
@@ -117,7 +135,12 @@ function assertPictures(list: Picture[]): void {
       if (!used.has(n)) throw new Error(`${picture.id} never uses color ${n}`);
     }
   }
-  const minimums: Partial<Record<CategoryId, number>> = { beach: 4, city: 4, peaceful: 6 };
+  const minimums: Partial<Record<CategoryId, number>> = {
+    "relaxing-landscapes": 8,
+    beach: 4,
+    city: 4,
+    peaceful: 6,
+  };
   for (const category of categories) {
     const count = list.filter((picture) => picture.category === category.id).length;
     const need = minimums[category.id] ?? 2;

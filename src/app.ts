@@ -153,7 +153,7 @@ export class App {
             )
             .join("")}
         </div>
-        <p class="note">Original pictures drawn for Linen. A wrong number never fills — only the matching color does.</p>
+        <p class="note">A wrong number never fills — only the matching color does. Relaxing Landscapes are adapted from public-domain prints. The other pages are drawn for Linen.</p>
         <button type="button" class="text-link" id="credits">Image credits</button>
         <div class="filters" role="group" aria-label="Show">
           <button type="button" data-filter="all" aria-pressed="${this.save.filter === "all"}">All</button>
@@ -213,7 +213,7 @@ export class App {
         </div>
       </header>
       <main class="gallery credits">
-        <p class="note">Every page is an original illustration drawn for Linen. Nothing here is copied from another coloring app or traced from someone else's artwork.</p>
+        <p class="note">Relaxing Landscapes are adapted from public-domain prints. Every other page is an original illustration drawn for Linen, not copied from another coloring app.</p>
         ${groups
           .map(
             (group) => `
@@ -226,11 +226,25 @@ export class App {
                 <h3>${esc(picture.title)}</h3>
                 <p>${esc(picture.caption)}</p>
                 <ul>
+                  ${(picture.credits?.length ? picture.credits : [{ work: "Original illustration", author: "Linen", sourceUrl: "", license: "Original work, created for Linen", licenseUrl: "" }])
+                    .map(
+                      (credit) => `
                   <li>
-                    <span class="credit-work">Original illustration</span>
-                    <span>Linen</span>
-                    <span>Original work, created for Linen</span>
-                  </li>
+                    <span class="credit-work">${esc(credit.work)}</span>
+                    <span>${esc(credit.author)}</span>
+                    ${
+                      credit.sourceUrl
+                        ? `<a href="${esc(credit.sourceUrl)}" target="_blank" rel="noreferrer">Source</a>`
+                        : "<span>Original illustration created for Linen</span>"
+                    }
+                    ${
+                      credit.licenseUrl
+                        ? `<a href="${esc(credit.licenseUrl)}" target="_blank" rel="noreferrer">${esc(credit.license)}</a>`
+                        : `<span>${esc(credit.license)}</span>`
+                    }
+                  </li>`,
+                    )
+                    .join("")}
                 </ul>
               </article>`,
               )

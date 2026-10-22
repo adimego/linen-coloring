@@ -1772,7 +1772,12 @@ def raster_previews(pictures: list[dict]) -> None:
 def main() -> None:
     ART.mkdir(parents=True, exist_ok=True)
     for old in ART.glob("*.json"):
-        old.unlink()
+        try:
+            kept = json.loads(old.read_text(encoding="utf-8")).get("category") == "relaxing-landscapes"
+        except json.JSONDecodeError:
+            kept = False
+        if not kept:
+            old.unlink()
     pictures = []
     paints = []
     for spec in PICTURES:

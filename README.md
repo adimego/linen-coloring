@@ -6,7 +6,7 @@ The gallery is a soft pink room. Each card shows the finished picture. Open one 
 
 ## Pictures
 
-Thirty original illustrations, drawn for Linen — not copied from another coloring app. Beach, city, and peaceful places sit beside animals, flowers, mandalas, landscapes, food, butterflies, birds, and home. Every page has its own palette and about 185 regions. Sources are listed on the Image credits screen and in [CREDITS.md](CREDITS.md).
+Eight Relaxing Landscapes are adapted from public-domain Japanese woodblock prints (Hiroshige and Hokusai on Wikimedia Commons). The other pages are original illustrations drawn for Linen — not copied from another coloring app. Beach, city, and peaceful places sit beside animals, flowers, mandalas, landscapes, food, butterflies, birds, and home. Every page has its own palette and about 100–300 regions. Sources are listed on the Image credits screen and in [CREDITS.md](CREDITS.md).
 
 ## Run it
 
@@ -58,7 +58,8 @@ Then open the native project with `npx cap open ios` or `npx cap open android`. 
 ## Project map
 
 - `src/pictures` — original color-by-number pages and their palettes
-- `scripts/make_pages.py` — redraws the pages
+- `scripts/make_pages.py` — redraws the original pages
+- `scripts/trace_landscapes.py` — rebuilds Relaxing Landscapes from the public-domain prints
 - `CREDITS.md` — authorship for every page
 - `src/app.ts` — gallery, coloring screen, and controls
 - `src/gestures.ts` — tap, pan, pinch, and find-next zoom

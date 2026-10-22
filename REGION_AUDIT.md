@@ -75,6 +75,6 @@ A region is too small when its area is under 0.15% of the page (221 square units
 | Single Tulip | tulips | 170 | 0.02% | 3.1px | 135 | 0.17% | 14.7px |
 | Sweet Tulip | tulips | 170 | 0.02% | 3.8px | 93 | 0.20% | 17.1px |
 | Tulip Bouquet | tulips | 170 | 0.05% | 4.7px | 141 | 0.18% | 16.3px |
-| Tulip Field | tulips | 170 | 0.02% | 5.2px | 115 | 0.22% | 16.1px |
+| Tulip Field | tulips | 170 | 0.03% | 6.1px | 163 | 0.18% | 17.1px |
 | Tulip Mandala | tulips | 170 | 0.03% | 5.8px | 132 | 0.18% | 15.5px |
 | Watering Can | tulips | 170 | 0.05% | 3.1px | 142 | 0.18% | 14.7px |

@@ -29,47 +29,77 @@ def tulip(scene: Scene, x: float, y: float, h: float, petal: int, leaf: int, ste
 
 
 def scene_field() -> Scene:
+    """Rows of tulips in perspective. Every bloom sits on a stem that reaches
+    the ground, with leaves. Far rows use a shared leaf band plus wide stems
+    so cleanup cannot erase them into the grass."""
     c = [
-        "#9fd0ea",
-        "#f7e7c4",
-        "#7ec48a",
-        "#3f8a4e",
-        "#e36d97",
-        "#c4476e",
-        "#f6d56a",
-        "#e07a45",
-        "#f7f4ee",
-        "#8d5344",
-        "#5c3a32",
-        "#6aa8d4",
-        "#e7eef6",
+        "#7ebfe0",  # 0 sky top
+        "#c5e6f6",  # 1 sky
+        "#fff6ea",  # 2 cloud and mill blades
+        "#f6d36a",  # 3 sun
+        "#d5ecc4",  # 4 far meadow
+        "#9ed39a",  # 5 grass
+        "#4e9a5c",  # 6 leaves
+        "#1f6a3c",  # 7 stems
+        "#e36d97",  # 8 pink
+        "#b43d66",  # 9 rose
+        "#e07a45",  # 10 coral
+        "#f0c14d",  # 11 yellow tulip
+        "#f4efe4",  # 12 mill wall
+        "#8d5344",  # 13 mill wood
+        "#4a332c",  # 14 mill shadow
+        "#d7b98a",  # 15 soil
     ]
-    s = Scene(c, {0, 1, 12}, 121)
-    s.img[:] = 0
-    s.bands(0, 0, 320, 200, [12, 0])
-    s.circle(250, 58, 22, 1)
-    s.ellipse(160, 230, 220, 40, 2)
-    s.rect(0, 210, 320, 250, 3)
-    s.ellipse(160, 280, 170, 16, 11)
-    # Windmill: tower, cap, and four blades that cross at the hub.
-    s.poly([(38, 250), (78, 250), (70, 150), (46, 150)], 10)
-    s.ellipse(58, 142, 22, 12, 9)
-    s.circle(58, 142, 6, 6)
-    for ang in (20, 110, 200, 290):
+    s = Scene(c, {0, 1, 4, 5, 15}, 121)
+    s.bands(0, 0, 320, 200, [0, 1])
+    s.circle(262, 58, 20, 3)
+    s.ellipse(70, 78, 36, 14, 2)
+    s.ellipse(96, 84, 28, 12, 2)
+    s.ellipse(188, 48, 40, 14, 2)
+    s.ellipse(214, 56, 26, 11, 2)
+    s.ellipse(160, 210, 200, 36, 4)
+    s.rect(0, 196, 320, 264, 5)
+    s.rect(0, 418, 320, 42, 15)
+
+    # Windmill stands on the far meadow, left of the flowers.
+    s.poly([(34, 268), (86, 268), (76, 148), (44, 148)], 12)
+    s.rect(52, 188, 16, 28, 14)
+    s.ellipse(60, 142, 28, 14, 13)
+    s.circle(60, 142, 9, 14)
+    for ang in (18, 108, 198, 288):
         rad = math.radians(ang)
-        s.capsule(58, 142, 58 + math.cos(rad) * 48, 142 + math.sin(rad) * 48, 5, 9)
-    rows = [
-        (150, 34, 5, 6),
-        (190, 42, 6, 7),
-        (240, 52, 7, 4),
-        (300, 64, 8, 5),
-        (360, 78, 9, 7),
-    ]
-    for y, height, step, count in rows:
-        for i in range(count):
-            x = 28 + i * (270 / max(1, count - 1))
-            shade = 4 if (i + int(y)) % 3 == 0 else 5 if (i + int(y)) % 3 == 1 else 6
-            tulip(s, x, y, height, shade, 2 if i % 2 == 0 else 3, 10, tilt=(i % 2) * 4 - 2)
+        s.capsule(60, 142, 60 + math.cos(rad) * 54, 142 + math.sin(rad) * 54, 8, 2)
+
+    blooms = (8, 9, 10, 11)
+
+    def cup(x: float, y: float, rx: float, ry: float, color: int) -> None:
+        # Each petal is wide enough to keep an inscribed diameter past the floor.
+        s.ellipse(x - rx * 0.42, y + ry * 0.12, rx * 0.78, ry * 0.86, color, -16)
+        s.ellipse(x + rx * 0.42, y + ry * 0.12, rx * 0.78, ry * 0.86, color, 16)
+        s.ellipse(x, y, rx * 0.7, ry, color)
+
+    def plant(x: float, bloom_y: float, ground_y: float, rx: float, ry: float, color: int, tilt: float, leaf: bool) -> None:
+        stem_top = bloom_y + ry * 0.55
+        s.capsule(x, stem_top, x + tilt, ground_y, 9, 7)
+        if leaf:
+            s.ellipse(x - 16, (stem_top + ground_y) * 0.5, 20, 10, 6, -50)
+            s.ellipse(x + 18, (stem_top + ground_y) * 0.58, 22, 10, 6, 46)
+        cup(x, bloom_y, rx, ry, color)
+
+    # Far row: wide stems drop into one leaf band, so nothing floats above the field.
+    s.poly([(96, 214), (308, 210), (316, 252), (88, 258)], 6)
+    far_x = [112, 156, 200, 244, 288]
+    for i, x in enumerate(far_x):
+        plant(x, 176, 248, 14, 18, blooms[i % 4], tilt=(i % 2) * 6 - 3, leaf=False)
+    # Mid row, a little closer and larger. Stems run down into the front foliage.
+    s.poly([(24, 292), (316, 286), (320, 340), (8, 348)], 6)
+    mid_x = [78, 132, 186, 240, 294]
+    for i, x in enumerate(mid_x):
+        plant(x, 252, 338, 16, 22, blooms[(i + 1) % 4], tilt=(i % 2) * 8 - 4, leaf=True)
+    # Front row reaches the soil at the bottom edge.
+    front_x = [58, 128, 198, 268]
+    for i, x in enumerate(front_x):
+        plant(x, 348, 456, 18, 28, blooms[(i + 2) % 4], tilt=(i % 2) * 10 - 5, leaf=True)
     return s
 
 
@@ -244,7 +274,7 @@ def scene_can() -> Scene:
 
 
 ORIGINALS = [
-    ("tulip-field", "Tulip Field", "Rows of tulips and a windmill.", scene_field),
+    ("tulip-field", "Tulip Field", "Rows of tulips on stems, and a windmill.", scene_field),
     ("tulip-bouquet", "Tulip Bouquet", "A vase filled with tulips.", scene_bouquet),
     ("tulip-closeup", "Single Tulip", "One tulip, close enough to count the petals.", scene_closeup),
     ("tulip-mandala", "Tulip Mandala", "Tulips arranged in a ring.", scene_mandala),

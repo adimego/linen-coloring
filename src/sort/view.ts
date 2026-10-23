@@ -274,7 +274,10 @@ function mountTable(root: HTMLElement, ctx: SortCtx, spec: TableSpec): () => voi
   const note = must<HTMLElement>(root, "#sort-note");
   const done = must<HTMLElement>(root, "#sort-done");
   const layer = must<HTMLElement>(root, "#pour-layer");
-  root.querySelector("#sort-back")?.addEventListener("click", () => ctx.back());
+  root.querySelector("#sort-back")?.addEventListener("click", () => {
+    spec.onCommit(history, isWon(jars));
+    ctx.back();
+  });
   board.addEventListener("pointerdown", (event) => {
     if (event.button !== 0) return;
     if (event.pointerType === "touch" && penIsBlocking()) return;
@@ -753,6 +756,7 @@ function mountTable(root: HTMLElement, ctx: SortCtx, spec: TableSpec): () => voi
     generation += 1;
     window.clearTimeout(hintTimer);
     layer.replaceChildren();
+    spec.onCommit(history, isWon(jars));
   };
 }
 

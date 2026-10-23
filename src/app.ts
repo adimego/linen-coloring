@@ -57,6 +57,66 @@ function sortIdFromHash(hash: string): number | undefined {
   return id;
 }
 
+type SectionMenu = "color" | "match" | "sort";
+
+type HistState = {
+  view: string;
+  puzzle: boolean;
+  menu: SectionMenu;
+  /** The history entry under this one is this section's menu. */
+  onMenu: boolean;
+};
+
+function hist(view: string, puzzle: boolean, menu: SectionMenu, onMenu: boolean): HistState {
+  return { view, puzzle, menu, onMenu };
+}
+
+function sectionOf(hash: string): SectionMenu {
+  if (hash === "#match" || /^#m=\d+$/.test(hash) || hash === "#zen") return "match";
+  if (hash === "#sort" || /^#s=\d+$/.test(hash) || hash === "#sort-zen") return "sort";
+  return "color";
+}
+
+function isPuzzleHash(hash: string): boolean {
+  return (
+    /^#p=[a-z0-9-]+$/.test(hash) ||
+    /^#m=\d+$/.test(hash) ||
+    hash === "#zen" ||
+    /^#s=\d+$/.test(hash) ||
+    hash === "#sort-zen" ||
+    hash === "#photo"
+  );
+}
+
+function isSectionHome(hash: string): boolean {
+  return hash === "" || hash === "#match" || hash === "#sort";
+}
+
+function menuHref(menu: SectionMenu): string {
+  if (menu === "match") return "#match";
+  if (menu === "sort") return "#sort";
+  return location.pathname + location.search;
+}
+
+function viewName(hash: string): string {
+  if (/^#m=\d+$/.test(hash)) return "level";
+  if (/^#s=\d+$/.test(hash)) return "sort-level";
+  if (hash.startsWith("#p=")) return "color";
+  if (hash.startsWith("#")) return hash.slice(1);
+  return "gallery";
+}
+
+function readHist(): HistState | null {
+  const state = history.state as Partial<HistState> | null;
+  if (!state || (state.menu !== "color" && state.menu !== "match" && state.menu !== "sort")) return null;
+  return {
+    view: typeof state.view === "string" ? state.view : "gallery",
+    puzzle: Boolean(state.puzzle),
+    menu: state.menu,
+    onMenu: Boolean(state.onMenu),
+  };
+}
+
 function haptic(): void {
   try {
     navigator.vibrate?.(12);
@@ -112,48 +172,16 @@ export class App {
   private installHistory(): void {
     const hash = location.hash;
     const base = location.pathname + location.search;
-    const matchLevel = /^#m=\d+$/.test(hash);
-    const sortLevel = /^#s=\d+$/.test(hash);
-    const pictureId = pictureIdFromHash() ?? "";
-    const stacked =
-      hash.startsWith("#p=") ||
-      hash === "#credits" ||
-      hash === "#match" ||
-      matchLevel ||
-      hash === "#zen" ||
-      hash === "#sort" ||
-      sortLevel ||
-      hash === "#sort-zen" ||
-      hash === "#daily" ||
-      hash === "#photos" ||
-      hash === "#photo" ||
-      hash === "#tones";
-    if (stacked) {
-      history.replaceState({ view: "gallery" }, "", base);
-      if (matchLevel || hash === "#zen") history.pushState({ view: "match" }, "", "#match");
-      if (sortLevel || hash === "#sort-zen") history.pushState({ view: "sort" }, "", "#sort");
-      if (hash === "#photo" || pictureId.startsWith("photo-")) history.pushState({ view: "photos" }, "", "#photos");
-      if (pictureId.startsWith("daily-")) history.pushState({ view: "daily" }, "", "#daily");
-      const view = hash === "#credits"
-        ? "credits"
-        : hash === "#match"
-          ? "match"
-          : matchLevel
-            ? "level"
-            : hash === "#zen"
-              ? "zen"
-              : hash === "#sort"
-                ? "sort"
-                : sortLevel
-                  ? "sort-level"
-                  : hash === "#sort-zen"
-                    ? "sort-zen"
-                    : hash.startsWith("#")
-                      ? hash.slice(1)
-                      : "color";
-      history.pushState({ view }, "", hash);
-    } else {
-      history.replaceState({ view: "gallery" }, "", base || "./");
+    history.replaceState(hist("gallery", false, "color", false), "", base || "./");
+    if (hash === "#match" || hash === "#sort") {
+      const menu = sectionOf(hash);
+      history.pushState(hist(menu, false, menu, false), "", hash);
+    } else if (hash) {
+      const menu = sectionOf(hash);
+      const puzzle = isPuzzleHash(hash);
+      if (puzzle && menu !== "color") history.pushState(hist(menu, false, menu, false), "", menuHref(menu));
+      const onMenu = puzzle || menu === "color";
+      history.pushState(hist(viewName(hash), puzzle, menu, onMenu), "", hash);
     }
     window.addEventListener("popstate", () => this.render());
   }
@@ -174,6 +202,7 @@ export class App {
   }
 
   private render(): void {
+    writeSave(this.save);
     this.cleanupView();
     const hash = location.hash;
     const matchRoute = hash === "#match" || hash.startsWith("#m=");
@@ -238,7 +267,7 @@ export class App {
   }
 
   private bounceGallery(): void {
-    history.replaceState({ view: "gallery" }, "", location.pathname + location.search);
+    history.replaceState(hist("gallery", false, "color", false), "", menuHref("color"));
   }
 
   private renderGallery(): void {
@@ -402,7 +431,7 @@ export class App {
           .join("")}
       </main>
     `;
-    this.must("#back").addEventListener("click", () => history.back());
+    this.must("#back").addEventListener("click", () => this.leaveSection("color"));
   }
 
   private card(picture: Picture): string {
@@ -508,7 +537,7 @@ export class App {
   }
 
   private bindStudio(picture: Picture): void {
-    this.must("#back").addEventListener("click", () => history.back());
+    this.must("#back").addEventListener("click", () => this.leaveSection("color"));
     this.must("#undo").addEventListener("click", () => this.step(picture, "undo"));
     this.must("#redo").addEventListener("click", () => this.step(picture, "redo"));
     this.must("#export").addEventListener("click", () => void this.savePng(picture));
@@ -761,25 +790,29 @@ export class App {
   }
 
   private open(id: string): void {
-    history.pushState({ view: "color" }, "", `#p=${id}`);
-    this.render();
+    this.place(`#p=${id}`, "color");
   }
 
   private openColor(): void {
     if (location.hash === "") return;
-    history.pushState({ view: "gallery" }, "", location.pathname + location.search);
-    this.render();
+    if (isPuzzleHash(location.hash) && sectionOf(location.hash) === "color") {
+      this.leaveSection("color");
+      return;
+    }
+    this.place(menuHref("color"), "gallery");
   }
 
   private openMatch(): void {
     if (location.hash === "#match") return;
-    history.pushState({ view: "match" }, "", "#match");
-    this.render();
+    if (isPuzzleHash(location.hash) && sectionOf(location.hash) === "match") {
+      this.leaveSection("match");
+      return;
+    }
+    this.place("#match", "match");
   }
 
   private openLevel(id: number): void {
-    history.pushState({ view: "level", id }, "", `#m=${id}`);
-    this.render();
+    this.place(`#m=${id}`, "level");
   }
 
   private renderMatchRoute(): void {
@@ -798,7 +831,7 @@ export class App {
       openMatch: () => this.openMatch(),
       openLevel: (id) => this.openLevel(id),
       openZen: () => this.openZen(),
-      back: () => history.back(),
+      back: () => this.leaveSection("match"),
       say: (message) => this.say(message),
       cue: (kind) => this.playCue(kind),
       haptic: () => haptic(),
@@ -903,7 +936,7 @@ export class App {
     this.viewCleanups.push(
       renderZen(this.root, {
         toolsHtml: this.headerTools(),
-        back: () => history.back(),
+        back: () => this.leaveSection("match"),
         say: (message) => this.say(message),
         cue: (kind) => this.playCue(kind),
         haptic: () => haptic(),
@@ -934,7 +967,7 @@ export class App {
       </main>
       <p class="live" id="live" aria-live="polite"></p>
     `;
-    this.must("#back").addEventListener("click", () => history.back());
+    this.must("#back").addEventListener("click", () => this.leaveSection("color"));
     const grid = this.root.querySelector("#daily-grid");
     if (!grid) return;
     const observer = new IntersectionObserver(
@@ -1013,7 +1046,7 @@ export class App {
       </main>
       <p class="live" id="live" aria-live="polite"></p>
     `;
-    this.must("#back").addEventListener("click", () => history.back());
+    this.must("#back").addEventListener("click", () => this.leaveSection("color"));
     this.must("#add-photo").addEventListener("click", () => this.openPhotoMaker());
     const grid = this.root.querySelector("#photo-grid");
     for (const record of records) {
@@ -1058,7 +1091,7 @@ export class App {
     this.root.className = "app is-gallery";
     this.root.innerHTML = `
       <header class="top gallery-top">
-        <button type="button" class="icon-btn" id="back" aria-label="Back to my photos">${icon("back")}</button>
+        <button type="button" class="icon-btn" id="back" aria-label="Back to gallery">${icon("back")}</button>
         <div class="title-block">
           <p class="eyebrow">On this phone</p>
           <h1>Your photo</h1>
@@ -1080,7 +1113,7 @@ export class App {
       </main>
       <p class="live" id="live" aria-live="polite"></p>
     `;
-    this.must("#back").addEventListener("click", () => history.back());
+    this.must("#back").addEventListener("click", () => this.leaveSection("color"));
     const input = this.must<HTMLInputElement>("#photo-file");
     const preview = this.must<HTMLImageElement>("#photo-preview");
     const range = this.must<HTMLInputElement>("#photo-difficulty");
@@ -1191,45 +1224,41 @@ export class App {
   }
 
   private openDaily(): void {
-    history.pushState({ view: "daily" }, "", "#daily");
-    this.render();
+    this.place("#daily", "daily");
   }
 
   private openPhotos(): void {
-    history.pushState({ view: "photos" }, "", "#photos");
-    this.render();
+    this.place("#photos", "photos");
   }
 
   private openPhotoMaker(): void {
-    history.pushState({ view: "photo" }, "", "#photo");
-    this.render();
+    this.place("#photo", "photo");
   }
 
   private openTones(): void {
-    history.pushState({ view: "tones" }, "", "#tones");
-    this.render();
+    this.place("#tones", "tones");
   }
 
   private openZen(): void {
-    history.pushState({ view: "zen" }, "", "#zen");
-    this.render();
+    this.place("#zen", "zen");
   }
 
   private openSort(): void {
     if (location.hash === "#sort") return;
-    history.pushState({ view: "sort" }, "", "#sort");
-    this.render();
+    if (isPuzzleHash(location.hash) && sectionOf(location.hash) === "sort") {
+      this.leaveSection("sort");
+      return;
+    }
+    this.place("#sort", "sort");
   }
 
   private openSortLevel(id: number): void {
-    history.pushState({ view: "sort-level", id }, "", `#s=${id}`);
-    this.render();
+    this.place(`#s=${id}`, "sort-level");
   }
 
   private openSortZen(): void {
     if (location.hash === "#sort-zen") return;
-    history.pushState({ view: "sort-zen" }, "", "#sort-zen");
-    this.render();
+    this.place("#sort-zen", "sort-zen");
   }
 
   private renderSortRoute(): void {
@@ -1253,7 +1282,7 @@ export class App {
       openSort: () => this.openSort(),
       openLevel: (id) => this.openSortLevel(id),
       openZen: () => this.openSortZen(),
-      back: () => history.back(),
+      back: () => this.leaveSection("sort"),
       say: (message) => this.say(message),
       cue: (kind) => this.playCue(kind),
       haptic: () => haptic(),
@@ -1267,7 +1296,52 @@ export class App {
   }
 
   private openCredits(): void {
-    history.pushState({ view: "credits" }, "", "#credits");
+    this.place("#credits", "credits");
+  }
+
+  /** One history entry for a puzzle. A second puzzle replaces the first, so Back cannot walk them. */
+  private place(url: string, view: string): void {
+    const hash = url.startsWith("#") ? url : "";
+    const here = location.hash;
+    if (hash === here && (hash !== "" || here === "")) return;
+
+    const puzzle = isPuzzleHash(hash);
+    const menu = sectionOf(hash);
+    const current = readHist();
+    const herePuzzle = isPuzzleHash(here);
+    let replace = false;
+    let onMenu = false;
+
+    if (puzzle && herePuzzle) {
+      replace = true;
+      onMenu = Boolean(current?.onMenu && current.menu === menu);
+    } else if (puzzle && isSectionHome(here) && sectionOf(here) === menu) {
+      onMenu = true;
+    } else if (puzzle) {
+      replace = true;
+      onMenu = Boolean(current?.onMenu && current.menu === menu);
+    } else if (!puzzle && herePuzzle && isSectionHome(hash) && sectionOf(here) === menu) {
+      this.leaveSection(menu);
+      return;
+    } else if (!puzzle && isSectionHome(here) && sectionOf(here) === menu && menu === "color" && hash !== "") {
+      onMenu = true;
+    }
+
+    const state = hist(view, puzzle, menu, onMenu);
+    if (replace) history.replaceState(state, "", url);
+    else history.pushState(state, "", url);
+    this.render();
+  }
+
+  /** Drop the puzzle and show its section menu. Pop when that menu is the parent; otherwise replace. */
+  private leaveSection(menu: SectionMenu): void {
+    writeSave(this.save);
+    const current = readHist();
+    if (current?.onMenu && current.menu === menu && history.length > 1) {
+      history.back();
+      return;
+    }
+    history.replaceState(hist(menu === "color" ? "gallery" : menu, false, menu, false), "", menuHref(menu));
     this.render();
   }
 

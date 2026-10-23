@@ -415,6 +415,13 @@ function renderBoard(root: HTMLElement, level: LevelDef, ctx: MatchCtx, record: 
     });
   }
 
+  function flush(): void {
+    const prev = getLevel(loadMatch(), level.id);
+    if (prev.pendingReveal && prev.won) return;
+    if (moves === 0 && !isWon(grid) && !prev.snapshot) return;
+    remember(false);
+  }
+
   async function showWin(): Promise<void> {
     won = true;
     clearHint();
@@ -607,7 +614,10 @@ function renderBoard(root: HTMLElement, level: LevelDef, ctx: MatchCtx, record: 
     armHint();
     ctx.say("A fresh scattering of pieces.");
   });
-  const onBack = (): void => ctx.back();
+  const onBack = (): void => {
+    flush();
+    ctx.back();
+  };
   root.querySelector("#match-back")?.addEventListener("click", onBack);
 
   board.setAttribute("aria-busy", "false");
@@ -621,6 +631,7 @@ function renderBoard(root: HTMLElement, level: LevelDef, ctx: MatchCtx, record: 
   return () => {
     token += 1;
     window.clearTimeout(hintTimer);
+    flush();
   };
 }
 

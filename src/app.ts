@@ -49,6 +49,13 @@ function esc(value: string): string {
   });
 }
 
+const PHOTO_ACCEPT = "image/*,image/heic,image/heif,.heic,.heif";
+
+function isPhotoFile(file: File): boolean {
+  if (file.type.toLowerCase().startsWith("image/")) return true;
+  return /\.(heic|heif|jpe?g|png|gif|webp|bmp|tiff?|avif)$/i.test(file.name);
+}
+
 function sortIdFromHash(hash: string): number | undefined {
   const match = /^#s=(\d+)$/.exec(hash);
   if (!match) return undefined;
@@ -1098,13 +1105,21 @@ export class App {
         </div>
         ${this.headerTools()}
       </header>
-      <main class="gallery photo-maker">
-        <p class="blurb">Take or choose a photo. Linen turns it into a coloring page here, on this phone. Nothing is uploaded.</p>
-        <label class="photo-pick">
-          <input id="photo-file" type="file" accept="image/*" capture="environment">
-          <span>Take or choose a photo</span>
-        </label>
+      <main class="gallery photo-maker" id="photo-drop">
+        <p class="blurb">Take a photo, or choose one from your library. On a computer, you can drop it here. Linen turns it into a coloring page on this phone. Nothing is uploaded.</p>
+        <div class="photo-actions">
+          <label class="photo-pick">
+            <span>Take photo</span>
+            <input id="photo-camera" type="file" accept="${PHOTO_ACCEPT}" capture="environment">
+          </label>
+          <label class="photo-pick">
+            <span>Choose from library</span>
+            <input id="photo-library" type="file" accept="${PHOTO_ACCEPT}">
+          </label>
+        </div>
+        <p class="note photo-drop-note">Or drop a photo here.</p>
         <img id="photo-preview" alt="Chosen photo" hidden>
+        <p class="note" id="photo-chosen" hidden></p>
         <label class="volume" for="photo-difficulty">Regions</label>
         <input id="photo-difficulty" type="range" min="0" max="100" value="45" aria-describedby="photo-diff-label">
         <p class="note" id="photo-diff-label">${esc(plan.label)}</p>
@@ -1114,35 +1129,82 @@ export class App {
       <p class="live" id="live" aria-live="polite"></p>
     `;
     this.must("#back").addEventListener("click", () => this.leaveSection("color"));
-    const input = this.must<HTMLInputElement>("#photo-file");
+    const camera = this.must<HTMLInputElement>("#photo-camera");
+    const library = this.must<HTMLInputElement>("#photo-library");
+    const drop = this.must("#photo-drop");
     const preview = this.must<HTMLImageElement>("#photo-preview");
+    const chosenNote = this.must("#photo-chosen");
     const range = this.must<HTMLInputElement>("#photo-difficulty");
     const make = this.must<HTMLButtonElement>("#photo-make");
     const label = this.must("#photo-diff-label");
     const status = this.must("#photo-status");
     let url = "";
-    input.addEventListener("change", () => {
-      if (url) URL.revokeObjectURL(url);
-      const file = input.files?.[0];
-      if (!file) {
-        preview.hidden = true;
-        make.disabled = true;
-        status.textContent = "";
+    let chosen: File | null = null;
+    let dragDepth = 0;
+    // A capture attribute anywhere on the page makes older iOS open the camera for every file input.
+    // Clear it before the library control is activated, and put it back only for Take photo.
+    library.addEventListener("pointerdown", () => camera.removeAttribute("capture"), true);
+    camera.addEventListener("pointerdown", () => camera.setAttribute("capture", "environment"), true);
+    const show = (file: File): void => {
+      if (!isPhotoFile(file)) {
+        status.textContent = "Choose a photo.";
+        this.say("Choose a photo.");
         return;
       }
+      if (url) URL.revokeObjectURL(url);
+      chosen = file;
       url = URL.createObjectURL(file);
       preview.src = url;
       preview.hidden = false;
+      chosenNote.hidden = false;
+      chosenNote.textContent = file.name;
       make.disabled = false;
       status.textContent = "";
+      this.say(`Selected ${file.name}.`);
+    };
+    preview.addEventListener("error", () => {
+      preview.hidden = true;
+      if (!chosen) return;
+      status.textContent = "The preview could not be drawn. You can still make the coloring page.";
+    });
+    const takeInput = (input: HTMLInputElement): void => {
+      const file = input.files?.[0];
+      input.value = "";
+      if (file) show(file);
+    };
+    camera.addEventListener("change", () => takeInput(camera));
+    library.addEventListener("change", () => takeInput(library));
+    drop.addEventListener("dragenter", (event) => {
+      event.preventDefault();
+      dragDepth += 1;
+      drop.classList.add("is-over");
+    });
+    drop.addEventListener("dragover", (event) => event.preventDefault());
+    drop.addEventListener("dragleave", () => {
+      dragDepth -= 1;
+      if (dragDepth <= 0) {
+        dragDepth = 0;
+        drop.classList.remove("is-over");
+      }
+    });
+    drop.addEventListener("drop", (event) => {
+      event.preventDefault();
+      dragDepth = 0;
+      drop.classList.remove("is-over");
+      const file = [...(event.dataTransfer?.files ?? [])].find(isPhotoFile);
+      if (!file) {
+        status.textContent = "Drop a photo.";
+        this.say("Drop a photo.");
+        return;
+      }
+      show(file);
     });
     range.addEventListener("input", () => {
       label.textContent = difficultyPlan(Number(range.value) / 100).label;
     });
     make.addEventListener("click", () => {
-      const file = input.files?.[0];
-      if (!file) return;
-      void this.makePhoto(file, Number(range.value) / 100, make, status);
+      if (!chosen) return;
+      void this.makePhoto(chosen, Number(range.value) / 100, make, status);
     });
     this.viewCleanups.push(() => {
       if (url) URL.revokeObjectURL(url);

@@ -1,7 +1,7 @@
 import { Ambience, type Cue } from "./audio.ts";
 import { archiveDates, buildDaily, dailyPicture, formatDailyLabel, isIsoDate, LAUNCH_DATE, localDateISO } from "./daily/generate.ts";
 import { exportPng } from "./exportPng.ts";
-import { GestureController } from "./gestures.ts";
+import { GestureController, installPalmRejection } from "./gestures.ts";
 import { icon } from "./icons.ts";
 import { renderZen } from "./match/zen.ts";
 import { levelFromHash } from "./match/levels.ts";
@@ -81,10 +81,12 @@ export class App {
   private viewCleanups: Array<() => void> = [];
   private wasComplete = false;
   private findCursor = -1;
+  private lastMiss = "";
   private readonly root: HTMLElement;
 
   constructor(root: HTMLElement) {
     this.root = root;
+    installPalmRejection();
     this.save = loadSave();
     if (this.save.category !== "all" && !categoryIds.has(this.save.category)) this.save.category = "all";
     const settings = loadSettings();
@@ -479,7 +481,7 @@ export class App {
     const svg = renderSvg(picture, data.fills, { interactive: true, numbers: true, lines: true, layout: "stage" });
     if (this.wasComplete) svg.classList.add("is-complete");
     viewport.prepend(svg);
-    this.gestures = new GestureController(viewport, svg, (x, y) => this.tap(picture, x, y));
+    this.gestures = new GestureController(viewport, svg, (x, y, phase) => this.tap(picture, x, y, phase));
     if (!this.wasComplete) markHot(svg, colorIndex + 1);
     this.paintSwatches(picture);
     this.paintMeter(picture);
@@ -578,20 +580,40 @@ export class App {
     markHot(svg, this.colorIndexOf(picture) + 1);
   }
 
-  private tap(picture: Picture, clientX: number, clientY: number): void {
-    const hit = document.elementFromPoint(clientX, clientY);
-    const group = hit?.closest("[data-region]");
-    const regionId = group?.getAttribute("data-region");
-    const region = picture.regions.find((item) => item.id === regionId);
+  private regionAt(clientX: number, clientY: number): { id: string; n: number } | undefined {
+    const svg = this.root.querySelector(".stage-svg");
+    if (!(svg instanceof SVGSVGElement)) return;
+    const ctm = svg.getScreenCTM();
+    if (!ctm) return;
+    const point = svg.createSVGPoint();
+    point.x = clientX;
+    point.y = clientY;
+    const local = point.matrixTransform(ctm.inverse());
+    const paths = svg.querySelectorAll<SVGPathElement>(".region");
+    for (let i = paths.length - 1; i >= 0; i -= 1) {
+      const path = paths[i];
+      if (!path.isPointInFill(local)) continue;
+      const id = path.dataset.region;
+      const n = Number(path.dataset.n);
+      if (id && Number.isInteger(n)) return { id, n };
+    }
+    return;
+  }
+
+  private tap(picture: Picture, clientX: number, clientY: number, phase: "down" | "move" | "up" = "down"): void {
+    const region = this.regionAt(clientX, clientY);
     if (!region) return;
     const fills = pictureSave(this.save, picture.id).fills;
     if (fills[region.id]) return;
     const selected = this.colorIndexOf(picture);
     if (region.n !== selected + 1) {
+      if (phase === "move" || (phase === "up" && this.lastMiss === region.id)) return;
+      this.lastMiss = region.id;
       this.nudge();
       this.say(`That region needs color ${region.n}.`);
       return;
     }
+    this.lastMiss = "";
     const color = picture.colors[region.n - 1];
     if (!color) return;
     const next = applyFill(this.save, picture, region.id, color);

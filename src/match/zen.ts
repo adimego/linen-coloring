@@ -1,4 +1,5 @@
 import type { Cue } from "../audio.ts";
+import { penIsBlocking } from "../gestures.ts";
 import { icon } from "../icons.ts";
 import type { Picture } from "../pictures/types.ts";
 import { referenceFills, renderSvg } from "../render.ts";
@@ -30,6 +31,7 @@ export function renderZen(root: HTMLElement, ctx: ZenCtx): () => void {
   const grid = createBoard({ mask, cover, kinds: 5 }, rng);
   let paused = false;
   let busy = false;
+  const queued: CellPos[] = [];
   let selected: CellPos | null = null;
   let hintTimer = 0;
   let pointer: { x: number; y: number; cell: CellPos } | null = null;
@@ -99,7 +101,8 @@ export function renderZen(root: HTMLElement, ctx: ZenCtx): () => void {
   });
 
   board.addEventListener("pointerdown", (event) => {
-    if (paused || busy || event.button !== 0) return;
+    if (paused || event.button !== 0) return;
+    if (event.pointerType === "touch" && penIsBlocking()) return;
     const cell = cellFrom(event.target);
     if (!cell) return;
     pointer = { x: event.clientX, y: event.clientY, cell };
@@ -109,14 +112,15 @@ export function renderZen(root: HTMLElement, ctx: ZenCtx): () => void {
     if (!pointer || paused || busy) return;
     const dx = event.clientX - pointer.x;
     const dy = event.clientY - pointer.y;
-    if (Math.hypot(dx, dy) < 18) return;
+    const need = event.pointerType === "pen" ? 28 : 18;
+    if (Math.hypot(dx, dy) < need) return;
     const next = neighbor(pointer.cell, dx, dy);
     const from = pointer.cell;
     pointer = null;
     if (next) void play(from, next);
   });
   board.addEventListener("pointerup", () => {
-    if (!pointer || paused || busy) {
+    if (!pointer || paused) {
       pointer = null;
       return;
     }
@@ -217,15 +221,31 @@ export function renderZen(root: HTMLElement, ctx: ZenCtx): () => void {
     return next;
   }
 
+  function settle(): void {
+    busy = false;
+    if (disposed || paused) return;
+    const next = queued.shift();
+    if (next) choose(next);
+    else armHint();
+  }
+
   function choose(cell: CellPos): void {
+    if (busy) {
+      queued.push(cell);
+      return;
+    }
     if (!selected) {
       selected = cell;
       paintSelect();
+      const follow = queued.shift();
+      if (follow) choose(follow);
       return;
     }
     if (selected.r === cell.r && selected.c === cell.c) {
       selected = null;
       paintSelect();
+      const again = queued.shift();
+      if (again) choose(again);
       return;
     }
     const from = selected;
@@ -234,6 +254,8 @@ export function renderZen(root: HTMLElement, ctx: ZenCtx): () => void {
     if (Math.abs(from.r - cell.r) + Math.abs(from.c - cell.c) !== 1) {
       selected = cell;
       paintSelect();
+      const again = queued.shift();
+      if (again) choose(again);
       return;
     }
     void play(from, cell);
@@ -277,15 +299,16 @@ export function renderZen(root: HTMLElement, ctx: ZenCtx): () => void {
   }
 
   async function play(a: CellPos, b: CellPos): Promise<void> {
-    if (busy || paused) return;
+    if (paused) return;
+    if (busy) return;
     busy = true;
     clearHint();
     const host = motionHost();
     await slideSwap(host, a, b, true);
+    if (disposed) return;
     if (!swapOnly(grid, a, b)) {
       await slideSwap(host, a, b, false);
-      busy = false;
-      armHint();
+      settle();
       return;
     }
     commitPositions();
@@ -296,6 +319,7 @@ export function renderZen(root: HTMLElement, ctx: ZenCtx): () => void {
       haptic: () => ctx.haptic(),
       alive: () => !disposed,
     });
+    if (disposed) return;
     if (!findMove(grid)) {
       reshuffle(grid, rng);
       ctx.cue("shuffle");
@@ -303,8 +327,7 @@ export function renderZen(root: HTMLElement, ctx: ZenCtx): () => void {
       paintPieces(true);
     }
     refreshLabels();
-    busy = false;
-    if (!paused) armHint();
+    settle();
   }
 
   function refreshLabels(): void {

@@ -1,4 +1,5 @@
 import type { Cue } from "../audio.ts";
+import { penIsBlocking } from "../gestures.ts";
 import { icon } from "../icons.ts";
 import {
   LEVEL_COUNT,
@@ -235,6 +236,7 @@ function mountTable(root: HTMLElement, ctx: SortCtx, spec: TableSpec): () => voi
   let jars = replay(base, history) ?? cloneJars(base);
   let lifted: number | null = null;
   let busy = false;
+  const pending: number[] = [];
   let generation = 0;
   let hintTimer = 0;
   const reduce = reducedMotion();
@@ -273,7 +275,9 @@ function mountTable(root: HTMLElement, ctx: SortCtx, spec: TableSpec): () => voi
   const done = must<HTMLElement>(root, "#sort-done");
   const layer = must<HTMLElement>(root, "#pour-layer");
   root.querySelector("#sort-back")?.addEventListener("click", () => ctx.back());
-  board.addEventListener("click", (event) => {
+  board.addEventListener("pointerdown", (event) => {
+    if (event.button !== 0) return;
+    if (event.pointerType === "touch" && penIsBlocking()) return;
     const vase = (event.target as Element | null)?.closest<HTMLButtonElement>(".vase");
     if (!vase) return;
     const index = Number(vase.dataset.jar);
@@ -292,9 +296,17 @@ function mountTable(root: HTMLElement, ctx: SortCtx, spec: TableSpec): () => voi
   }
 
   function paint(splash?: { settleJar: number; settleCount: number; fresh: boolean[]; shown?: { jar: number; slot: number } }): void {
-    const cols = jars.length <= 4 ? jars.length : Math.ceil(jars.length / 2);
-    const bit = cols <= 3 ? 44 : cols === 4 ? 36 : cols === 5 ? 32 : 28;
-    const width = cols <= 3 ? 62 : cols === 4 ? 52 : cols === 5 ? 46 : 40;
+    const stageW = board.clientWidth || window.innerWidth;
+    const stageH = board.clientHeight || window.innerHeight * 0.55;
+    const wide = stageW >= 900;
+    const cols = wide ? Math.min(jars.length, 8) : jars.length <= 4 ? jars.length : Math.ceil(jars.length / 2);
+    const rows = Math.max(1, Math.ceil(jars.length / cols));
+    const cap = Math.max(4, ...jars.map((jar) => jar.cap));
+    const baseBit = cols <= 3 ? 44 : cols === 4 ? 36 : cols === 5 ? 32 : 28;
+    const baseWidth = cols <= 3 ? 62 : cols === 4 ? 52 : cols === 5 ? 46 : 40;
+    const fitBit = Math.min((stageW * 0.7) / cols, (stageH * 0.72) / (rows * (cap * 0.85 + 0.8)));
+    const bit = stageW < 700 ? baseBit : Math.round(Math.max(baseBit, Math.min(72, fitBit)));
+    const width = stageW < 700 ? baseWidth : Math.round(Math.max(baseWidth, Math.min(100, bit * 1.35)));
     board.style.setProperty("--cols", String(cols));
     board.style.setProperty("--bit-size", `${bit}px`);
     board.style.setProperty("--jar-size", `${width}px`);
@@ -396,8 +408,21 @@ function mountTable(root: HTMLElement, ctx: SortCtx, spec: TableSpec): () => voi
     markLift();
   }
 
+  function release(): void {
+    busy = false;
+    board.classList.remove("is-busy");
+    syncTools();
+    if (isWon(jars) || !pending.length) return;
+    const next = pending.shift();
+    if (next !== undefined) void onTap(next);
+  }
+
   async function onTap(index: number): Promise<void> {
-    if (busy || isWon(jars)) return;
+    if (isWon(jars)) return;
+    if (busy) {
+      pending.push(index);
+      return;
+    }
     clearHint();
     const jar = jars[index];
     if (!jar) return;
@@ -437,10 +462,8 @@ function mountTable(root: HTMLElement, ctx: SortCtx, spec: TableSpec): () => voi
     const old = jars[from];
     const next = pour(jars, from, index);
     if (!next || !old) {
-      busy = false;
-      board.classList.remove("is-busy");
       clearLift();
-      syncTools();
+      release();
       return;
     }
     const shownIndex = next[from] && next[from].slots.length > 0 ? next[from].slots.length - 1 : -1;
@@ -450,11 +473,8 @@ function mountTable(root: HTMLElement, ctx: SortCtx, spec: TableSpec): () => voi
     lifted = null;
     const fresh = next.map((one, jarIndex) => isCompleteJar(one) && !before[jarIndex]);
     paint({ settleJar: index, settleCount: amount, fresh, shown });
-    busy = false;
-    board.classList.remove("is-busy");
-    syncTools();
-    ctx.haptic();
     const won = isWon(jars);
+    ctx.haptic();
     ctx.cue("clink");
     if (fresh.some(Boolean) && !won) ctx.cue("sparkle");
     if (won) ctx.cue("win");
@@ -467,6 +487,7 @@ function mountTable(root: HTMLElement, ctx: SortCtx, spec: TableSpec): () => voi
       const run = topRun((jars[index]?.slots ?? []).map((slot) => slot.color));
       ctx.say(run ? `${toneName(run.color)} poured.` : "Poured.");
     }
+    release();
   }
 
   async function fly(from: number, to: number, amount: number): Promise<void> {
@@ -571,8 +592,6 @@ function mountTable(root: HTMLElement, ctx: SortCtx, spec: TableSpec): () => voi
       if (!alive(mark)) return;
       await fly(last.to, last.from, amount);
       if (!alive(mark)) return;
-      busy = false;
-      board.classList.remove("is-busy");
     }
     jars = next;
     lifted = null;
@@ -581,6 +600,7 @@ function mountTable(root: HTMLElement, ctx: SortCtx, spec: TableSpec): () => voi
     note.textContent = spec.note(history);
     ctx.say("Undone.");
     if (amount > 0) ctx.cue("clink");
+    release();
   }
 
   function restart(): void {

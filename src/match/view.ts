@@ -1,4 +1,5 @@
 import type { Cue } from "../audio.ts";
+import { penIsBlocking } from "../gestures.ts";
 import { icon } from "../icons.ts";
 import { getPicture } from "../pictures/index.ts";
 import { referenceFills, renderSvg } from "../render.ts";
@@ -203,6 +204,7 @@ function renderBoard(root: HTMLElement, level: LevelDef, ctx: MatchCtx, record: 
   let token = 0;
   let pointer: { x: number; y: number; cell: CellPos; id: number } | null = null;
   let dragged = false;
+  const queued: CellPos[] = [];
   const reduce = reducedMotion();
 
   const picture = getPicture(level.pictureId);
@@ -449,9 +451,7 @@ function renderBoard(root: HTMLElement, level: LevelDef, ctx: MatchCtx, record: 
     const rng = mulberry32((seed + moves * 10007 + 17) >>> 0);
     if (!swapOnly(grid, a, b)) {
       await slideSwap(motionHost(), a, b, false);
-      busy = false;
-      board.setAttribute("aria-busy", "false");
-      armHint();
+      release();
       return;
     }
     commitPositions();
@@ -464,8 +464,7 @@ function renderBoard(root: HTMLElement, level: LevelDef, ctx: MatchCtx, record: 
     paintMeter();
     if (finished) {
       await showWin();
-      busy = false;
-      board.setAttribute("aria-busy", "false");
+      release();
       return;
     }
     if (!findMove(grid)) {
@@ -484,9 +483,35 @@ function renderBoard(root: HTMLElement, level: LevelDef, ctx: MatchCtx, record: 
       const cleared = frames.reduce((sum, frameStep) => sum + frameStep.cleared.length, 0);
       ctx.say(cleared >= 4 ? "A little more of the picture." : "The leaves lifted.");
     }
+    release();
+  }
+
+  function release(): void {
     busy = false;
     board.setAttribute("aria-busy", "false");
-    armHint();
+    const next = queued.shift();
+    if (next && !won && alive()) accept(next);
+    else if (!won && alive()) armHint();
+  }
+
+  function accept(here: CellPos): void {
+    if (won || !alive()) return;
+    if (busy) {
+      queued.push(here);
+      return;
+    }
+    if (selected && Math.abs(selected.r - here.r) + Math.abs(selected.c - here.c) === 1) {
+      const previous = selected;
+      selected = null;
+      paintSelect();
+      void playSwap(previous, here);
+      return;
+    }
+    selected = selected && selected.r === here.r && selected.c === here.c ? null : here;
+    paintSelect();
+    const follow = queued.shift();
+    if (follow) accept(follow);
+    else armHint();
   }
 
   function clearHint(): void {
@@ -516,7 +541,8 @@ function renderBoard(root: HTMLElement, level: LevelDef, ctx: MatchCtx, record: 
   }
 
   function onDown(event: PointerEvent): void {
-    if (busy || won || event.button !== 0) return;
+    if (won || event.button !== 0) return;
+    if (event.pointerType === "touch" && penIsBlocking()) return;
     const tile = tileFrom(event);
     if (!tile) return;
     clearHint();
@@ -527,11 +553,16 @@ function renderBoard(root: HTMLElement, level: LevelDef, ctx: MatchCtx, record: 
       id: event.pointerId,
     };
     dragged = false;
-    frame.setPointerCapture(event.pointerId);
+    try {
+      frame.setPointerCapture(event.pointerId);
+    } catch {
+      /* Synthetic taps still count. */
+    }
   }
 
   function onMove(event: PointerEvent): void {
     if (!pointer || dragged || busy || event.pointerId !== pointer.id) return;
+    if (event.pointerType === "pen" && Math.hypot(event.clientX - pointer.x, event.clientY - pointer.y) < 28) return;
     const dx = event.clientX - pointer.x;
     const dy = event.clientY - pointer.y;
     if (Math.hypot(dx, dy) < 18) return;
@@ -550,19 +581,10 @@ function renderBoard(root: HTMLElement, level: LevelDef, ctx: MatchCtx, record: 
     if (!pointer || event.pointerId !== pointer.id) return;
     const from = pointer.cell;
     pointer = null;
-    if (dragged || busy) return;
+    if (dragged) return;
     const tile = tileFrom(event);
     const here = tile ? { r: Number(tile.dataset.r), c: Number(tile.dataset.c) } : from;
-    if (selected && Math.abs(selected.r - here.r) + Math.abs(selected.c - here.c) === 1) {
-      const previous = selected;
-      selected = null;
-      paintSelect();
-      void playSwap(previous, here);
-      return;
-    }
-    selected = selected && selected.r === here.r && selected.c === here.c ? null : here;
-    paintSelect();
-    armHint();
+    accept(here);
   }
 
   frame.addEventListener("pointerdown", onDown);

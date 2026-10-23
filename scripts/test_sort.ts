@@ -49,6 +49,9 @@ const buried = pour([jar(4, [2, 1], [true, false]), empty], 0, 1);
 assert(buried?.[0]?.slots[0]?.hidden === false && buried[0].slots[0].color === 2, "uncovering a buried piece shows it");
 assert(buried?.[1]?.slots.every((slot) => !slot.hidden), "poured pieces are visible");
 
+const topped = pour([jar(4, [1, 2, 0, 0]), jar(4, [0])], 0, 1);
+assert(topped !== null && topped[0]?.slots.map((slot) => slot.color).join() === "1,2", "a pour leaves the buried pieces");
+assert(topped?.[1]?.slots.map((slot) => slot.color).join() === "0,0,0", "poured pieces land on the top of the stack");
 assert(isWon([jar(4, [0, 0]), empty, jar(3, [1, 1, 1])]), "single colors and empty vases win");
 assert(!isWon([jar(4, [0, 1])]), "a mixed vase is not won");
 assert(isCompleteJar(jar(4, [3, 3, 3, 3])), "four of a color seal a vase");

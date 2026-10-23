@@ -1,4 +1,5 @@
 import type { Cue } from "../audio.ts";
+import { penIsBlocking } from "../gestures.ts";
 import { icon } from "../icons.ts";
 import {
   LEVEL_COUNT,
@@ -235,6 +236,7 @@ function mountTable(root: HTMLElement, ctx: SortCtx, spec: TableSpec): () => voi
   let jars = replay(base, history) ?? cloneJars(base);
   let lifted: number | null = null;
   let busy = false;
+  const pending: number[] = [];
   let generation = 0;
   let hintTimer = 0;
   const reduce = reducedMotion();
@@ -273,13 +275,15 @@ function mountTable(root: HTMLElement, ctx: SortCtx, spec: TableSpec): () => voi
   const done = must<HTMLElement>(root, "#sort-done");
   const layer = must<HTMLElement>(root, "#pour-layer");
   root.querySelector("#sort-back")?.addEventListener("click", () => ctx.back());
-  board.addEventListener("click", (event) => {
+  board.addEventListener("pointerdown", (event) => {
+    if (event.button !== 0) return;
+    if (event.pointerType === "touch" && penIsBlocking()) return;
     const vase = (event.target as Element | null)?.closest<HTMLButtonElement>(".vase");
     if (!vase) return;
     const index = Number(vase.dataset.jar);
     if (Number.isInteger(index)) void onTap(index);
   });
-  must<HTMLButtonElement>(root, "#sort-undo").addEventListener("click", () => undo());
+  must<HTMLButtonElement>(root, "#sort-undo").addEventListener("click", () => void undo());
   must<HTMLButtonElement>(root, "#sort-restart").addEventListener("click", () => restart());
   must<HTMLButtonElement>(root, "#sort-hint").addEventListener("click", () => void hint());
   must<HTMLButtonElement>(root, "#sort-extra").addEventListener("click", () => addVase());
@@ -292,9 +296,17 @@ function mountTable(root: HTMLElement, ctx: SortCtx, spec: TableSpec): () => voi
   }
 
   function paint(splash?: { settleJar: number; settleCount: number; fresh: boolean[]; shown?: { jar: number; slot: number } }): void {
-    const cols = jars.length <= 4 ? jars.length : Math.ceil(jars.length / 2);
-    const bit = cols <= 3 ? 44 : cols === 4 ? 36 : cols === 5 ? 32 : 28;
-    const width = cols <= 3 ? 62 : cols === 4 ? 52 : cols === 5 ? 46 : 40;
+    const stageW = board.clientWidth || window.innerWidth;
+    const stageH = board.clientHeight || window.innerHeight * 0.55;
+    const wide = stageW >= 900;
+    const cols = wide ? Math.min(jars.length, 8) : jars.length <= 4 ? jars.length : Math.ceil(jars.length / 2);
+    const rows = Math.max(1, Math.ceil(jars.length / cols));
+    const cap = Math.max(4, ...jars.map((jar) => jar.cap));
+    const baseBit = cols <= 3 ? 44 : cols === 4 ? 36 : cols === 5 ? 32 : 28;
+    const baseWidth = cols <= 3 ? 62 : cols === 4 ? 52 : cols === 5 ? 46 : 40;
+    const fitBit = Math.min((stageW * 0.7) / cols, (stageH * 0.72) / (rows * (cap * 0.85 + 0.8)));
+    const bit = stageW < 700 ? baseBit : Math.round(Math.max(baseBit, Math.min(72, fitBit)));
+    const width = stageW < 700 ? baseWidth : Math.round(Math.max(baseWidth, Math.min(100, bit * 1.35)));
     board.style.setProperty("--cols", String(cols));
     board.style.setProperty("--bit-size", `${bit}px`);
     board.style.setProperty("--jar-size", `${width}px`);
@@ -344,12 +356,51 @@ function mountTable(root: HTMLElement, ctx: SortCtx, spec: TableSpec): () => voi
     board.querySelectorAll<HTMLButtonElement>(".vase").forEach((vase) => {
       const index = Number(vase.dataset.jar);
       const on = index === lifted;
+      const canTake = lifted !== null && index !== lifted && pourAmount(jars, lifted, index) > 0;
       vase.classList.toggle("is-source", on);
+      vase.classList.toggle("is-ready", canTake);
       vase.setAttribute("aria-pressed", on ? "true" : "false");
       const stack = [...vase.querySelectorAll<HTMLElement>(".bit")];
       const run = on ? (topRun((jars[index]?.slots ?? []).map((slot) => slot.color))?.count ?? 0) : 0;
-      stack.forEach((bit, indexInStack) => bit.classList.toggle("is-up", on && indexInStack >= stack.length - run));
+      const rise = on && run > 0 ? riseToMouth(vase, stack.length) : 0;
+      stack.forEach((bit, indexInStack) => {
+        const up = on && indexInStack >= stack.length - run;
+        bit.classList.toggle("is-up", up);
+        bit.style.transform = up ? `translateY(${rise}px)` : "";
+      });
     });
+  }
+
+  /** How far the top piece must travel to hover just above the mouth. */
+  function riseToMouth(vase: HTMLElement, count: number): number {
+    const glass = vase.querySelector(".glass");
+    const mouth = vase.querySelector(".mouth");
+    const sample = vase.querySelector<HTMLElement>(".bit");
+    if (!glass || !mouth || !sample || count < 1) return -28;
+    const glassRect = glass.getBoundingClientRect();
+    const mouthRect = mouth.getBoundingClientRect();
+    const bitH = sample.getBoundingClientRect().height || 32;
+    const restTop = glassRect.bottom - 4 - count * bitH;
+    return Math.min(-12, mouthRect.top - 8 - restTop);
+  }
+
+  function shake(index: number): void {
+    const vase = board.querySelector<HTMLElement>(`.vase[data-jar="${index}"]`);
+    if (!vase) return;
+    if (reduce) {
+      vase.animate([{ opacity: 1 }, { opacity: 0.45 }, { opacity: 1 }], { duration: 180, easing: "ease-out" });
+      return;
+    }
+    vase.classList.remove("is-shake");
+    void vase.offsetWidth;
+    vase.classList.add("is-shake");
+    window.setTimeout(() => vase.classList.remove("is-shake"), 300);
+  }
+
+  function clearHint(): void {
+    window.clearTimeout(hintTimer);
+    board.querySelectorAll(".is-hint").forEach((node) => node.classList.remove("is-hint"));
+    layer.querySelectorAll(".hint-arrow").forEach((node) => node.remove());
   }
 
   function clearLift(): void {
@@ -357,14 +408,28 @@ function mountTable(root: HTMLElement, ctx: SortCtx, spec: TableSpec): () => voi
     markLift();
   }
 
+  function release(): void {
+    busy = false;
+    board.classList.remove("is-busy");
+    syncTools();
+    if (isWon(jars) || !pending.length) return;
+    const next = pending.shift();
+    if (next !== undefined) void onTap(next);
+  }
+
   async function onTap(index: number): Promise<void> {
-    if (busy || isWon(jars)) return;
-    window.clearTimeout(hintTimer);
-    board.querySelectorAll(".is-hint").forEach((node) => node.classList.remove("is-hint"));
+    if (isWon(jars)) return;
+    if (busy) {
+      pending.push(index);
+      return;
+    }
+    clearHint();
     const jar = jars[index];
     if (!jar) return;
     if (lifted === null) {
       if (!jar.slots.length) {
+        shake(index);
+        ctx.cue("soft");
         ctx.say("This vase is empty.");
         return;
       }
@@ -381,7 +446,8 @@ function mountTable(root: HTMLElement, ctx: SortCtx, spec: TableSpec): () => voi
     }
     const amount = pourAmount(jars, lifted, index);
     if (!amount) {
-      clearLift();
+      shake(index);
+      ctx.cue("soft");
       ctx.say("Those don't pour together.");
       return;
     }
@@ -396,10 +462,8 @@ function mountTable(root: HTMLElement, ctx: SortCtx, spec: TableSpec): () => voi
     const old = jars[from];
     const next = pour(jars, from, index);
     if (!next || !old) {
-      busy = false;
-      board.classList.remove("is-busy");
       clearLift();
-      syncTools();
+      release();
       return;
     }
     const shownIndex = next[from] && next[from].slots.length > 0 ? next[from].slots.length - 1 : -1;
@@ -409,11 +473,8 @@ function mountTable(root: HTMLElement, ctx: SortCtx, spec: TableSpec): () => voi
     lifted = null;
     const fresh = next.map((one, jarIndex) => isCompleteJar(one) && !before[jarIndex]);
     paint({ settleJar: index, settleCount: amount, fresh, shown });
-    busy = false;
-    board.classList.remove("is-busy");
-    syncTools();
-    ctx.haptic();
     const won = isWon(jars);
+    ctx.haptic();
     ctx.cue("clink");
     if (fresh.some(Boolean) && !won) ctx.cue("sparkle");
     if (won) ctx.cue("win");
@@ -426,6 +487,7 @@ function mountTable(root: HTMLElement, ctx: SortCtx, spec: TableSpec): () => voi
       const run = topRun((jars[index]?.slots ?? []).map((slot) => slot.color));
       ctx.say(run ? `${toneName(run.color)} poured.` : "Poured.");
     }
+    release();
   }
 
   async function fly(from: number, to: number, amount: number): Promise<void> {
@@ -440,12 +502,15 @@ function mountTable(root: HTMLElement, ctx: SortCtx, spec: TableSpec): () => voi
     const bits = [...source.querySelectorAll<HTMLElement>(".bit")];
     const moving = bits.slice(-amount);
     for (const bit of bits) {
-      if (!moving.includes(bit)) bit.classList.remove("is-up");
+      if (!moving.includes(bit)) {
+        bit.classList.remove("is-up");
+        bit.style.transform = "";
+      }
     }
     const glassRect = destGlass.getBoundingClientRect();
     const destCount = jars[to]?.slots.length ?? 0;
     const flights: Promise<void>[] = [];
-    layer.replaceChildren();
+    layer.querySelectorAll(".hint-arrow").forEach((node) => node.remove());
     moving.forEach((bit, index) => {
       const rect = bit.getBoundingClientRect();
       bit.style.visibility = "hidden";
@@ -456,19 +521,22 @@ function mountTable(root: HTMLElement, ctx: SortCtx, spec: TableSpec): () => voi
       clone.style.top = `${rect.top}px`;
       clone.style.width = `${rect.width}px`;
       clone.style.height = `${rect.height}px`;
-      layer.append(clone);
       const endX = glassRect.left + (glassRect.width - rect.width) / 2;
       const endY = glassRect.bottom - 4 - (destCount + index + 1) * rect.height;
       const dx = endX - rect.left;
       const dy = endY - rect.top;
-      const arc = -Math.min(96, 52 + Math.abs(dx) * 0.16);
+      const arc = -Math.min(110, 64 + Math.abs(dx) * 0.18);
+      const midX = dx * 0.5;
+      const midY = dy * 0.38 + arc;
+      layer.append(trailPath(rect.left + rect.width / 2, rect.top + rect.height / 2, endX + rect.width / 2, endY + rect.height / 2, midX, midY, index * 42));
+      layer.append(clone);
       const anim = clone.animate(
         [
           { transform: "translate3d(0px, 0px, 0)" },
-          { transform: `translate3d(${(dx * 0.5).toFixed(1)}px, ${(dy * 0.38 + arc).toFixed(1)}px, 0)`, offset: 0.55 },
+          { transform: `translate3d(${midX.toFixed(1)}px, ${midY.toFixed(1)}px, 0)`, offset: 0.55 },
           { transform: `translate3d(${dx.toFixed(1)}px, ${dy.toFixed(1)}px, 0)` },
         ],
-        { duration: 420, delay: index * 42, easing: "cubic-bezier(.2,.7,.3,1)", fill: "forwards" },
+        { duration: 460, delay: index * 42, easing: "cubic-bezier(.2,.7,.3,1)", fill: "forwards" },
       );
       flights.push(anim.finished.then(() => undefined).catch(() => undefined));
     });
@@ -476,21 +544,68 @@ function mountTable(root: HTMLElement, ctx: SortCtx, spec: TableSpec): () => voi
     layer.replaceChildren();
   }
 
-  function undo(): void {
+  function trailPath(x1: number, y1: number, x2: number, y2: number, midX: number, midY: number, delay: number): SVGSVGElement {
+    const svg = document.createElementNS("http://www.w3.org/2000/svg", "svg");
+    svg.setAttribute("class", "pour-trail");
+    const path = document.createElementNS("http://www.w3.org/2000/svg", "path");
+    const cpx = x1 + midX;
+    const cpy = y1 + midY;
+    path.setAttribute("d", `M ${x1.toFixed(1)} ${y1.toFixed(1)} Q ${cpx.toFixed(1)} ${cpy.toFixed(1)} ${x2.toFixed(1)} ${y2.toFixed(1)}`);
+    path.setAttribute("stroke", "rgba(214, 120, 150, 0.55)");
+    path.setAttribute("stroke-width", "4");
+    svg.append(path);
+    svg.style.position = "fixed";
+    svg.style.inset = "0";
+    svg.style.width = "100%";
+    svg.style.height = "100%";
+    path.animate(
+      [
+        { strokeDasharray: "10 14", strokeDashoffset: "80", opacity: 0.15 },
+        { opacity: 0.7, offset: 0.35 },
+        { strokeDashoffset: "0", opacity: 0 },
+      ],
+      { duration: 460, delay, easing: "ease-out", fill: "forwards" },
+    );
+    return svg;
+  }
+
+  async function undo(): Promise<void> {
     if (busy || !history.length) return;
-    window.clearTimeout(hintTimer);
+    clearHint();
+    const last = history[history.length - 1];
+    const next = replay(base, history.slice(0, -1)) ?? cloneJars(base);
+    const amount = last?.kind === "pour" ? (jars[last.to]?.slots.length ?? 0) - (next[last.to]?.slots.length ?? 0) : 0;
     history = history.slice(0, -1);
-    jars = replay(base, history) ?? cloneJars(base);
+    if (last?.kind === "pour" && amount > 0 && !reduce) {
+      const mark = generation;
+      busy = true;
+      board.classList.add("is-busy");
+      syncTools();
+      const sourceVase = board.querySelector<HTMLElement>(`.vase[data-jar="${last.to}"]`);
+      const stack = [...(sourceVase?.querySelectorAll<HTMLElement>(".bit") ?? [])];
+      const rise = sourceVase ? riseToMouth(sourceVase, stack.length) : -28;
+      stack.slice(-amount).forEach((bit) => {
+        bit.classList.add("is-up");
+        bit.style.transform = `translateY(${rise}px)`;
+      });
+      await wait(180);
+      if (!alive(mark)) return;
+      await fly(last.to, last.from, amount);
+      if (!alive(mark)) return;
+    }
+    jars = next;
     lifted = null;
-    paint();
+    paint(last?.kind === "pour" ? { settleJar: last.from, settleCount: Math.max(amount, 0), fresh: jars.map(() => false) } : undefined);
     spec.onCommit(history, isWon(jars));
     note.textContent = spec.note(history);
     ctx.say("Undone.");
+    if (amount > 0) ctx.cue("clink");
+    release();
   }
 
   function restart(): void {
     if (busy) return;
-    window.clearTimeout(hintTimer);
+    clearHint();
     history = [];
     jars = cloneJars(base);
     lifted = null;
@@ -514,6 +629,7 @@ function mountTable(root: HTMLElement, ctx: SortCtx, spec: TableSpec): () => voi
   async function hint(): Promise<void> {
     if (busy || isWon(jars)) return;
     clearLift();
+    clearHint();
     const move = solveMove(jars);
     if (!move) {
       ctx.say("There is no pour from here.");
@@ -522,20 +638,57 @@ function mountTable(root: HTMLElement, ctx: SortCtx, spec: TableSpec): () => voi
     const mark = generation;
     await pulse(move.from, mark);
     if (!alive(mark)) return;
-    await pulse(move.to, mark);
+    placeArrow(move.from, move.to);
+    await pulse(move.to, mark, true);
     if (!alive(mark)) return;
+    board.querySelectorAll(".is-hint").forEach((node) => node.classList.remove("is-hint"));
+    layer.querySelectorAll(".hint-arrow").forEach((node) => node.remove());
     const run = topRun((jars[move.from]?.slots ?? []).map((slot) => slot.color));
     const name = run ? toneName(run.color).toLowerCase() : "pieces";
-    ctx.say(`Try the ${name}. The highlighted vases pour together.`);
+    ctx.say(`Try the ${name}. The arrow shows the pour.`);
   }
 
-  function pulse(index: number, mark: number): Promise<void> {
+  function placeArrow(from: number, to: number): void {
+    const mouthA = board.querySelector(`.vase[data-jar="${from}"] .mouth`);
+    const mouthB = board.querySelector(`.vase[data-jar="${to}"] .mouth`);
+    if (!mouthA || !mouthB) return;
+    const a = mouthA.getBoundingClientRect();
+    const b = mouthB.getBoundingClientRect();
+    const x1 = a.left + a.width / 2;
+    const y1 = a.top;
+    const x2 = b.left + b.width / 2;
+    const y2 = b.top;
+    const mx = (x1 + x2) / 2;
+    const my = Math.min(y1, y2) - 42;
+    const svg = document.createElementNS("http://www.w3.org/2000/svg", "svg");
+    svg.setAttribute("class", "hint-arrow");
+    const path = document.createElementNS("http://www.w3.org/2000/svg", "path");
+    path.setAttribute("d", `M ${x1.toFixed(1)} ${y1.toFixed(1)} Q ${mx.toFixed(1)} ${my.toFixed(1)} ${x2.toFixed(1)} ${y2.toFixed(1)}`);
+    path.setAttribute("marker-end", "url(#hint-head)");
+    const defs = document.createElementNS("http://www.w3.org/2000/svg", "defs");
+    const marker = document.createElementNS("http://www.w3.org/2000/svg", "marker");
+    marker.setAttribute("id", "hint-head");
+    marker.setAttribute("markerWidth", "8");
+    marker.setAttribute("markerHeight", "8");
+    marker.setAttribute("refX", "6");
+    marker.setAttribute("refY", "4");
+    marker.setAttribute("orient", "auto");
+    const head = document.createElementNS("http://www.w3.org/2000/svg", "path");
+    head.setAttribute("d", "M0 0 L8 4 L0 8 Z");
+    head.setAttribute("fill", "#d56d8d");
+    marker.append(head);
+    defs.append(marker);
+    svg.append(defs, path);
+    layer.append(svg);
+  }
+
+  function pulse(index: number, mark: number, keep = false): Promise<void> {
     if (!alive(mark)) return Promise.resolve();
-    board.querySelectorAll(".is-hint").forEach((node) => node.classList.remove("is-hint"));
+    if (!keep) board.querySelectorAll(".is-hint").forEach((node) => node.classList.remove("is-hint"));
     board.querySelector(`.vase[data-jar="${index}"]`)?.classList.add("is-hint");
     return new Promise((resolve) => {
       hintTimer = window.setTimeout(() => {
-        if (alive(mark)) board.querySelector(`.vase[data-jar="${index}"]`)?.classList.remove("is-hint");
+        if (alive(mark) && !keep) board.querySelector(`.vase[data-jar="${index}"]`)?.classList.remove("is-hint");
         resolve();
       }, reduce ? 180 : 720);
     });

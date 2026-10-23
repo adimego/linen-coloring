@@ -4,7 +4,7 @@
  */
 import type { ScapeId } from "./settings.ts";
 
-export type Cue = "match" | "win" | "shuffle" | "clink" | "sparkle";
+export type Cue = "match" | "win" | "shuffle" | "clink" | "sparkle" | "soft";
 
 type BedNode = AudioNode & { stop?: (when?: number) => void };
 
@@ -70,6 +70,11 @@ export class Ambience {
       this.blip(1318.51, now, 0.1, 0.08);
       this.blip(1760, now + 0.06, 0.08, 0.09);
       this.blip(2093, now + 0.12, 0.06, 0.1);
+      return;
+    }
+    if (kind === "soft") {
+      this.blip(349.23, now, 0.1, 0.08);
+      this.blip(293.66, now + 0.07, 0.07, 0.12);
       return;
     }
     this.blip(659.25, now, 0.34, 0.2);

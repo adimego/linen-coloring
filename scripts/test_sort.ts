@@ -52,10 +52,14 @@ assert(buried?.[1]?.slots.every((slot) => !slot.hidden), "poured pieces are visi
 const topped = pour([jar(4, [1, 2, 0, 0]), jar(4, [0])], 0, 1);
 assert(topped !== null && topped[0]?.slots.map((slot) => slot.color).join() === "1,2", "a pour leaves the buried pieces");
 assert(topped?.[1]?.slots.map((slot) => slot.color).join() === "0,0,0", "poured pieces land on the top of the stack");
-assert(isWon([jar(4, [0, 0]), empty, jar(3, [1, 1, 1])]), "single colors and empty vases win");
+assert(!isWon([jar(4, [0, 0]), empty, jar(3, [1, 1, 1])]), "a partly filled single color is not finished");
+assert(isWon([jar(4, [0, 0, 0, 0]), empty, jar(3, [1, 1, 1])]), "full vases and empty spares win");
 assert(!isWon([jar(4, [0, 1])]), "a mixed vase is not won");
+assert(!isWon([jar(6, [1, 1, 1, 1]), empty]), "four pieces do not finish a tall vase");
+assert(isWon([jar(6, [1, 1, 1, 1, 1, 1]), empty]), "a full tall vase finishes");
 assert(isCompleteJar(jar(4, [3, 3, 3, 3])), "four of a color seal a vase");
-assert(isCompleteJar(jar(6, [1, 1, 1, 1])), "a tall vase seals at four");
+assert(!isCompleteJar(jar(6, [1, 1, 1, 1])), "a tall vase does not seal at four");
+assert(isCompleteJar(jar(6, [1, 1, 1, 1, 1, 1])), "a tall vase seals when it is full");
 assert(isCompleteJar(jar(3, [2, 2, 2])), "a full narrow vase seals");
 assert(!isCompleteJar(jar(4, [2, 2])), "two of a color stay open");
 assert(!isCompleteJar(empty), "an empty vase has no lid");
@@ -84,8 +88,11 @@ for (let id = 1; id <= LEVEL_COUNT; id += 1) {
   assert(level.colors === spec.colors, `${id} color count`);
   assert(!isWon(level.jars), `${id} is already sorted`);
   const tally = counts(level.jars);
+  const caps = new Set(level.jars.map((one) => one.cap));
   for (let color = 0; color < spec.colors; color += 1) {
-    assert(tally.get(color) === STACK, `${id} color ${color} count`);
+    const pieces = spec.tall && color === 0 ? STACK + 2 : STACK;
+    assert(tally.get(color) === pieces, `${id} color ${color} count`);
+    assert(caps.has(pieces), `${id} color ${color} has a vase of that capacity`);
   }
   assert(level.jars.filter((one) => one.slots.length === 0).length <= spec.spares, `${id} spare count`);
   if (spec.hidden) assert(level.jars.some((one) => one.slots.some((slot) => slot.hidden)), `${id} hides buried pieces`);
@@ -118,8 +125,25 @@ for (let id = 1; id <= LEVEL_COUNT; id += 1) {
   const withSpare = replay(level.jars, [{ kind: "extra" }]);
   assert(withSpare !== null && withSpare.length === level.jars.length + 1, `${id} extra vase`);
 }
-const zen = zenSpec(3, 99);
-assert(!isWon(zen.jars) && solveMove(zen.jars, 40_000) !== null, "zen table is solvable");
+const zen = zenSpec(19, 99);
+assert(zen.twists.includes("narrow") && zen.twists.includes("tall"), "zen can mix a narrow spare and a tall vase");
+const zenCounts = counts(zen.jars);
+for (let color = 0; color < zen.colors; color += 1) {
+  const pieces = color === 0 ? STACK + 2 : STACK;
+  assert(zenCounts.get(color) === pieces, `zen color ${color} matches its vase`);
+}
+assert(!isWon(zen.jars), "zen table starts unsorted");
+let zenJars = cloneJars(zen.jars);
+let zenPours = 0;
+while (!isWon(zenJars)) {
+  const move = solveMove(zenJars, 40_000);
+  assert(move !== null, `zen solver stopped after ${zenPours}`);
+  const next = pour(zenJars, move.from, move.to);
+  assert(next !== null, "zen solver poured illegally");
+  zenJars = next;
+  zenPours += 1;
+  assert(zenPours < 80, "zen solution is too long");
+}
 
 console.log(
   `sort: ${LEVEL_COUNT} tables solved, longest ${hardest} pours, slowest ${Math.round(slowest)}ms, total ${Math.round(performance.now() - started)}ms`,

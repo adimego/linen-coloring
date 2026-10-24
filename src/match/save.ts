@@ -73,9 +73,9 @@ export function putLevel(id: number, level: LevelSave): void {
   writeMatch(save);
 }
 
-export function isUnlocked(save: MatchSave, id: number): boolean {
-  if (id <= 1) return true;
-  return getLevel(save, id - 1).won;
+/** Every level is playable from the start. Clear seals still come from the save. */
+export function isUnlocked(_save: MatchSave, _id: number): boolean {
+  return true;
 }
 
 export function snapshotFromGrid(grid: Grid, moves: number, seed: number): Snapshot {

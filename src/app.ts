@@ -148,7 +148,6 @@ export class App {
   private viewCleanups: Array<() => void> = [];
   private wasComplete = false;
   private findCursor = -1;
-  private lastMiss = "";
   private readonly root: HTMLElement;
 
   constructor(root: HTMLElement) {
@@ -304,7 +303,7 @@ export class App {
           <button type="button" data-go="photo">Your photo</button>
           <button type="button" data-go="photos">My photos</button>
         </div>
-        <p class="blurb">Choose a shade, then tap every region that wears its number.</p>
+        <p class="blurb">Tap an empty region. Linen selects its color and fills it.</p>
         <div class="categories" role="tablist" aria-label="Categories">
           ${chips
             .map(
@@ -315,7 +314,7 @@ export class App {
             )
             .join("")}
         </div>
-        <p class="note">A wrong number never fills — only the matching color does. Music and Relaxing Landscapes come from public-domain art. The other pages are drawn for Linen.</p>
+        <p class="note">Drag keeps the color you already have. A filled region stays filled. Music and Relaxing Landscapes come from public-domain art. The other pages are drawn for Linen.</p>
         <button type="button" class="text-link" id="credits">Image credits</button>
         <div class="filters" role="group" aria-label="Show">
           <button type="button" data-filter="all" aria-pressed="${this.save.filter === "all"}">All</button>
@@ -595,6 +594,7 @@ export class App {
     const selectedButton = host.querySelector<HTMLButtonElement>('[aria-selected="true"]');
     if (selectedButton) {
       host.scrollLeft = selectedButton.offsetLeft - host.clientWidth / 2 + selectedButton.clientWidth / 2;
+      selectedButton.scrollIntoView({ inline: "center", block: "nearest" });
     }
   }
 
@@ -641,15 +641,15 @@ export class App {
     if (!region) return;
     const fills = pictureSave(this.save, picture.id).fills;
     if (fills[region.id]) return;
-    const selected = this.colorIndexOf(picture);
+    let selected = this.colorIndexOf(picture);
     if (region.n !== selected + 1) {
-      if (phase === "move" || (phase === "up" && this.lastMiss === region.id)) return;
-      this.lastMiss = region.id;
-      this.nudge();
-      this.say(`That region needs color ${region.n}.`);
-      return;
+      if (phase === "move") return;
+      selected = region.n - 1;
+      this.findCursor = -1;
+      this.save = withColor(this.save, picture.id, selected);
+      writeSave(this.save);
+      this.say(`Color ${region.n}.`);
     }
-    this.lastMiss = "";
     const color = picture.colors[region.n - 1];
     if (!color) return;
     const next = applyFill(this.save, picture, region.id, color);
@@ -742,14 +742,6 @@ export class App {
     if (region.label) return region.label;
     const box = path.getBBox();
     return [box.x + box.width / 2, box.y + box.height / 2];
-  }
-
-  private nudge(): void {
-    const viewport = this.root.querySelector("#viewport");
-    if (!(viewport instanceof HTMLElement)) return;
-    viewport.classList.remove("nudge");
-    void viewport.offsetWidth;
-    viewport.classList.add("nudge");
   }
 
   private burst(): void {
@@ -1110,7 +1102,7 @@ export class App {
         <div class="photo-actions">
           <label class="photo-pick">
             <span>Take photo</span>
-            <input id="photo-camera" type="file" accept="${PHOTO_ACCEPT}" capture="environment">
+            <input id="photo-camera" type="file" accept="${PHOTO_ACCEPT}">
           </label>
           <label class="photo-pick">
             <span>Choose from library</span>
@@ -1141,8 +1133,8 @@ export class App {
     let url = "";
     let chosen: File | null = null;
     let dragDepth = 0;
-    // A capture attribute anywhere on the page makes older iOS open the camera for every file input.
-    // Clear it before the library control is activated, and put it back only for Take photo.
+    // Older iOS Safari opens the camera for every file input if any of them has capture.
+    // The attribute stays off the page until Take photo is pressed, and the library control strips it.
     library.addEventListener("pointerdown", () => camera.removeAttribute("capture"), true);
     camera.addEventListener("pointerdown", () => camera.setAttribute("capture", "environment"), true);
     const show = (file: File): void => {

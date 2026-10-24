@@ -2,9 +2,122 @@
 
 Music and Relaxing Landscapes are adapted from public-domain art on Wikimedia Commons.
 Every other coloring page is an original illustration drawn for this app.
+The Intricate pages are original botanical drawings made for Linen, denser than the rest of the gallery, and not copied from another coloring book.
 Pink, Jewelry, and Fun Designs are original illustrations drawn for this app.
 Tulips mixes original illustrations with public-domain botanical plates.
 Those original pages are not copied from Happy Color, Color by Number, or any other coloring product.
+
+## Intricate
+
+Each of these pages is an original illustration drawn for Linen. The regions follow petals, feathers, leaves, fish, and glass panes. They are not traced from a photograph or another coloring page.
+
+### Morning Glories
+
+Trumpet blooms and heart-shaped leaves on a vine trellis.
+
+- **Morning Glories**
+  - Author: Linen
+  - Source: original illustration created for Linen
+  - License: original work, created for Linen
+
+### Peony Garden
+
+Layered peonies and a butterfly in a soft border.
+
+- **Peony Garden**
+  - Author: Linen
+  - Source: original illustration created for Linen
+  - License: original work, created for Linen
+
+### Koi Pond
+
+Two koi under lotus blooms and lily pads.
+
+- **Koi Pond**
+  - Author: Linen
+  - Source: original illustration created for Linen
+  - License: original work, created for Linen
+
+### Flowering Owl
+
+An owl perched in a branch of open blossoms.
+
+- **Flowering Owl**
+  - Author: Linen
+  - Source: original illustration created for Linen
+  - License: original work, created for Linen
+
+### Mandala Bloom
+
+A round flower mandala with a sprig in each corner.
+
+- **Mandala Bloom**
+  - Author: Linen
+  - Source: original illustration created for Linen
+  - License: original work, created for Linen
+
+### Trumpet Flowers
+
+A hummingbird at a stand of trumpet flowers.
+
+- **Trumpet Flowers**
+  - Author: Linen
+  - Source: original illustration created for Linen
+  - License: original work, created for Linen
+
+### Autumn Fox
+
+A fox sitting under red and gold trees.
+
+- **Autumn Fox**
+  - Author: Linen
+  - Source: original illustration created for Linen
+  - License: original work, created for Linen
+
+### Coral and Shell
+
+A spiral shell among coral, weed, and anemones.
+
+- **Coral and Shell**
+  - Author: Linen
+  - Source: original illustration created for Linen
+  - License: original work, created for Linen
+
+### Wisteria Arch
+
+Racemes of wisteria hanging from a garden arch.
+
+- **Wisteria Arch**
+  - Author: Linen
+  - Source: original illustration created for Linen
+  - License: original work, created for Linen
+
+### Sunflower Bees
+
+Sunflowers across a field, with bees at the blooms.
+
+- **Sunflower Bees**
+  - Author: Linen
+  - Source: original illustration created for Linen
+  - License: original work, created for Linen
+
+### Peacock Fan
+
+A peacock's tail opened into a fan of eyed feathers.
+
+- **Peacock Fan**
+  - Author: Linen
+  - Source: original illustration created for Linen
+  - License: original work, created for Linen
+
+### Lantern Garden
+
+Leaded lanterns hanging in a night garden.
+
+- **Lantern Garden**
+  - Author: Linen
+  - Source: original illustration created for Linen
+  - License: original work, created for Linen
 
 ## Music
 

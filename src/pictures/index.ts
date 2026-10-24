@@ -70,6 +70,18 @@ import scoreFile from "./art/violin-score.json";
 import tideFile from "./art/tide-pool.json";
 import kotoFile from "./art/with-a-koto.json";
 import zenFile from "./art/zen-garden.json";
+import morningGloriesFile from "./art/morning-glories.json";
+import peonyGardenFile from "./art/peony-garden.json";
+import koiPondFile from "./art/koi-pond.json";
+import floweringOwlFile from "./art/flowering-owl.json";
+import mandalaBloomFile from "./art/mandala-bloom.json";
+import trumpetFile from "./art/trumpet-hummingbird.json";
+import autumnFoxFile from "./art/autumn-fox.json";
+import coralShellFile from "./art/coral-shell.json";
+import wisteriaFile from "./art/wisteria-arch.json";
+import sunflowerBeesFile from "./art/sunflower-bees.json";
+import peacockFanFile from "./art/peacock-fan.json";
+import lanternGardenFile from "./art/lantern-garden.json";
 import { categories, type CategoryId, type Credit, type Picture, type Region } from "./types.ts";
 
 type ArtFile = {
@@ -101,6 +113,18 @@ function art(file: ArtFile): Picture {
 }
 
 export const pictures: Picture[] = [
+  art(morningGloriesFile as unknown as ArtFile),
+  art(peonyGardenFile as unknown as ArtFile),
+  art(koiPondFile as unknown as ArtFile),
+  art(floweringOwlFile as unknown as ArtFile),
+  art(mandalaBloomFile as unknown as ArtFile),
+  art(trumpetFile as unknown as ArtFile),
+  art(autumnFoxFile as unknown as ArtFile),
+  art(coralShellFile as unknown as ArtFile),
+  art(wisteriaFile as unknown as ArtFile),
+  art(sunflowerBeesFile as unknown as ArtFile),
+  art(peacockFanFile as unknown as ArtFile),
+  art(lanternGardenFile as unknown as ArtFile),
   art(fieldFile as unknown as ArtFile),
   art(bouquetFile as unknown as ArtFile),
   art(closeupFile as unknown as ArtFile),
@@ -182,8 +206,15 @@ function assertPictures(list: Picture[]): void {
     if (ids.has(picture.id)) throw new Error(`Duplicate picture ${picture.id}`);
     ids.add(picture.id);
     const count = picture.regions.length;
-    if (count < 110 || count > 280) throw new Error(`${picture.id} has ${count} regions; want 110–280`);
-    if (picture.colors.length < 8 || picture.colors.length > 28) {
+    const intricate = picture.category === "intricate";
+    if (intricate) {
+      if (count < 250 || count > 450) throw new Error(`${picture.id} has ${count} regions; want 250–450`);
+      if (picture.colors.length < 10 || picture.colors.length > 16) {
+        throw new Error(`${picture.id} has ${picture.colors.length} colors; want 10–16`);
+      }
+    } else if (count < 110 || count > 280) {
+      throw new Error(`${picture.id} has ${count} regions; want 110–280`);
+    } else if (picture.colors.length < 8 || picture.colors.length > 28) {
       throw new Error(`${picture.id} has ${picture.colors.length} colors`);
     }
     const seen = new Set<string>();
@@ -204,6 +235,7 @@ function assertPictures(list: Picture[]): void {
     }
   }
   const minimums: Partial<Record<CategoryId, number>> = {
+    intricate: 12,
     tulips: 8,
     pink: 6,
     jewelry: 6,

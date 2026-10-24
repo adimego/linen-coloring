@@ -6,7 +6,7 @@ The gallery is a soft pink room. Each card shows the finished picture. Open one 
 
 ## Pictures
 
-Music and Relaxing Landscapes are adapted from public-domain art on Wikimedia Commons: instrument still lifes, an Art Nouveau music poster, Japanese prints of musicians, and Hiroshige and Hokusai landscapes. The other pages are original illustrations drawn for Linen — not copied from another coloring app. Beach, city, and peaceful places sit beside animals, flowers, mandalas, landscapes, food, butterflies, birds, and home. Every page has its own palette, about 10–28 numbered colors, and about 120–220 regions. Broad areas such as sky, water, petals, and hills are split into a few smooth light-to-dark bands that follow the shape. Simple subjects stay nearer the low end rather than being filled with extra pieces. The smallest region is still large enough to tap on a phone. Sources are listed on the Image credits screen and in [CREDITS.md](CREDITS.md).
+Music and Relaxing Landscapes are adapted from public-domain art on Wikimedia Commons: instrument still lifes, an Art Nouveau music poster, Japanese prints of musicians, and Hiroshige and Hokusai landscapes. The other pages are original illustrations drawn for Linen — not copied from another coloring app. Beach, city, and peaceful places sit beside animals, flowers, mandalas, landscapes, food, butterflies, birds, and home. Every page has its own palette. The Intricate category is twelve original botanical drawings, about 250–450 regions and 10–16 colors, with the tone of each petal, feather, or pane following that shape. The other pages stay at about 10–28 numbered colors and about 120–220 regions. Broad areas such as sky, water, petals, and hills are split into a few smooth light-to-dark bands that follow the shape. Simple subjects stay nearer the low end rather than being filled with extra pieces. The smallest region is still large enough to tap on a phone. Sources are listed on the Image credits screen and in [CREDITS.md](CREDITS.md).
 
 ## Run it
 
@@ -21,7 +21,7 @@ Open [http://127.0.0.1:43123](http://127.0.0.1:43123). The layout is meant for a
 
 - Pick a category, then a picture.
 - The palette is numbered. The selected color highlights every region that still needs it, and the bar under the tools shows how many of those regions are filled.
-- Tap a region with the right number and it fills. A wrong number shakes the page and leaves the region empty. There is no free-color mode and no eraser.
+- Tap an empty region and it selects that region's color, scrolls the swatch into view, and fills the region. Drag keeps painting the color already selected. A region that is already filled stays as it is. There is no eraser.
 - When a color is finished, the next unfinished color is selected for you.
 - Find zooms to an open region of the selected color. Pinch to zoom and drag to move. Minus, plus, and Fit do the same.
 - Undo and redo sit in the top bar.
@@ -33,13 +33,13 @@ Open [http://127.0.0.1:43123](http://127.0.0.1:43123). The layout is meant for a
 
 ## Match
 
-The home page has Color, Match, and Sort tabs. Match is a quiet match-3: drag or tap two pieces that touch. The two pieces slide past each other, and a swap that does not match slides back. A line of three or more shells, flowers, tulips, gems, leaves, or hearts glows, then pops with a small sparkle in that piece’s color, a soft chime, and a light vibration when the phone allows it. Mute turns the chime off. The pieces underneath slide down into the gaps and new ones fall from above, with a small settle as they land. A chain plays one step at a time. If the phone asks for less motion, matched pieces fade instead. Each level sits over one of Linen’s original pictures. Tiles start under leaves or dust; a match lifts the cover on those tiles, and a few later levels have a second layer. The level is won when the whole board is uncovered. There is no clock, no lives, and no fail state. If no swap is left, the pieces reshuffle themselves. After a few quiet seconds a possible swap glows. Twenty levels open one by one, from a small square to shaped boards. Progress saves in `localStorage` under `linen.match.v1`, separate from coloring, and the same pages work offline once the app is installed.
+The home page has Color, Match, and Sort tabs. Match is a quiet match-3: drag or tap two pieces that touch. The two pieces slide past each other, and a swap that does not match slides back. A line of three or more shells, flowers, tulips, gems, leaves, or hearts glows, then pops with a small sparkle in that piece’s color, a soft chime, and a light vibration when the phone allows it. Mute turns the chime off. The pieces underneath slide down into the gaps and new ones fall from above, with a small settle as they land. A chain plays one step at a time. If the phone asks for less motion, matched pieces fade instead. Each level sits over one of Linen’s original pictures. Tiles start under leaves or dust; a match lifts the cover on those tiles, and a few later levels have a second layer. The level is won when the whole board is uncovered. There is no clock, no lives, and no fail state. If no swap is left, the pieces reshuffle themselves. After a few quiet seconds a possible swap glows. All twenty levels are open from the start, from a small square to shaped boards. A cleared picture keeps its seal. Progress saves in `localStorage` under `linen.match.v1`, separate from coloring, and the same pages work offline once the app is installed.
 
 Zen, on the Match home page, is the same pieces with no levels and no goal. Matches refill the board. Pause stops the board and the hint. Today’s picture can fade in slowly behind the pieces.
 
 ## Sort
 
-Sort is a quiet pouring puzzle on the same home page. Vases hold sea glass, beads, petals, candies, gems, and the other pastel pieces drawn for Linen. Tap a vase to lift the top run of one color, then tap another. They pour across if that vase is empty or its top color matches, and only as many as will fit. A table is finished when every vase is a single color or empty. A finished vase gets a lid and a small sparkle, and the pieces clink as they land. Mute turns the clink off. If the phone asks for less motion, the pieces fade into place instead of arcing.
+Sort is a quiet pouring puzzle on the same home page. Vases hold sea glass, beads, petals, candies, gems, and the other pastel pieces drawn for Linen. Tap a vase to lift the top run of one color, then tap another. They pour across if that vase is empty or its top color matches, and only as many as will fit. A table is finished when every color fills one vase to the brim and the spare vases are empty. A vase gets a lid and a small sparkle only when one color fills it completely, and the pieces clink as they land. Mute turns the clink off. If the phone asks for less motion, the pieces fade into place instead of arcing.
 
 There is no clock and no way to lose. Undo, Again, and a hint (the next pour a solver would make) are always there, and each table can add one empty vase. One hundred ten tables are made on the phone and checked with a solver before they open, from four colors up to twelve, with fewer spare vases as you go. Later tables sometimes hide buried pieces until they reach the top, or include a narrower vase or a taller one. Tables open one by one. Progress saves in `localStorage` under `linen.sort.v1`, separate from coloring and Match. Zen Sort deals another solvable table whenever you ask.
 
@@ -49,7 +49,7 @@ From 22 October 2026, each calendar day has one picture. It is built on the phon
 
 ## Your photo
 
-Your photo picks or takes a picture and turns it into a numbered page on the device: it is scaled, posterized, and merged so regions stay large enough to tap. A slider asks for fewer or more regions. The page is kept in My photos on this phone (IndexedDB). Delete removes the page and its coloring progress. The file is never uploaded.
+Your photo can take a picture or choose one from the library, then turns it into a numbered page on the device: it is scaled, posterized, and merged so regions stay large enough to tap. Take photo asks for the camera. Choose from library does not set a capture attribute, so iOS Safari and the home-screen app can open the photo library. On a computer, the page also accepts a dropped image. A slider asks for fewer or more regions. The page is kept in My photos on this phone (IndexedDB). Delete removes the page and its coloring progress. The file is never uploaded.
 
 ## Install and play offline
 

@@ -4,9 +4,29 @@ Measured on the page viewBox (320×460). At the default fit on a 390×844 phone 
 
 Gallery pages keep the drawn subject. Large areas — sky, water, hills, petals, fabric — are cut into a few wavy or concentric bands, light to dark. Small parts of the drawing are left whole. Nothing is tessellated into triangles. A split is kept only when every piece still has area at least 88 and an inscribed radius of at least 5.25 viewBox units. The palette stays at 28 colors or fewer, and neighboring steps are about 34 apart in RGB.
 
-- Pictures: 72
-- Regions: 119–216
-- Colors: 10–28
+The first 72 pictures stay in that range: 119–216 regions and 10–28 colors. Intricate is a separate set of 12 original pages, 250–320 regions and 10–16 colors, drawn as petals, feathers, leaves, fish, and glass panes rather than a cell mosaic.
+
+- Pictures: 84
+- Other gallery regions: 119–216
+- Intricate regions: 250–320
+- Colors: 10–28 on the earlier pages, 10–16 on Intricate
+
+### Intricate
+
+| Picture | Regions | Colors | Credit |
+| --- | ---: | ---: | --- |
+| Morning Glories | 314 | 10 | original |
+| Peony Garden | 252 | 13 | original |
+| Koi Pond | 264 | 15 | original |
+| Flowering Owl | 253 | 15 | original |
+| Mandala Bloom | 254 | 12 | original |
+| Trumpet Flowers | 275 | 12 | original |
+| Autumn Fox | 320 | 16 | original |
+| Coral and Shell | 320 | 16 | original |
+| Wisteria Arch | 260 | 15 | original |
+| Sunflower Bees | 271 | 11 | original |
+| Peacock Fan | 272 | 16 | original |
+| Lantern Garden | 315 | 13 | original |
 
 | Picture | Category | Regions | Colors | Credit |
 | --- | --- | ---: | ---: | --- |

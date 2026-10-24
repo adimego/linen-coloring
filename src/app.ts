@@ -1,5 +1,6 @@
 import { Ambience, type Cue } from "./audio.ts";
 import { archiveDates, buildDaily, dailyPicture, formatDailyLabel, isIsoDate, LAUNCH_DATE, localDateISO } from "./daily/generate.ts";
+import { TEMPLATES } from "./daily/scenes.ts";
 import { exportPng } from "./exportPng.ts";
 import { GestureController, installPalmRejection } from "./gestures.ts";
 import { icon } from "./icons.ts";
@@ -47,6 +48,13 @@ function esc(value: string): string {
     if (char === '"') return "&quot;";
     return "&#39;";
   });
+}
+
+const PHOTO_ACCEPT = "image/*,image/heic,image/heif,.heic,.heif";
+
+function isPhotoFile(file: File): boolean {
+  if (file.type.toLowerCase().startsWith("image/")) return true;
+  return /\.(heic|heif|jpe?g|png|gif|webp|bmp|tiff?|avif)$/i.test(file.name);
 }
 
 function sortIdFromHash(hash: string): number | undefined {
@@ -141,7 +149,6 @@ export class App {
   private viewCleanups: Array<() => void> = [];
   private wasComplete = false;
   private findCursor = -1;
-  private lastMiss = "";
   private readonly root: HTMLElement;
 
   constructor(root: HTMLElement) {
@@ -297,7 +304,7 @@ export class App {
           <button type="button" data-go="photo">Your photo</button>
           <button type="button" data-go="photos">My photos</button>
         </div>
-        <p class="blurb">Choose a shade, then tap every region that wears its number.</p>
+        <p class="blurb">Tap an empty region. Linen selects its color and fills it.</p>
         <div class="categories" role="tablist" aria-label="Categories">
           ${chips
             .map(
@@ -308,7 +315,7 @@ export class App {
             )
             .join("")}
         </div>
-        <p class="note">A wrong number never fills — only the matching color does. Music and Relaxing Landscapes come from public-domain art. The other pages are drawn for Linen.</p>
+        <p class="note">Drag keeps the color you already have. A filled region stays filled. Music and Relaxing Landscapes come from public-domain art. The other pages are drawn for Linen.</p>
         <button type="button" class="text-link" id="credits">Image credits</button>
         <div class="filters" role="group" aria-label="Show">
           <button type="button" data-filter="all" aria-pressed="${this.save.filter === "all"}">All</button>
@@ -390,7 +397,7 @@ export class App {
         </div>
       </header>
       <main class="gallery credits">
-        <p class="note">Music and Relaxing Landscapes are adapted from public-domain art. Every other page is an original illustration drawn for Linen, not copied from another coloring app.</p>
+        <p class="note">Music, Relaxing Landscapes, Sweet Tulip, and Besler Tulips are adapted from public-domain art. Every other gallery page is an original illustration drawn for Linen. Each daily picture is a recolor of one of those original drawings.</p>
         ${groups
           .map(
             (group) => `
@@ -429,6 +436,27 @@ export class App {
           </section>`,
           )
           .join("")}
+        <section>
+          <h2>Daily</h2>
+          ${TEMPLATES.map((template) => {
+            const source = getPicture(template.source);
+            const name = source?.title ?? template.source;
+            const titles = [template.titles.dawn, template.titles.day, template.titles.dusk, template.titles.night].join(", ");
+            return `
+            <article>
+              <h3>${esc(name)}</h3>
+              <p>${esc(titles)}. A recolor of the original gallery drawing.</p>
+              <ul>
+                <li>
+                  <span class="credit-work">${esc(name)}</span>
+                  <span>Linen</span>
+                  <span>Original illustration created for Linen</span>
+                  <span>Original work, created for Linen</span>
+                </li>
+              </ul>
+            </article>`;
+          }).join("")}
+        </section>
       </main>
     `;
     this.must("#back").addEventListener("click", () => this.leaveSection("color"));
@@ -588,6 +616,7 @@ export class App {
     const selectedButton = host.querySelector<HTMLButtonElement>('[aria-selected="true"]');
     if (selectedButton) {
       host.scrollLeft = selectedButton.offsetLeft - host.clientWidth / 2 + selectedButton.clientWidth / 2;
+      selectedButton.scrollIntoView({ inline: "center", block: "nearest" });
     }
   }
 
@@ -634,15 +663,15 @@ export class App {
     if (!region) return;
     const fills = pictureSave(this.save, picture.id).fills;
     if (fills[region.id]) return;
-    const selected = this.colorIndexOf(picture);
+    let selected = this.colorIndexOf(picture);
     if (region.n !== selected + 1) {
-      if (phase === "move" || (phase === "up" && this.lastMiss === region.id)) return;
-      this.lastMiss = region.id;
-      this.nudge();
-      this.say(`That region needs color ${region.n}.`);
-      return;
+      if (phase === "move") return;
+      selected = region.n - 1;
+      this.findCursor = -1;
+      this.save = withColor(this.save, picture.id, selected);
+      writeSave(this.save);
+      this.say(`Color ${region.n}.`);
     }
-    this.lastMiss = "";
     const color = picture.colors[region.n - 1];
     if (!color) return;
     const next = applyFill(this.save, picture, region.id, color);
@@ -735,14 +764,6 @@ export class App {
     if (region.label) return region.label;
     const box = path.getBBox();
     return [box.x + box.width / 2, box.y + box.height / 2];
-  }
-
-  private nudge(): void {
-    const viewport = this.root.querySelector("#viewport");
-    if (!(viewport instanceof HTMLElement)) return;
-    viewport.classList.remove("nudge");
-    void viewport.offsetWidth;
-    viewport.classList.add("nudge");
   }
 
   private burst(): void {
@@ -1098,13 +1119,21 @@ export class App {
         </div>
         ${this.headerTools()}
       </header>
-      <main class="gallery photo-maker">
-        <p class="blurb">Take or choose a photo. Linen turns it into a coloring page here, on this phone. Nothing is uploaded.</p>
-        <label class="photo-pick">
-          <input id="photo-file" type="file" accept="image/*" capture="environment">
-          <span>Take or choose a photo</span>
-        </label>
+      <main class="gallery photo-maker" id="photo-drop">
+        <p class="blurb">Take a photo, or choose one from your library. On a computer, you can drop it here. Linen turns it into a coloring page on this phone. Nothing is uploaded.</p>
+        <div class="photo-actions">
+          <label class="photo-pick">
+            <span>Take photo</span>
+            <input id="photo-camera" type="file" accept="${PHOTO_ACCEPT}">
+          </label>
+          <label class="photo-pick">
+            <span>Choose from library</span>
+            <input id="photo-library" type="file" accept="${PHOTO_ACCEPT}">
+          </label>
+        </div>
+        <p class="note photo-drop-note">Or drop a photo here.</p>
         <img id="photo-preview" alt="Chosen photo" hidden>
+        <p class="note" id="photo-chosen" hidden></p>
         <label class="volume" for="photo-difficulty">Regions</label>
         <input id="photo-difficulty" type="range" min="0" max="100" value="45" aria-describedby="photo-diff-label">
         <p class="note" id="photo-diff-label">${esc(plan.label)}</p>
@@ -1114,35 +1143,82 @@ export class App {
       <p class="live" id="live" aria-live="polite"></p>
     `;
     this.must("#back").addEventListener("click", () => this.leaveSection("color"));
-    const input = this.must<HTMLInputElement>("#photo-file");
+    const camera = this.must<HTMLInputElement>("#photo-camera");
+    const library = this.must<HTMLInputElement>("#photo-library");
+    const drop = this.must("#photo-drop");
     const preview = this.must<HTMLImageElement>("#photo-preview");
+    const chosenNote = this.must("#photo-chosen");
     const range = this.must<HTMLInputElement>("#photo-difficulty");
     const make = this.must<HTMLButtonElement>("#photo-make");
     const label = this.must("#photo-diff-label");
     const status = this.must("#photo-status");
     let url = "";
-    input.addEventListener("change", () => {
-      if (url) URL.revokeObjectURL(url);
-      const file = input.files?.[0];
-      if (!file) {
-        preview.hidden = true;
-        make.disabled = true;
-        status.textContent = "";
+    let chosen: File | null = null;
+    let dragDepth = 0;
+    // Older iOS Safari opens the camera for every file input if any of them has capture.
+    // The attribute stays off the page until Take photo is pressed, and the library control strips it.
+    library.addEventListener("pointerdown", () => camera.removeAttribute("capture"), true);
+    camera.addEventListener("pointerdown", () => camera.setAttribute("capture", "environment"), true);
+    const show = (file: File): void => {
+      if (!isPhotoFile(file)) {
+        status.textContent = "Choose a photo.";
+        this.say("Choose a photo.");
         return;
       }
+      if (url) URL.revokeObjectURL(url);
+      chosen = file;
       url = URL.createObjectURL(file);
       preview.src = url;
       preview.hidden = false;
+      chosenNote.hidden = false;
+      chosenNote.textContent = file.name;
       make.disabled = false;
       status.textContent = "";
+      this.say(`Selected ${file.name}.`);
+    };
+    preview.addEventListener("error", () => {
+      preview.hidden = true;
+      if (!chosen) return;
+      status.textContent = "The preview could not be drawn. You can still make the coloring page.";
+    });
+    const takeInput = (input: HTMLInputElement): void => {
+      const file = input.files?.[0];
+      input.value = "";
+      if (file) show(file);
+    };
+    camera.addEventListener("change", () => takeInput(camera));
+    library.addEventListener("change", () => takeInput(library));
+    drop.addEventListener("dragenter", (event) => {
+      event.preventDefault();
+      dragDepth += 1;
+      drop.classList.add("is-over");
+    });
+    drop.addEventListener("dragover", (event) => event.preventDefault());
+    drop.addEventListener("dragleave", () => {
+      dragDepth -= 1;
+      if (dragDepth <= 0) {
+        dragDepth = 0;
+        drop.classList.remove("is-over");
+      }
+    });
+    drop.addEventListener("drop", (event) => {
+      event.preventDefault();
+      dragDepth = 0;
+      drop.classList.remove("is-over");
+      const file = [...(event.dataTransfer?.files ?? [])].find(isPhotoFile);
+      if (!file) {
+        status.textContent = "Drop a photo.";
+        this.say("Drop a photo.");
+        return;
+      }
+      show(file);
     });
     range.addEventListener("input", () => {
       label.textContent = difficultyPlan(Number(range.value) / 100).label;
     });
     make.addEventListener("click", () => {
-      const file = input.files?.[0];
-      if (!file) return;
-      void this.makePhoto(file, Number(range.value) / 100, make, status);
+      if (!chosen) return;
+      void this.makePhoto(chosen, Number(range.value) / 100, make, status);
     });
     this.viewCleanups.push(() => {
       if (url) URL.revokeObjectURL(url);

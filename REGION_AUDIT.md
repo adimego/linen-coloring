@@ -4,6 +4,8 @@ Measured on the page viewBox (320×460). At the default fit on a 390×844 phone 
 
 Gallery pages keep the drawn subject. Large areas — sky, water, hills, petals, fabric — are cut into a few wavy or concentric bands, light to dark. Small parts of the drawing are left whole. Nothing is tessellated into triangles. A split is kept only when every piece still has area at least 88 and an inscribed radius of at least 5.25 viewBox units. The palette stays at 28 colors or fewer, and neighboring steps are about 34 apart in RGB.
 
+The gallery stays in that range: 72 pictures, 119–216 regions and 10–28 colors.
+
 - Pictures: 72
 - Regions: 119–216
 - Colors: 10–28

@@ -13,12 +13,46 @@ export function difficultyPlan(amount: number): { colors: number; maxRegions: nu
 }
 
 export async function posterizeFile(file: File, amount: number, meta: { id: string; title: string }): Promise<Picture> {
-  const bitmap = await createImageBitmap(file);
+  const bitmap = await bitmapFromFile(file);
   try {
     return posterizeBitmap(bitmap, amount, meta);
   } finally {
     bitmap.close();
   }
+}
+
+/** iOS gives HEIC from the library. Safari decodes it through an image when createImageBitmap rejects the file. */
+async function bitmapFromFile(file: File): Promise<ImageBitmap> {
+  try {
+    return await createImageBitmap(file, { imageOrientation: "from-image" });
+  } catch {
+    const url = URL.createObjectURL(file);
+    try {
+      const image = await loadImage(url);
+      try {
+        return await createImageBitmap(image, { imageOrientation: "from-image" });
+      } catch {
+        const canvas = document.createElement("canvas");
+        canvas.width = image.naturalWidth;
+        canvas.height = image.naturalHeight;
+        const ctx = canvas.getContext("2d");
+        if (!ctx || canvas.width < 1 || canvas.height < 1) throw new Error("This photo could not be read.");
+        ctx.drawImage(image, 0, 0);
+        return await createImageBitmap(canvas);
+      }
+    } finally {
+      URL.revokeObjectURL(url);
+    }
+  }
+}
+
+function loadImage(url: string): Promise<HTMLImageElement> {
+  return new Promise((resolve, reject) => {
+    const image = new Image();
+    image.onload = () => resolve(image);
+    image.onerror = () => reject(new Error("This photo could not be read."));
+    image.src = url;
+  });
 }
 
 function posterizeBitmap(bitmap: ImageBitmap, amount: number, meta: { id: string; title: string }): Picture {

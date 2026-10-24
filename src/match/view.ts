@@ -121,21 +121,18 @@ export function renderMatchHome(root: HTMLElement, ctx: MatchCtx): () => void {
 
 function levelCard(level: LevelDef, save: ReturnType<typeof loadMatch>, isNext: boolean): string {
   const record = getLevel(save, level.id);
-  const unlocked = isUnlocked(save, level.id);
   const picture = getPicture(level.pictureId);
   const title = picture?.title ?? level.name;
   const progress = snapshotProgress(level, record.snapshot, record.won);
   const pct = progress.total ? Math.round((progress.clear / progress.total) * 100) : 0;
-  const status = !unlocked
-    ? `After level ${level.id - 1}`
-    : record.snapshot
-      ? `${progress.clear} of ${progress.total} clear`
-      : record.won
-        ? "Clear"
-        : "Covered";
+  const status = record.snapshot
+    ? `${progress.clear} of ${progress.total} clear`
+    : record.won
+      ? "Clear"
+      : "Covered";
   const width = record.snapshot ? pct : record.won ? 100 : 0;
   return `
-    <button type="button" class="level-card${record.won ? " is-done" : ""}${isNext ? " is-next" : ""}" data-level="${level.id}" ${unlocked ? "" : "disabled"} aria-label="Level ${level.id}, ${esc(level.name)}, ${esc(title)}, ${esc(status)}">
+    <button type="button" class="level-card${record.won ? " is-done" : ""}${isNext ? " is-next" : ""}" data-level="${level.id}" aria-label="Level ${level.id}, ${esc(level.name)}, ${esc(title)}, ${esc(status)}">
       <span class="thumb" id="level-thumb-${level.id}"></span>
       <span class="meta">
         <span class="meta-row">
@@ -152,32 +149,8 @@ function levelCard(level: LevelDef, save: ReturnType<typeof loadMatch>, isNext: 
 
 export function renderMatchLevel(root: HTMLElement, level: LevelDef, ctx: MatchCtx): () => void {
   const record = getLevel(loadMatch(), level.id);
-  if (!isUnlocked(loadMatch(), level.id)) return renderLocked(root, level, ctx);
   if (record.pendingReveal && record.won) return renderReveal(root, level, ctx, record.bestMoves ?? 0);
   return renderBoard(root, level, ctx, record);
-}
-
-function renderLocked(root: HTMLElement, level: LevelDef, ctx: MatchCtx): () => void {
-  root.innerHTML = `
-    <header class="top gallery-top">
-      <button type="button" class="icon-btn" id="match-back" aria-label="Back to levels">${icon("back")}</button>
-      <div class="title-block">
-        <p class="eyebrow">Level ${level.id}</p>
-        <h1>${esc(level.name)}</h1>
-      </div>
-      ${ctx.soundHtml}
-    </header>
-    <main class="gallery">
-      <div class="empty">
-        <p>This picture is still waiting.</p>
-        <p>Clear level ${level.id - 1} and it will open. There is nothing to lose.</p>
-      </div>
-    </main>
-    <p class="live" id="live" aria-live="polite"></p>
-  `;
-  root.querySelector("#match-back")?.addEventListener("click", () => ctx.back());
-  ctx.say(`Level ${level.id} opens after level ${level.id - 1}.`);
-  return () => {};
 }
 
 function renderReveal(root: HTMLElement, level: LevelDef, ctx: MatchCtx, moves: number): () => void {

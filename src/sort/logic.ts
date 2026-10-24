@@ -80,19 +80,16 @@ export function reveal(jars: Jar[]): void {
   }
 }
 
+/** A table is done when every color fills one vase to the brim and the spare vases are empty. */
 export function isWon(jars: Jar[]): boolean {
-  return jars.every((jar) => {
-    if (!jar.slots.length) return true;
-    const color = jar.slots[0]?.color;
-    return jar.slots.every((slot) => slot.color === color);
-  });
+  return jars.every((jar) => jar.slots.length === 0 || isCompleteJar(jar));
 }
 
+/** A lid belongs on a vase only when one color fills it exactly to capacity. */
 export function isCompleteJar(jar: Jar): boolean {
-  if (!jar.slots.length) return false;
+  if (!jar.slots.length || jar.slots.length !== jar.cap) return false;
   const color = jar.slots[0]?.color;
-  if (!jar.slots.every((slot) => slot.color === color)) return false;
-  return jar.slots.length === jar.cap || jar.slots.length >= STACK;
+  return jar.slots.every((slot) => slot.color === color);
 }
 
 export function boundaries(stacks: number[][]): number {
@@ -157,14 +154,31 @@ function canon(tubes: Tube[]): Tube[] {
 
 type HeapNode = { f: number; g: number; tubes: Tube[]; move: Move | null };
 
+function tubesWon(tubes: Tube[]): boolean {
+  return tubes.every((tube) => {
+    if (!tube.stack.length) return true;
+    if (tube.stack.length !== tube.cap) return false;
+    const color = tube.stack[0];
+    return tube.stack.every((item) => item === color);
+  });
+}
+
+function sortHeuristic(tubes: Tube[]): number {
+  let score = boundaries(tubes.map((tube) => tube.stack));
+  for (const tube of tubes) {
+    if (tube.stack.length > 0 && tube.stack.length !== tube.cap) score += 1;
+  }
+  return score;
+}
+
 function search(start: Tube[], nodeLimit: number): Move | null {
-  const open: HeapNode[] = [{ f: boundaries(start.map((tube) => tube.stack)), g: 0, tubes: start, move: null }];
+  const open: HeapNode[] = [{ f: sortHeuristic(start), g: 0, tubes: start, move: null }];
   const seen = new Set<string>([keyOf(start)]);
   let expanded = 0;
   while (open.length && expanded < nodeLimit) {
     const node = pop(open);
     if (!node) break;
-    if (boundaries(node.tubes.map((tube) => tube.stack)) === 0) return node.move;
+    if (tubesWon(node.tubes)) return node.move;
     expanded += 1;
     for (const move of legalMoves(node.tubes)) {
       const next = applyTube(node.tubes, move);
@@ -173,7 +187,7 @@ function search(start: Tube[], nodeLimit: number): Move | null {
       if (seen.has(key)) continue;
       seen.add(key);
       const g = node.g + 1;
-      const h = boundaries(canonical.map((tube) => tube.stack));
+      const h = sortHeuristic(canonical);
       push(open, { f: g + h, g, tubes: canonical, move: node.move ?? move });
     }
   }
@@ -301,7 +315,7 @@ function solvedTubes(colors: number, spares: number, narrow: boolean, tall: bool
   const tubes: Tube[] = [];
   for (let color = 0; color < colors; color += 1) {
     const cap = tall && color === 0 ? STACK + 2 : STACK;
-    tubes.push({ cap, stack: Array.from({ length: STACK }, () => color) });
+    tubes.push({ cap, stack: Array.from({ length: cap }, () => color) });
   }
   for (let spare = 0; spare < spares; spare += 1) {
     const cap = narrow && spare === 0 ? STACK - 1 : STACK;

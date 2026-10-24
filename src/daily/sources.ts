@@ -26,6 +26,7 @@ import tulipField from "../pictures/art/tulip-field.json" with { type: "json" };
 
 export type GallerySource = {
   id: string;
+  title: string;
   colors: string[];
   regions: Region[];
   outline: string;
@@ -58,6 +59,7 @@ const files = [
 
 const sources: GallerySource[] = files.map((file) => ({
   id: file.id,
+  title: file.title,
   colors: file.colors,
   outline: file.outline,
   ink: file.ink,

@@ -1,9 +1,12 @@
 # Image credits
 
 Music and Relaxing Landscapes are adapted from public-domain art on Wikimedia Commons.
+Sweet Tulip and Besler Tulips are public-domain botanical plates from the same source.
 Every other coloring page is an original illustration drawn for this app.
 Pink, Jewelry, and Fun Designs are original illustrations drawn for this app.
-Tulips mixes original illustrations with public-domain botanical plates.
+The other Tulips pages are original illustrations. Only Sweet Tulip and Besler Tulips are sourced.
+Landscapes (Lake Evening and Coast Path) are original drawings. They are separate from the Hiroshige and Hokusai prints in Relaxing Landscapes.
+Each daily picture is a recolor of one of those original gallery drawings. Dawn, day, dusk, and night share that drawing's credit.
 Those original pages are not copied from Happy Color, Color by Number, or any other coloring product.
 
 ## Music
@@ -361,6 +364,8 @@ Rings of petals around a quiet center.
 
 ## Landscapes
 
+Original illustrations drawn for Linen. These two pages are not the public-domain prints in Relaxing Landscapes.
+
 ### Lake Evening
 
 Mountains resting in a still lake.
@@ -713,3 +718,188 @@ Three tulips from a Hortus Eystettensis plate.
   - Author: Basilius Besler
   - Source: https://commons.wikimedia.org/wiki/File:Besler_H.E._tulipa_2.jpg
   - License: Public domain — https://creativecommons.org/publicdomain/mark/1.0/
+
+## Daily
+
+Each daily picture recolors an original Linen gallery drawing. None of the daily sources are the public-domain prints. The four titles for a drawing (dawn, day, dusk, and night) share one credit.
+
+### Monarch
+
+Monarch at Dawn, Monarch, Monarch at Dusk, Night Monarch.
+
+- **Monarch**
+  - Author: Linen
+  - Source: original illustration created for Linen
+  - License: original work, created for Linen
+
+### Cat Nap
+
+Cat at Dawn, Cat Nap, Cat at Dusk, Night Cat.
+
+- **Cat Nap**
+  - Author: Linen
+  - Source: original illustration created for Linen
+  - License: original work, created for Linen
+
+### Lemon Tea
+
+Morning Tea, Lemon Tea, Tea at Dusk, Night Tea.
+
+- **Lemon Tea**
+  - Author: Linen
+  - Source: original illustration created for Linen
+  - License: original work, created for Linen
+
+### Flamingo
+
+Flamingo at Dawn, Flamingo, Flamingo at Dusk, Night Flamingo.
+
+- **Flamingo**
+  - Author: Linen
+  - Source: original illustration created for Linen
+  - License: original work, created for Linen
+
+### Peony
+
+Peony at Dawn, Peony, Peony at Dusk, Night Peony.
+
+- **Peony**
+  - Author: Linen
+  - Source: original illustration created for Linen
+  - License: original work, created for Linen
+
+### Cherry Blossoms
+
+Cherry Morning, Cherry Blossoms, Cherry at Dusk, Night Cherry.
+
+- **Cherry Blossoms**
+  - Author: Linen
+  - Source: original illustration created for Linen
+  - License: original work, created for Linen
+
+### Sunflower
+
+Sunflower Morning, Sunflower, Sunflower at Dusk, Night Sunflower.
+
+- **Sunflower**
+  - Author: Linen
+  - Source: original illustration created for Linen
+  - License: original work, created for Linen
+
+### Tulip Field
+
+Tulips at Dawn, Tulip Field, Tulips at Dusk, Night Tulips.
+
+- **Tulip Field**
+  - Author: Linen
+  - Source: original illustration created for Linen
+  - License: original work, created for Linen
+
+### Still Swan
+
+Swan at Dawn, Still Swan, Swan at Dusk, Night Swan.
+
+- **Still Swan**
+  - Author: Linen
+  - Source: original illustration created for Linen
+  - License: original work, created for Linen
+
+### Garden Robin
+
+Robin at Dawn, Garden Robin, Robin at Dusk, Night Robin.
+
+- **Garden Robin**
+  - Author: Linen
+  - Source: original illustration created for Linen
+  - License: original work, created for Linen
+
+### Garden Fox
+
+Fox at Dawn, Garden Fox, Fox at Dusk, Night Fox.
+
+- **Garden Fox**
+  - Author: Linen
+  - Source: original illustration created for Linen
+  - License: original work, created for Linen
+
+### Rose Cottage
+
+Cottage Morning, Rose Cottage, Cottage at Dusk, Cottage Lights.
+
+- **Rose Cottage**
+  - Author: Linen
+  - Source: original illustration created for Linen
+  - License: original work, created for Linen
+
+### Lighthouse Cove
+
+Cove at Dawn, Lighthouse Cove, Cove at Dusk, Night Light.
+
+- **Lighthouse Cove**
+  - Author: Linen
+  - Source: original illustration created for Linen
+  - License: original work, created for Linen
+
+### Canal Bridge
+
+Canal Morning, Canal Bridge, Canal at Dusk, Night Canal.
+
+- **Canal Bridge**
+  - Author: Linen
+  - Source: original illustration created for Linen
+  - License: original work, created for Linen
+
+### Snow Cabin
+
+Cabin at Dawn, Snow Cabin, Cabin at Dusk, Cabin Lights.
+
+- **Snow Cabin**
+  - Author: Linen
+  - Source: original illustration created for Linen
+  - License: original work, created for Linen
+
+### Balloon Valley
+
+Balloons at Dawn, Balloon Valley, Balloons at Dusk, Night Balloons.
+
+- **Balloon Valley**
+  - Author: Linen
+  - Source: original illustration created for Linen
+  - License: original work, created for Linen
+
+### Pink Cupcakes
+
+Morning Cakes, Pink Cupcakes, Cupcakes at Dusk, Night Cupcakes.
+
+- **Pink Cupcakes**
+  - Author: Linen
+  - Source: original illustration created for Linen
+  - License: original work, created for Linen
+
+### Open Rose
+
+Rose at Dawn, Open Rose, Rose at Dusk, Night Rose.
+
+- **Open Rose**
+  - Author: Linen
+  - Source: original illustration created for Linen
+  - License: original work, created for Linen
+
+### Tide Pool
+
+Pool at Dawn, Tide Pool, Pool at Dusk, Night Pool.
+
+- **Tide Pool**
+  - Author: Linen
+  - Source: original illustration created for Linen
+  - License: original work, created for Linen
+
+### Beach Huts
+
+Huts at Dawn, Beach Huts, Huts at Dusk, Night Huts.
+
+- **Beach Huts**
+  - Author: Linen
+  - Source: original illustration created for Linen
+  - License: original work, created for Linen
+

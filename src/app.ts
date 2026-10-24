@@ -1,5 +1,6 @@
 import { Ambience, type Cue } from "./audio.ts";
 import { archiveDates, buildDaily, dailyPicture, formatDailyLabel, isIsoDate, LAUNCH_DATE, localDateISO } from "./daily/generate.ts";
+import { TEMPLATES } from "./daily/scenes.ts";
 import { exportPng } from "./exportPng.ts";
 import { GestureController, installPalmRejection } from "./gestures.ts";
 import { icon } from "./icons.ts";
@@ -396,7 +397,7 @@ export class App {
         </div>
       </header>
       <main class="gallery credits">
-        <p class="note">Music and Relaxing Landscapes are adapted from public-domain art. Every other page is an original illustration drawn for Linen, not copied from another coloring app.</p>
+        <p class="note">Music, Relaxing Landscapes, Sweet Tulip, and Besler Tulips are adapted from public-domain art. Every other gallery page is an original illustration drawn for Linen. Each daily picture is a recolor of one of those original drawings.</p>
         ${groups
           .map(
             (group) => `
@@ -435,6 +436,27 @@ export class App {
           </section>`,
           )
           .join("")}
+        <section>
+          <h2>Daily</h2>
+          ${TEMPLATES.map((template) => {
+            const source = getPicture(template.source);
+            const name = source?.title ?? template.source;
+            const titles = [template.titles.dawn, template.titles.day, template.titles.dusk, template.titles.night].join(", ");
+            return `
+            <article>
+              <h3>${esc(name)}</h3>
+              <p>${esc(titles)}. A recolor of the original gallery drawing.</p>
+              <ul>
+                <li>
+                  <span class="credit-work">${esc(name)}</span>
+                  <span>Linen</span>
+                  <span>Original illustration created for Linen</span>
+                  <span>Original work, created for Linen</span>
+                </li>
+              </ul>
+            </article>`;
+          }).join("")}
+        </section>
       </main>
     `;
     this.must("#back").addEventListener("click", () => this.leaveSection("color"));

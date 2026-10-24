@@ -30,6 +30,15 @@ export function composeDaily(
     regions,
     outline: flip ? mapPath(source.outline, mirrorX) : source.outline,
     ink: source.ink.map((stroke) => ({ d: flip ? mapPath(stroke.d, mirrorX) : stroke.d, w: stroke.w })),
+    credits: [
+      {
+        work: meta.title,
+        author: "Linen",
+        sourceUrl: "",
+        license: `Original work, created for Linen. Recolor of ${source.title}.`,
+        licenseUrl: "",
+      },
+    ],
   };
   return { picture, report: reportOf(picture, meta.minRadiusVu, meta.minAreaVu) };
 }
